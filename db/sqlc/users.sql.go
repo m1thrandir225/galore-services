@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -22,7 +23,7 @@ INSERT INTO users (
   $2,
   $3,
   $4
-) RETURNING id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at
+) RETURNING id, name, email, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at
 `
 
 type CreateUserParams struct {
@@ -32,19 +33,28 @@ type CreateUserParams struct {
 	AvatarUrl string `json:"avatar_url"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	ID                        pgtype.UUID `json:"id"`
+	Name                      string      `json:"name"`
+	Email                     string      `json:"email"`
+	AvatarUrl                 string      `json:"avatar_url"`
+	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
+	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`
+	CreatedAt                 time.Time   `json:"created_at"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Email,
 		arg.Name,
 		arg.Password,
 		arg.AvatarUrl,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
 		&i.Name,
-		&i.Password,
+		&i.Email,
 		&i.AvatarUrl,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
@@ -56,12 +66,46 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users 
 WHERE id = $1 
-RETURNING id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at
+RETURNING id, name, email, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
+}
+
+const getCreatedCocktails = `-- name: GetCreatedCocktails :many
+SELECT id, name, image, ingredients, instructions, description, user_id, created_at FROM created_cocktails 
+WHERE user_id = $1
+`
+
+func (q *Queries) GetCreatedCocktails(ctx context.Context, userID pgtype.UUID) ([]CreatedCocktail, error) {
+	rows, err := q.db.Query(ctx, getCreatedCocktails, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CreatedCocktail{}
+	for rows.Next() {
+		var i CreatedCocktail
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Image,
+			&i.Ingredients,
+			&i.Instructions,
+			&i.Description,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUser = `-- name: GetUser :one
@@ -83,4 +127,35 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getUserFCMTokens = `-- name: GetUserFCMTokens :many
+SELECT id, token, device_id, user_id, created_at FROM fcm_tokens 
+WHERE user_id = $1
+`
+
+func (q *Queries) GetUserFCMTokens(ctx context.Context, userID pgtype.UUID) ([]FcmToken, error) {
+	rows, err := q.db.Query(ctx, getUserFCMTokens, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FcmToken{}
+	for rows.Next() {
+		var i FcmToken
+		if err := rows.Scan(
+			&i.ID,
+			&i.Token,
+			&i.DeviceID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
