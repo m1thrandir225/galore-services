@@ -11,11 +11,16 @@ import (
 )
 
 type Querier interface {
+	CreateFlavour(ctx context.Context, name string) (Flavour, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeleteFlavour(ctx context.Context, id pgtype.UUID) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	GetCreatedCocktails(ctx context.Context, userID pgtype.UUID) ([]CreatedCocktail, error)
+	GetFlavourId(ctx context.Context, id pgtype.UUID) (Flavour, error)
+	GetFlavourName(ctx context.Context, name string) (Flavour, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserFCMTokens(ctx context.Context, userID pgtype.UUID) ([]FcmToken, error)
+	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
 }
 
 var _ Querier = (*Queries)(nil)
