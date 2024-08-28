@@ -12,13 +12,19 @@ import (
 
 type Querier interface {
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
+	CreateNotifcationType(ctx context.Context, arg CreateNotifcationTypeParams) (NotificationType, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
 	DeleteFlavour(ctx context.Context, id pgtype.UUID) error
+	DeleteNotificationType(ctx context.Context, id pgtype.UUID) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
+	DeleteUserCocktail(ctx context.Context, id pgtype.UUID) error
+	GetAllTypes(ctx context.Context) ([]NotificationType, error)
 	GetCreatedCocktails(ctx context.Context, userID pgtype.UUID) ([]CreatedCocktail, error)
 	GetFlavourId(ctx context.Context, id pgtype.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
+	GetUserCocktail(ctx context.Context, id pgtype.UUID) (CreatedCocktail, error)
 	GetUserFCMTokens(ctx context.Context, userID pgtype.UUID) ([]FcmToken, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
 }
