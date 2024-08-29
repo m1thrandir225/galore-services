@@ -17,20 +17,23 @@ INSERT INTO users (
   email,
   name,
   password,
-  avatar_url
+  avatar_url,
+  birthday
 ) VALUES (
   $1,
   $2,
   $3,
-  $4
-) RETURNING id, name, email, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at
+  $4,
+  $5
+) RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at
 `
 
 type CreateUserParams struct {
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	Password  string `json:"password"`
-	AvatarUrl string `json:"avatar_url"`
+	Email     string      `json:"email"`
+	Name      string      `json:"name"`
+	Password  string      `json:"password"`
+	AvatarUrl string      `json:"avatar_url"`
+	Birthday  pgtype.Date `json:"birthday"`
 }
 
 type CreateUserRow struct {
@@ -38,6 +41,7 @@ type CreateUserRow struct {
 	Name                      string      `json:"name"`
 	Email                     string      `json:"email"`
 	AvatarUrl                 string      `json:"avatar_url"`
+	Birthday                  pgtype.Date `json:"birthday"`
 	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
 	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`
 	CreatedAt                 time.Time   `json:"created_at"`
@@ -49,6 +53,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		arg.Name,
 		arg.Password,
 		arg.AvatarUrl,
+		arg.Birthday,
 	)
 	var i CreateUserRow
 	err := row.Scan(
@@ -56,6 +61,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		&i.Name,
 		&i.Email,
 		&i.AvatarUrl,
+		&i.Birthday,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
 		&i.CreatedAt,
@@ -66,7 +72,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users 
 WHERE id = $1 
-RETURNING id, name, email, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at
+RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
@@ -109,7 +115,7 @@ func (q *Queries) GetCreatedCocktails(ctx context.Context, userID pgtype.UUID) (
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at FROM users 
+SELECT id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
 WHERE id = $1 LIMIT 1
 `
 
@@ -125,6 +131,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
 		&i.CreatedAt,
+		&i.Birthday,
 	)
 	return i, err
 }

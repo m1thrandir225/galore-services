@@ -10,6 +10,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Cocktail struct {
+	ID           pgtype.UUID `json:"id"`
+	Name         string      `json:"name"`
+	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
+	Glass        string      `json:"glass"`
+	Image        string      `json:"image"`
+	Instructions []byte      `json:"instructions"`
+	Ingredients  []byte      `json:"ingredients"`
+	CreatedAt    time.Time   `json:"created_at"`
+}
+
 type CreatedCocktail struct {
 	ID           pgtype.UUID `json:"id"`
 	Name         string      `json:"name"`
@@ -69,4 +80,5 @@ type User struct {
 	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
 	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`
 	CreatedAt                 time.Time   `json:"created_at"`
+	Birthday                  pgtype.Date `json:"birthday"`
 }
