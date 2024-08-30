@@ -136,6 +136,28 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 	return i, err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.Password,
+		&i.AvatarUrl,
+		&i.EnabledPushNotifications,
+		&i.EnabledEmailNotifications,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
 const getUserFCMTokens = `-- name: GetUserFCMTokens :many
 SELECT id, token, device_id, user_id, created_at FROM fcm_tokens 
 WHERE user_id = $1

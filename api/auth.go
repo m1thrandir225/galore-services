@@ -23,7 +23,15 @@ type registerUserResponse struct {
 	AccessToken string           `json:"access_token"`
 }
 
-type LoginUserRequest struct{}
+type loginUserRequest struct {
+	email    string `json:"email" binding:"required"`
+	password string `json:"password" binding:"required"`
+}
+
+type loginUserResponse struct {
+	User        db.User `json:"user"`
+	AccessToken string  `json:"access_token"`
+}
 
 func (server *Server) registerUser(ctx *gin.Context) {
 	var requestData registerUserRequest
@@ -39,11 +47,6 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	var dbDate pgtype.Date
 
 	err = dbDate.Scan(birthdayDate)
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -85,6 +88,41 @@ func (server *Server) registerUser(ctx *gin.Context) {
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
+
+	var requestData loginUserRequest
+
+	if err := ctx.Bind(&requestData); err != nil {
+		ctx.JSON(400, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserByEmail(ctx, requestData.email)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = util.ComparePassword(user.Password, requestData.password)
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(requestData.email, server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	response := loginUserResponse{
+		User:        user,
+		AccessToken: accessToken,
+	}
+
+	ctx.JSON(http.StatusOK, response)
+
 }
 
 func (server *Server) logout(ctx *gin.Context) {}
