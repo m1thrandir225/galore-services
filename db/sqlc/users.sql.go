@@ -9,6 +9,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -37,7 +38,7 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID                        pgtype.UUID `json:"id"`
+	ID                        uuid.UUID   `json:"id"`
 	Name                      string      `json:"name"`
 	Email                     string      `json:"email"`
 	AvatarUrl                 string      `json:"avatar_url"`
@@ -75,7 +76,7 @@ WHERE id = $1
 RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
@@ -85,7 +86,7 @@ SELECT id, name, image, ingredients, instructions, description, user_id, created
 WHERE user_id = $1
 `
 
-func (q *Queries) GetCreatedCocktails(ctx context.Context, userID pgtype.UUID) ([]CreatedCocktail, error) {
+func (q *Queries) GetCreatedCocktails(ctx context.Context, userID uuid.UUID) ([]CreatedCocktail, error) {
 	rows, err := q.db.Query(ctx, getCreatedCocktails, userID)
 	if err != nil {
 		return nil, err
@@ -119,7 +120,7 @@ SELECT id, email, name, password, avatar_url, enabled_push_notifications, enable
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
 	var i User
 	err := row.Scan(
@@ -163,7 +164,7 @@ SELECT id, token, device_id, user_id, created_at FROM fcm_tokens
 WHERE user_id = $1
 `
 
-func (q *Queries) GetUserFCMTokens(ctx context.Context, userID pgtype.UUID) ([]FcmToken, error) {
+func (q *Queries) GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error) {
 	rows, err := q.db.Query(ctx, getUserFCMTokens, userID)
 	if err != nil {
 		return nil, err

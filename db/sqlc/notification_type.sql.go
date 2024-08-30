@@ -8,7 +8,7 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createNotifcationType = `-- name: CreateNotifcationType :one
@@ -47,7 +47,7 @@ DELETE from notification_types
 WHERE id = $1
 `
 
-func (q *Queries) DeleteNotificationType(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteNotificationType(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteNotificationType, id)
 	return err
 }

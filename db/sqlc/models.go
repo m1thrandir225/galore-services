@@ -7,11 +7,12 @@ package db
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Cocktail struct {
-	ID           pgtype.UUID `json:"id"`
+	ID           uuid.UUID   `json:"id"`
 	Name         string      `json:"name"`
 	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
 	Glass        string      `json:"glass"`
@@ -22,68 +23,68 @@ type Cocktail struct {
 }
 
 type CreatedCocktail struct {
-	ID           pgtype.UUID `json:"id"`
-	Name         string      `json:"name"`
-	Image        string      `json:"image"`
-	Ingredients  []byte      `json:"ingredients"`
-	Instructions []byte      `json:"instructions"`
-	Description  string      `json:"description"`
-	UserID       pgtype.UUID `json:"user_id"`
-	CreatedAt    time.Time   `json:"created_at"`
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Image        string    `json:"image"`
+	Ingredients  []byte    `json:"ingredients"`
+	Instructions []byte    `json:"instructions"`
+	Description  string    `json:"description"`
+	UserID       uuid.UUID `json:"user_id"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type FcmToken struct {
-	ID        pgtype.UUID `json:"id"`
-	Token     string      `json:"token"`
-	DeviceID  string      `json:"device_id"`
-	UserID    pgtype.UUID `json:"user_id"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID        uuid.UUID `json:"id"`
+	Token     string    `json:"token"`
+	DeviceID  string    `json:"device_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type Flavour struct {
-	ID        pgtype.UUID `json:"id"`
-	Name      string      `json:"name"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type LikedCocktail struct {
-	CocktailID string      `json:"cocktail_id"`
-	UserID     pgtype.UUID `json:"user_id"`
+	CocktailID string    `json:"cocktail_id"`
+	UserID     uuid.UUID `json:"user_id"`
 }
 
 type LikedFlavour struct {
-	FlavourID pgtype.UUID `json:"flavour_id"`
-	UserID    pgtype.UUID `json:"user_id"`
+	FlavourID uuid.UUID `json:"flavour_id"`
+	UserID    uuid.UUID `json:"user_id"`
 }
 
 type Notification struct {
-	ID               pgtype.UUID `json:"id"`
-	UserID           pgtype.UUID `json:"user_id"`
-	NotificationType pgtype.UUID `json:"notification_type"`
-	CreatedAt        time.Time   `json:"created_at"`
+	ID               uuid.UUID `json:"id"`
+	UserID           uuid.UUID `json:"user_id"`
+	NotificationType uuid.UUID `json:"notification_type"`
+	CreatedAt        time.Time `json:"created_at"`
 }
 
 type NotificationType struct {
-	ID        pgtype.UUID `json:"id"`
-	Title     string      `json:"title"`
-	Content   string      `json:"content"`
-	Tag       string      `json:"tag"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	Tag       string    `json:"tag"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type Session struct {
-	ID           pgtype.UUID `json:"id"`
-	Email        string      `json:"email"`
-	RefreshToken string      `json:"refresh_token"`
-	UserAgent    string      `json:"user_agent"`
-	ClientIp     string      `json:"client_ip"`
-	IsBlocked    bool        `json:"is_blocked"`
-	ExpiresAt    time.Time   `json:"expires_at"`
-	CreatedAt    time.Time   `json:"created_at"`
+	ID           uuid.UUID `json:"id"`
+	Email        string    `json:"email"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type User struct {
-	ID                        pgtype.UUID `json:"id"`
+	ID                        uuid.UUID   `json:"id"`
 	Email                     string      `json:"email"`
 	Name                      string      `json:"name"`
 	Password                  string      `json:"password"`

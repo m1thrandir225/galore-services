@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/util"
@@ -19,18 +20,26 @@ type registerUserRequest struct {
 }
 
 type registerUserResponse struct {
-	User        db.CreateUserRow `json:"user"`
-	AccessToken string           `json:"access_token"`
+	User                  db.CreateUserRow `json:"user"`
+	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
+	AccessToken           string           `json:"access_token"`
+	RefreshToken          string           `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time        `json:"refresh_token_expires_at"`
+	SessionID             uuid.UUID        `json:"session_id"`
 }
 
 type loginUserRequest struct {
-	email    string `json:"email" binding:"required"`
-	password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type loginUserResponse struct {
-	User        db.User `json:"user"`
-	AccessToken string  `json:"access_token"`
+	SessionID             uuid.UUID `json:"session_id"`
+	User                  db.User   `json:"user"`
+	AccessToken           string    `json:"access_token"`
+	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at"`
+	RefreshToken          string    `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
 }
 
 func (server *Server) registerUser(ctx *gin.Context) {
@@ -47,7 +56,6 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	var dbDate pgtype.Date
 
 	err = dbDate.Scan(birthdayDate)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -70,18 +78,42 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(args.Email, server.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(args.Email, server.config.AccessTokenDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	//TODO: implement adding file to storage
+	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(args.Email, server.config.RefreshTokenDuration)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshTokenPayload.ID,
+		Email:        args.Email,
+		RefreshToken: refreshToken,
+		ClientIp:     ctx.ClientIP(),
+		UserAgent:    ctx.Request.UserAgent(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshTokenPayload.ExpiredAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	response := registerUserResponse{
-		User:        newEntry,
-		AccessToken: accessToken,
+		User:                  newEntry,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
+		SessionID:             session.ID,
 	}
 
 	ctx.JSON(http.StatusOK, response)
@@ -96,36 +128,64 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserByEmail(ctx, requestData.email)
+	user, err := server.store.GetUserByEmail(ctx, requestData.Email)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	err = util.ComparePassword(user.Password, requestData.password)
+	err = util.ComparePassword(user.Password, requestData.Password)
 
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(requestData.email, server.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(requestData.Email, server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(requestData.Email, server.config.RefreshTokenDuration)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshTokenPayload.ID,
+		Email:        requestData.Email,
+		RefreshToken: refreshToken,
+		ClientIp:     ctx.ClientIP(),
+		UserAgent:    ctx.Request.UserAgent(),
+		ExpiresAt:    time.Now().Add(server.config.RefreshTokenDuration),
+	})
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	response := loginUserResponse{
-		User:        user,
-		AccessToken: accessToken,
+		SessionID:             session.ID,
+		User:                  user,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
 	}
 
 	ctx.JSON(http.StatusOK, response)
 
 }
 
-func (server *Server) logout(ctx *gin.Context) {}
+func (server *Server) logout(ctx *gin.Context) {
+	// probably send a session_id and an email and logout??
+	// this is mainly to set the session to is_blocked
+}
 
 func (server *Server) verifyAuthCookie(cookie string) bool {
 	payload, err := server.tokenMaker.VerifyToken(cookie)

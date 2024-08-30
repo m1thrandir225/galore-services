@@ -8,7 +8,7 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createFlavour = `-- name: CreateFlavour :one
@@ -31,7 +31,7 @@ DELETE FROM flavours
 WHERE id = $1
 `
 
-func (q *Queries) DeleteFlavour(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteFlavour(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteFlavour, id)
 	return err
 }
@@ -41,7 +41,7 @@ SELECT id, name, created_at FROM flavours
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetFlavourId(ctx context.Context, id pgtype.UUID) (Flavour, error) {
+func (q *Queries) GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error) {
 	row := q.db.QueryRow(ctx, getFlavourId, id)
 	var i Flavour
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
@@ -68,8 +68,8 @@ RETURNING id, name, created_at
 `
 
 type UpdateFlavourParams struct {
-	ID   pgtype.UUID `json:"id"`
-	Name string      `json:"name"`
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 
 func (q *Queries) UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error) {

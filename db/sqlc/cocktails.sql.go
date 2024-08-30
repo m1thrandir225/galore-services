@@ -8,7 +8,7 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createUserCocktail = `-- name: CreateUserCocktail :one
@@ -30,12 +30,12 @@ INSERT INTO created_cocktails (
 `
 
 type CreateUserCocktailParams struct {
-	Name         string      `json:"name"`
-	Image        string      `json:"image"`
-	Ingredients  []byte      `json:"ingredients"`
-	Instructions []byte      `json:"instructions"`
-	Description  string      `json:"description"`
-	UserID       pgtype.UUID `json:"user_id"`
+	Name         string    `json:"name"`
+	Image        string    `json:"image"`
+	Ingredients  []byte    `json:"ingredients"`
+	Instructions []byte    `json:"instructions"`
+	Description  string    `json:"description"`
+	UserID       uuid.UUID `json:"user_id"`
 }
 
 func (q *Queries) CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error) {
@@ -66,7 +66,7 @@ DELETE FROM created_cocktails
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUserCocktail(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteUserCocktail(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUserCocktail, id)
 	return err
 }
@@ -76,7 +76,7 @@ SELECT id, name, image, ingredients, instructions, description, user_id, created
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserCocktail(ctx context.Context, id pgtype.UUID) (CreatedCocktail, error) {
+func (q *Queries) GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error) {
 	row := q.db.QueryRow(ctx, getUserCocktail, id)
 	var i CreatedCocktail
 	err := row.Scan(

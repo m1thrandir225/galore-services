@@ -7,7 +7,7 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -16,19 +16,19 @@ type Querier interface {
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
-	DeleteFlavour(ctx context.Context, id pgtype.UUID) error
-	DeleteNotificationType(ctx context.Context, id pgtype.UUID) error
-	DeleteUser(ctx context.Context, id pgtype.UUID) error
-	DeleteUserCocktail(ctx context.Context, id pgtype.UUID) error
+	DeleteFlavour(ctx context.Context, id uuid.UUID) error
+	DeleteNotificationType(ctx context.Context, id uuid.UUID) error
+	DeleteUser(ctx context.Context, id uuid.UUID) error
+	DeleteUserCocktail(ctx context.Context, id uuid.UUID) error
 	GetAllTypes(ctx context.Context) ([]NotificationType, error)
-	GetCreatedCocktails(ctx context.Context, userID pgtype.UUID) ([]CreatedCocktail, error)
-	GetFlavourId(ctx context.Context, id pgtype.UUID) (Flavour, error)
+	GetCreatedCocktails(ctx context.Context, userID uuid.UUID) ([]CreatedCocktail, error)
+	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)
-	GetSession(ctx context.Context, id pgtype.UUID) (Session, error)
-	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
+	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	GetUserCocktail(ctx context.Context, id pgtype.UUID) (CreatedCocktail, error)
-	GetUserFCMTokens(ctx context.Context, userID pgtype.UUID) ([]FcmToken, error)
+	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
+	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
 }
 
