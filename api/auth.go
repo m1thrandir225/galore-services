@@ -34,12 +34,16 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	SessionID             uuid.UUID `json:"session_id"`
-	User                  db.User   `json:"user"`
-	AccessToken           string    `json:"access_token"`
-	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at"`
-	RefreshToken          string    `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
+	SessionID             uuid.UUID        `json:"session_id"`
+	User                  db.CreateUserRow `json:"user"`
+	AccessToken           string           `json:"access_token"`
+	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
+	RefreshToken          string           `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time        `json:"refresh_token_expires_at"`
+}
+
+type logoutRequest struct {
+	SessionID uuid.UUID `json:"session_id" binding:"required"`
 }
 
 func (server *Server) registerUser(ctx *gin.Context) {
@@ -170,8 +174,17 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	response := loginUserResponse{
-		SessionID:             session.ID,
-		User:                  user,
+		SessionID: session.ID,
+		User: db.CreateUserRow{
+			ID:                        user.ID,
+			Name:                      user.Name,
+			Email:                     user.Email,
+			AvatarUrl:                 user.AvatarUrl,
+			Birthday:                  user.Birthday,
+			EnabledPushNotifications:  user.EnabledPushNotifications,
+			EnabledEmailNotifications: user.EnabledPushNotifications,
+			CreatedAt:                 user.CreatedAt,
+		},
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
 		RefreshToken:          refreshToken,
@@ -183,8 +196,39 @@ func (server *Server) loginUser(ctx *gin.Context) {
 }
 
 func (server *Server) logout(ctx *gin.Context) {
-	// probably send a session_id and an email and logout??
-	// this is mainly to set the session to is_blocked
+	//This will be an auth only route so you would need to send a acces token, and as a specific meter need to send the session id
+	//so when you logout the session can be deleted or maybe set it to blocked, let it be for the time being just be deleted
+	//TODO: set the session to blocked instead of deleting it so the user can see his own previous sessions.
+
+	var requestData logoutRequest
+
+	if err := ctx.Bind(&requestData); err != nil {
+		ctx.JSON(400, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.GetSession(ctx, requestData.SessionID)
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	_, err = server.tokenMaker.VerifyToken(session.RefreshToken)
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	err = server.store.DeleteSession(ctx, requestData.SessionID)
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	//No need to return aynthing
+	ctx.Status(http.StatusNoContent)
 }
 
 func (server *Server) verifyAuthCookie(cookie string) bool {

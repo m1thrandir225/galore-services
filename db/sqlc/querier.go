@@ -18,6 +18,7 @@ type Querier interface {
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
 	DeleteFlavour(ctx context.Context, id uuid.UUID) error
 	DeleteNotificationType(ctx context.Context, id uuid.UUID) error
+	DeleteSession(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserCocktail(ctx context.Context, id uuid.UUID) error
 	GetAllTypes(ctx context.Context) ([]NotificationType, error)
