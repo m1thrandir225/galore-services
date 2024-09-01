@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/util"
 )
@@ -53,13 +52,8 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
-	format := "2006-01-02"
+	dbDate, err := util.TimeToDbDate(requestData.Birthday)
 
-	birthdayDate, err := time.Parse(format, requestData.Birthday)
-
-	var dbDate pgtype.Date
-
-	err = dbDate.Scan(birthdayDate)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

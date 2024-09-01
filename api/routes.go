@@ -11,9 +11,15 @@ func (server *Server) setupRouter() {
 
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
 
+	/*
+	 * Public routes
+	 */
 	v1.POST("/register", server.registerUser)
 	v1.POST("/login", server.loginUser)
 
+	/*
+	 * Private routes
+	 */
 	authRoutes.POST("/logout", server.logout)
 	authRoutes.GET("/users/:id/profile", server.getUserDetails)
 	authRoutes.DELETE("/users/:id/profile", server.deleteUser)
