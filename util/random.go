@@ -30,7 +30,7 @@ func RandomEmail() string {
 	return fmt.Sprintf("%s@gmail.com", RandomString(6))
 }
 
-func RandomDate() time.Time {
+func RandomDate() string {
 	min := time.Date(1965, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
 	max := time.Date(2024, 1, 0, 0, 0, 0, 0, time.UTC).Unix()
 
@@ -38,5 +38,7 @@ func RandomDate() time.Time {
 
 	sec := rand.Int63n(delta) + min
 
-	return time.Unix(sec, 0)
+	dateWithTime := time.Unix(sec, 0)
+
+	return fmt.Sprintf("%d-%02d-%02d", dateWithTime.Year(), dateWithTime.Month(), dateWithTime.Day())
 }
