@@ -21,6 +21,9 @@ INSERT INTO sessions (
 SELECT * FROM sessions
 WHERE id = $1 LIMIT 1;
 
+-- name: GetAllUserSessions :many
+SELECT * FROM sessions 
+WHERE email = $1;
 -- name: DeleteSession :exec
 DELETE FROM sessions
 WHERE id = $1;

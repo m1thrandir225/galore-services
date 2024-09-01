@@ -22,6 +22,7 @@ type Querier interface {
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserCocktail(ctx context.Context, id uuid.UUID) error
 	GetAllTypes(ctx context.Context) ([]NotificationType, error)
+	GetAllUserSessions(ctx context.Context, email string) ([]Session, error)
 	GetCreatedCocktails(ctx context.Context, userID uuid.UUID) ([]CreatedCocktail, error)
 	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)
