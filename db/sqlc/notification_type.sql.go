@@ -81,3 +81,21 @@ func (q *Queries) GetAllTypes(ctx context.Context) ([]NotificationType, error) {
 	}
 	return items, nil
 }
+
+const getNotificationType = `-- name: GetNotificationType :one
+SELECT id, title, content, tag, created_at from notification_types
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetNotificationType(ctx context.Context, id uuid.UUID) (NotificationType, error) {
+	row := q.db.QueryRow(ctx, getNotificationType, id)
+	var i NotificationType
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Content,
+		&i.Tag,
+		&i.CreatedAt,
+	)
+	return i, err
+}
