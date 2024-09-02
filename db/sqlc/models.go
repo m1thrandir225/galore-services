@@ -62,6 +62,7 @@ type Notification struct {
 	ID               uuid.UUID `json:"id"`
 	UserID           uuid.UUID `json:"user_id"`
 	NotificationType uuid.UUID `json:"notification_type"`
+	Opened           bool      `json:"opened"`
 	CreatedAt        time.Time `json:"created_at"`
 }
 

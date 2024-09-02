@@ -11,11 +11,14 @@ import (
 )
 
 type Querier interface {
+	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
 	CreateNotifcationType(ctx context.Context, arg CreateNotifcationTypeParams) (NotificationType, error)
+	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
+	DeleteFCMToken(ctx context.Context, id uuid.UUID) error
 	DeleteFlavour(ctx context.Context, id uuid.UUID) error
 	DeleteNotificationType(ctx context.Context, id uuid.UUID) error
 	DeleteSession(ctx context.Context, id uuid.UUID) error
@@ -32,7 +35,13 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
 	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
+	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error)
+	LikeFlavour(ctx context.Context, arg LikeFlavourParams) (LikedFlavour, error)
+	UnlikeCocktail(ctx context.Context, arg UnlikeCocktailParams) error
+	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
+	UpdateUserNotification(ctx context.Context, arg UpdateUserNotificationParams) (Notification, error)
 }
 
 var _ Querier = (*Queries)(nil)
