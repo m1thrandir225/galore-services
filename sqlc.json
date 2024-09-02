@@ -25,17 +25,17 @@
             {
               "column": "created_cocktails.instructions",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/db",
+                "import": "github.com/m1thrandir225/galore-services/dto",
                 "package": "dto",
-                "type": "InstructionData"
+                "type": "InstructionDto"
               }
             },
             {
               "column": "created_cocktails.ingredients",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/db",
+                "import": "github.com/m1thrandir225/galore-services/dto",
                 "package": "dto",
-                "type": "IngredientData"
+                "type": "IngredientDto"
               }
             }
           ]

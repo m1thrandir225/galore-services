@@ -9,7 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	dto "github.com/m1thrandir225/galore-services/db"
+	dto "github.com/m1thrandir225/galore-services/dto"
 )
 
 const createUserCocktail = `-- name: CreateUserCocktail :one
@@ -31,12 +31,12 @@ INSERT INTO created_cocktails (
 `
 
 type CreateUserCocktailParams struct {
-	Name         string              `json:"name"`
-	Image        string              `json:"image"`
-	Ingredients  dto.IngredientData  `json:"ingredients"`
-	Instructions dto.InstructionData `json:"instructions"`
-	Description  string              `json:"description"`
-	UserID       uuid.UUID           `json:"user_id"`
+	Name         string             `json:"name"`
+	Image        string             `json:"image"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Description  string             `json:"description"`
+	UserID       uuid.UUID          `json:"user_id"`
 }
 
 func (q *Queries) CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error) {

@@ -1,23 +1,13 @@
 package util
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"strings"
 	"time"
+
+	dto "github.com/m1thrandir225/galore-services/dto"
 )
-
-type ingredient struct {
-	Name   string `json:"name"`
-	Amount string `json:"amount"`
-}
-
-type instructionWithImage struct {
-	Instruction string `json:"instruction"`
-	Image       string `json:"instruction_image"`
-}
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
@@ -58,11 +48,11 @@ func RandomDate() string {
 /**
 * Generate a random array of ingredients and return a json
  */
-func RandomIngredients() []byte {
-	var ingredients []ingredient
+func RandomIngredients() []dto.IngredientData {
+	var ingredients []dto.IngredientData
 
 	for i := 0; i < 10; i++ {
-		new_ingredient := ingredient{
+		new_ingredient := dto.IngredientData{
 			Name:   RandomString(10),
 			Amount: RandomString(4),
 		}
@@ -70,36 +60,24 @@ func RandomIngredients() []byte {
 		ingredients = append(ingredients, new_ingredient)
 	}
 
-	b, err := json.Marshal(ingredients)
-
-	if err != nil {
-		log.Fatal("There was a problem encoding json: ", err)
-	}
-
-	return b
+	return ingredients
 
 }
 
 /*
 * Generate a random array of instructions and return a json
  */
-func RandomInstructions() []byte {
-	var instructions []instructionWithImage
+func RandomInstructions() []dto.InstructionData {
+	var instructions []dto.InstructionData
 
 	for i := 0; i < 10; i++ {
-		new_instruction := instructionWithImage{
-			Image:       RandomString(12),
-			Instruction: RandomString(64),
+		new_instruction := dto.InstructionData{
+			InstructionImage: RandomString(12),
+			Instruction:      RandomString(64),
 		}
 
 		instructions = append(instructions, new_instruction)
 	}
 
-	b, err := json.Marshal(instructions)
-
-	if err != nil {
-		log.Fatal("There was a problem encoding json: ", err)
-	}
-
-	return b
+	return instructions
 }

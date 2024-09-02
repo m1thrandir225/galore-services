@@ -5,20 +5,26 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/m1thrandir225/galore-services/dto"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
 
-	ingredients_json := util.RandomIngredients()
-	instructions_json := util.RandomInstructions()
+	ingredients := dto.IngredientDto{
+		Ingredients: util.RandomIngredients(),
+	}
+
+	instructions := dto.InstructionDto{
+		Instructions: util.RandomInstructions(),
+	}
 
 	arg := CreateUserCocktailParams{
 		Name:         util.RandomString(10),
 		Image:        util.RandomString(24),
-		Ingredients:  ingredients_json,
-		Instructions: instructions_json,
+		Ingredients:  ingredients,
+		Instructions: instructions,
 		UserID:       user_id,
 		Description:  util.RandomString(256),
 	}
@@ -30,8 +36,8 @@ func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
 
 	require.Equal(t, arg.Name, cocktail.Name)
 	require.Equal(t, arg.Image, cocktail.Image)
-	require.Equal(t, string(arg.Ingredients), string(cocktail.Ingredients))
-	require.Equal(t, string(arg.Instructions), string(cocktail.Instructions))
+	require.Equal(t, arg.Ingredients, cocktail.Ingredients)
+	require.Equal(t, arg.Instructions, cocktail.Instructions)
 	require.Equal(t, arg.UserID, cocktail.UserID)
 	require.Equal(t, arg.Description, cocktail.Description)
 
