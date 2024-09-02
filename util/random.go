@@ -1,11 +1,23 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"strings"
 	"time"
 )
+
+type ingredient struct {
+	Name   string `json:"name"`
+	Amount string `json:"amount"`
+}
+
+type instructionWithImage struct {
+	Instruction string `json:"instruction"`
+	Image       string `json:"instruction_image"`
+}
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
@@ -41,4 +53,53 @@ func RandomDate() string {
 	dateWithTime := time.Unix(sec, 0)
 
 	return fmt.Sprintf("%d-%02d-%02d", dateWithTime.Year(), dateWithTime.Month(), dateWithTime.Day())
+}
+
+/**
+* Generate a random array of ingredients and return a json
+ */
+func RandomIngredients() []byte {
+	var ingredients []ingredient
+
+	for i := 0; i < 10; i++ {
+		new_ingredient := ingredient{
+			Name:   RandomString(10),
+			Amount: RandomString(4),
+		}
+
+		ingredients = append(ingredients, new_ingredient)
+	}
+
+	b, err := json.Marshal(ingredients)
+
+	if err != nil {
+		log.Fatal("There was a problem encoding json: ", err)
+	}
+
+	return b
+
+}
+
+/*
+* Generate a random array of instructions and return a json
+ */
+func RandomInstructions() []byte {
+	var instructions []instructionWithImage
+
+	for i := 0; i < 10; i++ {
+		new_instruction := instructionWithImage{
+			Image:       RandomString(12),
+			Instruction: RandomString(64),
+		}
+
+		instructions = append(instructions, new_instruction)
+	}
+
+	b, err := json.Marshal(instructions)
+
+	if err != nil {
+		log.Fatal("There was a problem encoding json: ", err)
+	}
+
+	return b
 }

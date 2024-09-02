@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	dto "github.com/m1thrandir225/galore-services/db"
 )
 
 type Cocktail struct {
@@ -23,14 +24,14 @@ type Cocktail struct {
 }
 
 type CreatedCocktail struct {
-	ID           uuid.UUID `json:"id"`
-	Name         string    `json:"name"`
-	Image        string    `json:"image"`
-	Ingredients  []byte    `json:"ingredients"`
-	Instructions []byte    `json:"instructions"`
-	Description  string    `json:"description"`
-	UserID       uuid.UUID `json:"user_id"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID           uuid.UUID           `json:"id"`
+	Name         string              `json:"name"`
+	Image        string              `json:"image"`
+	Ingredients  dto.IngredientData  `json:"ingredients"`
+	Instructions dto.InstructionData `json:"instructions"`
+	Description  string              `json:"description"`
+	UserID       uuid.UUID           `json:"user_id"`
+	CreatedAt    time.Time           `json:"created_at"`
 }
 
 type FcmToken struct {

@@ -4,12 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomSession(userEmail string, t *testing.T) Session {
 	arg := CreateSessionParams{
+		ID:           uuid.New(),
 		Email:        userEmail,
 		RefreshToken: util.RandomString(5),
 		UserAgent:    util.RandomString(8),
