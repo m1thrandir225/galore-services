@@ -8,15 +8,17 @@ INSERT INTO cocktail_categories (
 ) RETURNING *;
 
 -- name: GetCategoriesForCocktail :many 
-SELECT * from categories c
+SELECT c.id, name, created_at from categories c
 JOIN cocktail_categories cc ON cc.category_id = c.id 
 WHERE cc.cocktail_id = $1
-GROUP BY cc.user_id;
+GROUP BY cc.cocktail_id, cc.category_id, c.id;
 
 -- name: GetCocktailsForCategory :many
-SELECT * FROM cocktails c 
-JOIN cocktail_categories cc on cc.cocktail_id 
+SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, created_at FROM cocktails c 
+JOIN cocktail_categories cc on cc.cocktail_id = c.id
+WHERE cc.category_id = $1
+GROUP BY cc.category_id, cc.cocktail_id, c.id;
 
 -- name: DeleteCocktailCategory :exec
-DELETE FROM cocktail_categories
-WHERE id = $1;
+DELETE FROM cocktail_categories cc
+WHERE cc.id = $1;

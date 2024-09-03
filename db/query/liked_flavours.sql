@@ -8,11 +8,16 @@ INSERT INTO liked_flavours (
 ) RETURNING *;
 
 -- name: GetLikedFlavour :one 
-select * from flavours f 
+select id ,name, created_at from flavours f 
 join liked_flavours lf ON f.id = lf.flavour_id 
 where lf.user_id = $1 and lf.flavour_id = $2
 group by lf.flavour_id, lf.user_id, f.id;
 
+-- name: GetUserLikedFlavours :many
+SELECT id, name, created_at from flavours f 
+JOIN liked_flavours lf ON f.id = lf.flavour_id
+WHERE lf.user_id = $1
+GROUP BY lf.flavour_id, lf.user_id, f.id;
 
 -- name: UnlikeFlavour :exec
 DELETE FROM liked_flavours 

@@ -7,13 +7,12 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const getLikedFlavour = `-- name: GetLikedFlavour :one
-select id, name, created_at, flavour_id, user_id from flavours f 
+select id ,name, created_at from flavours f 
 join liked_flavours lf ON f.id = lf.flavour_id 
 where lf.user_id = $1 and lf.flavour_id = $2
 group by lf.flavour_id, lf.user_id, f.id
@@ -24,25 +23,38 @@ type GetLikedFlavourParams struct {
 	FlavourID uuid.UUID `json:"flavour_id"`
 }
 
-type GetLikedFlavourRow struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	FlavourID uuid.UUID `json:"flavour_id"`
-	UserID    uuid.UUID `json:"user_id"`
+func (q *Queries) GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (Flavour, error) {
+	row := q.db.QueryRow(ctx, getLikedFlavour, arg.UserID, arg.FlavourID)
+	var i Flavour
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	return i, err
 }
 
-func (q *Queries) GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (GetLikedFlavourRow, error) {
-	row := q.db.QueryRow(ctx, getLikedFlavour, arg.UserID, arg.FlavourID)
-	var i GetLikedFlavourRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.CreatedAt,
-		&i.FlavourID,
-		&i.UserID,
-	)
-	return i, err
+const getUserLikedFlavours = `-- name: GetUserLikedFlavours :many
+SELECT id, name, created_at from flavours f 
+JOIN liked_flavours lf ON f.id = lf.flavour_id
+WHERE lf.user_id = $1
+GROUP BY lf.flavour_id, lf.user_id, f.id
+`
+
+func (q *Queries) GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error) {
+	rows, err := q.db.Query(ctx, getUserLikedFlavours, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Flavour{}
+	for rows.Next() {
+		var i Flavour
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const likeFlavour = `-- name: LikeFlavour :one

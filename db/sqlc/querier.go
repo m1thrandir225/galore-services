@@ -11,7 +11,9 @@ import (
 )
 
 type Querier interface {
+	CreateCategory(ctx context.Context, name string) (Category, error)
 	CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error)
+	CreateCocktailCategory(ctx context.Context, arg CreateCocktailCategoryParams) (CocktailCategory, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
 	CreateNotifcationType(ctx context.Context, arg CreateNotifcationTypeParams) (NotificationType, error)
@@ -19,7 +21,9 @@ type Querier interface {
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
+	DeleteCategory(ctx context.Context, id uuid.UUID) error
 	DeleteCocktail(ctx context.Context, id uuid.UUID) error
+	DeleteCocktailCategory(ctx context.Context, id uuid.UUID) error
 	DeleteFCMToken(ctx context.Context, id uuid.UUID) error
 	DeleteFlavour(ctx context.Context, id uuid.UUID) error
 	DeleteNotificationType(ctx context.Context, id uuid.UUID) error
@@ -28,25 +32,31 @@ type Querier interface {
 	DeleteUserCocktail(ctx context.Context, id uuid.UUID) error
 	GetAllTypes(ctx context.Context) ([]NotificationType, error)
 	GetAllUserSessions(ctx context.Context, email string) ([]Session, error)
+	GetCategoriesForCocktail(ctx context.Context, cocktailID uuid.UUID) ([]Category, error)
+	GetCategoryById(ctx context.Context, id uuid.UUID) (Category, error)
+	GetCategoryByName(ctx context.Context, name string) (Category, error)
 	GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, error)
+	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]Cocktail, error)
 	GetCreatedCocktails(ctx context.Context, userID uuid.UUID) ([]CreatedCocktail, error)
 	GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, error)
 	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)
 	GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error)
 	GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error)
-	GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (GetLikedFlavourRow, error)
+	GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (Flavour, error)
 	GetNotificationType(ctx context.Context, id uuid.UUID) (NotificationType, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
 	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
+	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error)
 	LikeFlavour(ctx context.Context, arg LikeFlavourParams) (LikedFlavour, error)
 	UnlikeCocktail(ctx context.Context, arg UnlikeCocktailParams) error
 	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
 	UpdateUserNotification(ctx context.Context, arg UpdateUserNotificationParams) (Notification, error)
 }

@@ -4,15 +4,15 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
-func createLikedFlavour(t *testing.T) LikedFlavour {
-	user := createRandomUser(t)
+func createLikedFlavour(user_id uuid.UUID, t *testing.T) LikedFlavour {
 	flavour := createRandomFlavour(t)
 
 	arg := LikeFlavourParams{
-		UserID:    user.ID,
+		UserID:    user_id,
 		FlavourID: flavour.ID,
 	}
 
@@ -27,28 +27,59 @@ func createLikedFlavour(t *testing.T) LikedFlavour {
 }
 
 func TestLikeFlavour(t *testing.T) {
-	createLikedFlavour(t)
+	user := createRandomUser(t)
+	createLikedFlavour(user.ID, t)
 }
 
 func TestGetLikedFlavour(t *testing.T) {
-	likedFlavour := createLikedFlavour(t)
+	user := createRandomUser(t)
+	likedFlavour := createLikedFlavour(user.ID, t)
 
 	get_args := GetLikedFlavourParams{
 		UserID:    likedFlavour.UserID,
 		FlavourID: likedFlavour.FlavourID,
 	}
 
-	selected_flavour, err := testStore.GetLikedFlavour(context.Background(), get_args)
+	selected_flavour, err := testStore.GetFlavourId(context.Background(), likedFlavour.FlavourID)
+
 	require.NoError(t, err)
 	require.NotEmpty(t, selected_flavour)
 
-	require.Equal(t, likedFlavour.UserID, selected_flavour.UserID)
-	require.Equal(t, likedFlavour.FlavourID, selected_flavour.FlavourID)
+	selected_liked_flavour, err := testStore.GetLikedFlavour(context.Background(), get_args)
+	require.NoError(t, err)
+	require.NotEmpty(t, selected_liked_flavour)
 
+	require.Equal(t, selected_flavour.ID, selected_liked_flavour.ID)
+	require.Equal(t, selected_flavour.Name, selected_liked_flavour.Name)
+	require.Equal(t, selected_flavour.CreatedAt, selected_liked_flavour.CreatedAt)
 }
 
-func TestDeleteLikeFlavour(t *testing.T) {
-	likedFlavour := createLikedFlavour(t)
+func TestGetUserLikedFlavours(t *testing.T) {
+	user := createRandomUser(t)
+
+	var flavours []Flavour
+	for i := 0; i < 10; i++ {
+		liked_flavour := createLikedFlavour(user.ID, t)
+
+		flavour, err := testStore.GetFlavourId(context.Background(), liked_flavour.FlavourID)
+		require.NoError(t, err)
+		require.NotEmpty(t, flavour)
+
+		flavours = append(flavours, flavour)
+	}
+
+	liked_flavours, err := testStore.GetUserLikedFlavours(context.Background(), user.ID)
+
+	require.NoError(t, err)
+
+	require.NotEmpty(t, liked_flavours)
+
+	require.Equal(t, len(flavours), len(liked_flavours))
+}
+
+func TestUnikeFlavour(t *testing.T) {
+	user := createRandomUser(t)
+	likedFlavour := createLikedFlavour(user.ID, t)
 
 	arg := UnlikeFlavourParams{
 		UserID:    likedFlavour.UserID,
