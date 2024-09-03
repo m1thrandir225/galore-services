@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	dto "github.com/m1thrandir225/galore-services/dto"
 )
 
 const getLikedCocktail = `-- name: GetLikedCocktail :one
@@ -26,16 +27,16 @@ type GetLikedCocktailParams struct {
 }
 
 type GetLikedCocktailRow struct {
-	ID           uuid.UUID   `json:"id"`
-	Name         string      `json:"name"`
-	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
-	Glass        string      `json:"glass"`
-	Image        string      `json:"image"`
-	Instructions []byte      `json:"instructions"`
-	Ingredients  []byte      `json:"ingredients"`
-	CreatedAt    time.Time   `json:"created_at"`
-	CocktailID   string      `json:"cocktail_id"`
-	UserID       uuid.UUID   `json:"user_id"`
+	ID           uuid.UUID          `json:"id"`
+	Name         string             `json:"name"`
+	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
+	Glass        string             `json:"glass"`
+	Image        string             `json:"image"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	CreatedAt    time.Time          `json:"created_at"`
+	CocktailID   string             `json:"cocktail_id"`
+	UserID       uuid.UUID          `json:"user_id"`
 }
 
 func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error) {
@@ -64,16 +65,16 @@ GROUP BY lc.user_id
 `
 
 type GetLikedCocktailsRow struct {
-	ID           uuid.UUID   `json:"id"`
-	Name         string      `json:"name"`
-	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
-	Glass        string      `json:"glass"`
-	Image        string      `json:"image"`
-	Instructions []byte      `json:"instructions"`
-	Ingredients  []byte      `json:"ingredients"`
-	CreatedAt    time.Time   `json:"created_at"`
-	CocktailID   string      `json:"cocktail_id"`
-	UserID       uuid.UUID   `json:"user_id"`
+	ID           uuid.UUID          `json:"id"`
+	Name         string             `json:"name"`
+	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
+	Glass        string             `json:"glass"`
+	Image        string             `json:"image"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	CreatedAt    time.Time          `json:"created_at"`
+	CocktailID   string             `json:"cocktail_id"`
+	UserID       uuid.UUID          `json:"user_id"`
 }
 
 func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error) {

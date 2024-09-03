@@ -19,14 +19,14 @@ type Category struct {
 }
 
 type Cocktail struct {
-	ID           uuid.UUID   `json:"id"`
-	Name         string      `json:"name"`
-	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
-	Glass        string      `json:"glass"`
-	Image        string      `json:"image"`
-	Instructions []byte      `json:"instructions"`
-	Ingredients  []byte      `json:"ingredients"`
-	CreatedAt    time.Time   `json:"created_at"`
+	ID           uuid.UUID          `json:"id"`
+	Name         string             `json:"name"`
+	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
+	Glass        string             `json:"glass"`
+	Image        string             `json:"image"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	CreatedAt    time.Time          `json:"created_at"`
 }
 
 type CocktailCategory struct {
@@ -36,14 +36,14 @@ type CocktailCategory struct {
 }
 
 type CreatedCocktail struct {
-	ID           uuid.UUID          `json:"id"`
-	Name         string             `json:"name"`
-	Image        string             `json:"image"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Description  string             `json:"description"`
-	UserID       uuid.UUID          `json:"user_id"`
-	CreatedAt    time.Time          `json:"created_at"`
+	ID           uuid.UUID            `json:"id"`
+	Name         string               `json:"name"`
+	Image        string               `json:"image"`
+	Ingredients  dto.IngredientDto    `json:"ingredients"`
+	Instructions dto.AiInstructionDto `json:"instructions"`
+	Description  string               `json:"description"`
+	UserID       uuid.UUID            `json:"user_id"`
+	CreatedAt    time.Time            `json:"created_at"`
 }
 
 type FcmToken struct {

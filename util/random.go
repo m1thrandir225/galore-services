@@ -27,6 +27,9 @@ func RandomString(n int) string {
 
 	return sb.String()
 }
+func RandomBool() bool {
+	return rand.Uint64()%2 == 1
+}
 
 func RandomEmail() string {
 	return fmt.Sprintf("%s@gmail.com", RandomString(6))
@@ -67,13 +70,27 @@ func RandomIngredients() []dto.IngredientData {
 /*
 * Generate a random array of instructions and return a json
  */
+func RandomAiInstructions() []dto.AiInstructionData {
+	var instructions []dto.AiInstructionData
+
+	for i := 0; i < 10; i++ {
+		new_instruction := dto.AiInstructionData{
+			InstructionImage: RandomString(12),
+			Instruction:      RandomString(64),
+		}
+
+		instructions = append(instructions, new_instruction)
+	}
+
+	return instructions
+}
+
 func RandomInstructions() []dto.InstructionData {
 	var instructions []dto.InstructionData
 
 	for i := 0; i < 10; i++ {
 		new_instruction := dto.InstructionData{
-			InstructionImage: RandomString(12),
-			Instruction:      RandomString(64),
+			Instruction: RandomString(64),
 		}
 
 		instructions = append(instructions, new_instruction)

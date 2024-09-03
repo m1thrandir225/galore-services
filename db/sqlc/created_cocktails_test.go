@@ -16,8 +16,8 @@ func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
 		Ingredients: util.RandomIngredients(),
 	}
 
-	instructions := dto.InstructionDto{
-		Instructions: util.RandomInstructions(),
+	instructions := dto.AiInstructionDto{
+		Instructions: util.RandomAiInstructions(),
 	}
 
 	arg := CreateUserCocktailParams{

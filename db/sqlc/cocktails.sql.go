@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	dto "github.com/m1thrandir225/galore-services/dto"
 )
 
 const createCocktail = `-- name: CreateCocktail :one
@@ -31,12 +32,12 @@ INSERT INTO cocktails (
 `
 
 type CreateCocktailParams struct {
-	Name         string      `json:"name"`
-	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
-	Glass        string      `json:"glass"`
-	Image        string      `json:"image"`
-	Instructions []byte      `json:"instructions"`
-	Ingredients  []byte      `json:"ingredients"`
+	Name         string             `json:"name"`
+	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
+	Glass        string             `json:"glass"`
+	Image        string             `json:"image"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
 }
 
 func (q *Queries) CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error) {
