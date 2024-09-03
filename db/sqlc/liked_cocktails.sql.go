@@ -7,9 +7,105 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const getLikedCocktail = `-- name: GetLikedCocktail :one
+SELECT id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, cocktail_id, user_id from cocktails c
+JOIN liked_cocktails lc ON c.id = lc.cocktail_id
+WHERE lc.user_id = $1 and lc.cocktail_id = $2
+GROUP BY lc.user_id, lc.cocktail_id, c.id
+`
+
+type GetLikedCocktailParams struct {
+	UserID     uuid.UUID `json:"user_id"`
+	CocktailID string    `json:"cocktail_id"`
+}
+
+type GetLikedCocktailRow struct {
+	ID           uuid.UUID   `json:"id"`
+	Name         string      `json:"name"`
+	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
+	Glass        string      `json:"glass"`
+	Image        string      `json:"image"`
+	Instructions []byte      `json:"instructions"`
+	Ingredients  []byte      `json:"ingredients"`
+	CreatedAt    time.Time   `json:"created_at"`
+	CocktailID   string      `json:"cocktail_id"`
+	UserID       uuid.UUID   `json:"user_id"`
+}
+
+func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error) {
+	row := q.db.QueryRow(ctx, getLikedCocktail, arg.UserID, arg.CocktailID)
+	var i GetLikedCocktailRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsAlcoholic,
+		&i.Glass,
+		&i.Image,
+		&i.Instructions,
+		&i.Ingredients,
+		&i.CreatedAt,
+		&i.CocktailID,
+		&i.UserID,
+	)
+	return i, err
+}
+
+const getLikedCocktails = `-- name: GetLikedCocktails :many
+SELECt id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, cocktail_id, user_id from cocktails c
+JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
+WHERE lc.user_id = $1
+GROUP BY lc.user_id
+`
+
+type GetLikedCocktailsRow struct {
+	ID           uuid.UUID   `json:"id"`
+	Name         string      `json:"name"`
+	IsAlcoholic  pgtype.Bool `json:"is_alcoholic"`
+	Glass        string      `json:"glass"`
+	Image        string      `json:"image"`
+	Instructions []byte      `json:"instructions"`
+	Ingredients  []byte      `json:"ingredients"`
+	CreatedAt    time.Time   `json:"created_at"`
+	CocktailID   string      `json:"cocktail_id"`
+	UserID       uuid.UUID   `json:"user_id"`
+}
+
+func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error) {
+	rows, err := q.db.Query(ctx, getLikedCocktails, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetLikedCocktailsRow{}
+	for rows.Next() {
+		var i GetLikedCocktailsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.IsAlcoholic,
+			&i.Glass,
+			&i.Image,
+			&i.Instructions,
+			&i.Ingredients,
+			&i.CreatedAt,
+			&i.CocktailID,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const likeCocktail = `-- name: LikeCocktail :one
 INSERT INTO liked_cocktails (

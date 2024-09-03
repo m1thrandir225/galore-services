@@ -7,9 +7,43 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+const getLikedFlavour = `-- name: GetLikedFlavour :one
+select id, name, created_at, flavour_id, user_id from flavours f 
+join liked_flavours lf ON f.id = lf.flavour_id 
+where lf.user_id = $1 and lf.flavour_id = $2
+group by lf.flavour_id, lf.user_id, f.id
+`
+
+type GetLikedFlavourParams struct {
+	UserID    uuid.UUID `json:"user_id"`
+	FlavourID uuid.UUID `json:"flavour_id"`
+}
+
+type GetLikedFlavourRow struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	FlavourID uuid.UUID `json:"flavour_id"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (GetLikedFlavourRow, error) {
+	row := q.db.QueryRow(ctx, getLikedFlavour, arg.UserID, arg.FlavourID)
+	var i GetLikedFlavourRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.FlavourID,
+		&i.UserID,
+	)
+	return i, err
+}
 
 const likeFlavour = `-- name: LikeFlavour :one
 INSERT INTO liked_flavours (
