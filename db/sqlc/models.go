@@ -12,6 +12,12 @@ import (
 	dto "github.com/m1thrandir225/galore-services/dto"
 )
 
+type Category struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Cocktail struct {
 	ID           uuid.UUID   `json:"id"`
 	Name         string      `json:"name"`
@@ -21,6 +27,12 @@ type Cocktail struct {
 	Instructions []byte      `json:"instructions"`
 	Ingredients  []byte      `json:"ingredients"`
 	CreatedAt    time.Time   `json:"created_at"`
+}
+
+type CocktailCategory struct {
+	ID         uuid.UUID `json:"id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
+	CategoryID uuid.UUID `json:"category_id"`
 }
 
 type CreatedCocktail struct {
