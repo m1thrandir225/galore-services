@@ -51,3 +51,21 @@ func (q *Queries) DeleteFCMToken(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteFCMToken, id)
 	return err
 }
+
+const getFCMTokenById = `-- name: GetFCMTokenById :one
+SELECT id, token, device_id, user_id, created_at FROM fcm_tokens
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, error) {
+	row := q.db.QueryRow(ctx, getFCMTokenById, id)
+	var i FcmToken
+	err := row.Scan(
+		&i.ID,
+		&i.Token,
+		&i.DeviceID,
+		&i.UserID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
