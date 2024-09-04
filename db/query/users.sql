@@ -26,12 +26,3 @@ DELETE FROM users
 WHERE id = $1 
 RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at;
 
--- name: GetUserFCMTokens :many 
-SELECT * FROM fcm_tokens 
-WHERE user_id = $1; 
-
--- name: GetCreatedCocktails :many 
-SELECT * FROM created_cocktails 
-WHERE user_id = $1;
-
-

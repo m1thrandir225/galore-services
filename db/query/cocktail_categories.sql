@@ -7,6 +7,10 @@ INSERT INTO cocktail_categories (
   $2
 ) RETURNING *;
 
+-- name: GetCocktailCategory :one
+SELECT * from cocktail_categories
+WHERE id = $1 LIMIT 1;
+
 -- name: GetCategoriesForCocktail :many 
 SELECT c.id, name, created_at from categories c
 JOIN cocktail_categories cc ON cc.category_id = c.id 
@@ -20,5 +24,5 @@ WHERE cc.category_id = $1
 GROUP BY cc.category_id, cc.cocktail_id, c.id;
 
 -- name: DeleteCocktailCategory :exec
-DELETE FROM cocktail_categories cc
-WHERE cc.id = $1;
+DELETE FROM cocktail_categories
+WHERE id = $1;

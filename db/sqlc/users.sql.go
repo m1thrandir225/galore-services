@@ -81,40 +81,6 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getCreatedCocktails = `-- name: GetCreatedCocktails :many
-SELECT id, name, image, ingredients, instructions, description, user_id, created_at FROM created_cocktails 
-WHERE user_id = $1
-`
-
-func (q *Queries) GetCreatedCocktails(ctx context.Context, userID uuid.UUID) ([]CreatedCocktail, error) {
-	rows, err := q.db.Query(ctx, getCreatedCocktails, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []CreatedCocktail{}
-	for rows.Next() {
-		var i CreatedCocktail
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Image,
-			&i.Ingredients,
-			&i.Instructions,
-			&i.Description,
-			&i.UserID,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getUser = `-- name: GetUser :one
 SELECT id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
 WHERE id = $1 LIMIT 1
@@ -157,35 +123,4 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Birthday,
 	)
 	return i, err
-}
-
-const getUserFCMTokens = `-- name: GetUserFCMTokens :many
-SELECT id, token, device_id, user_id, created_at FROM fcm_tokens 
-WHERE user_id = $1
-`
-
-func (q *Queries) GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error) {
-	rows, err := q.db.Query(ctx, getUserFCMTokens, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []FcmToken{}
-	for rows.Next() {
-		var i FcmToken
-		if err := rows.Scan(
-			&i.ID,
-			&i.Token,
-			&i.DeviceID,
-			&i.UserID,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }

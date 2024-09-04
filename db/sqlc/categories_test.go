@@ -55,6 +55,7 @@ func TestUpdateCategory(t *testing.T) {
 	category := createRandomCategory(t)
 
 	new_name := util.RandomString(12)
+
 	arg := UpdateCategoryParams{
 		ID:   category.ID,
 		Name: new_name,

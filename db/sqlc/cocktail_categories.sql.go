@@ -34,8 +34,8 @@ func (q *Queries) CreateCocktailCategory(ctx context.Context, arg CreateCocktail
 }
 
 const deleteCocktailCategory = `-- name: DeleteCocktailCategory :exec
-DELETE FROM cocktail_categories cc
-WHERE cc.id = $1
+DELETE FROM cocktail_categories
+WHERE id = $1
 `
 
 func (q *Queries) DeleteCocktailCategory(ctx context.Context, id uuid.UUID) error {
@@ -68,6 +68,18 @@ func (q *Queries) GetCategoriesForCocktail(ctx context.Context, cocktailID uuid.
 		return nil, err
 	}
 	return items, nil
+}
+
+const getCocktailCategory = `-- name: GetCocktailCategory :one
+SELECT id, cocktail_id, category_id from cocktail_categories
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error) {
+	row := q.db.QueryRow(ctx, getCocktailCategory, id)
+	var i CocktailCategory
+	err := row.Scan(&i.ID, &i.CocktailID, &i.CategoryID)
+	return i, err
 }
 
 const getCocktailsForCategory = `-- name: GetCocktailsForCategory :many
