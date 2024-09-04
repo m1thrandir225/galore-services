@@ -14,25 +14,25 @@ import (
 const createNotification = `-- name: CreateNotification :one
 INSERT INTO notifications (
   user_id,
-  notification_type
+  notification_type_id
 ) VALUES (
   $1,
   $2
-) RETURNING id, user_id, notification_type, opened, created_at
+) RETURNING id, user_id, notification_type_id, opened, created_at
 `
 
 type CreateNotificationParams struct {
-	UserID           uuid.UUID `json:"user_id"`
-	NotificationType uuid.UUID `json:"notification_type"`
+	UserID             uuid.UUID `json:"user_id"`
+	NotificationTypeID uuid.UUID `json:"notification_type_id"`
 }
 
 func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error) {
-	row := q.db.QueryRow(ctx, createNotification, arg.UserID, arg.NotificationType)
+	row := q.db.QueryRow(ctx, createNotification, arg.UserID, arg.NotificationTypeID)
 	var i Notification
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.NotificationType,
+		&i.NotificationTypeID,
 		&i.Opened,
 		&i.CreatedAt,
 	)
@@ -40,8 +40,8 @@ func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotification
 }
 
 const getUserNotifications = `-- name: GetUserNotifications :many
-SELECT id, user_id, notification_type, opened, created_at FROM notifications 
-WHERE user_id = $1 LIMIT 1
+SELECT id, user_id, notification_type_id, opened, created_at FROM notifications 
+WHERE user_id = $1
 `
 
 func (q *Queries) GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error) {
@@ -56,7 +56,7 @@ func (q *Queries) GetUserNotifications(ctx context.Context, userID uuid.UUID) ([
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
-			&i.NotificationType,
+			&i.NotificationTypeID,
 			&i.Opened,
 			&i.CreatedAt,
 		); err != nil {
@@ -74,7 +74,7 @@ const updateUserNotification = `-- name: UpdateUserNotification :one
 UPDATE notifications
   SET opened = $2
   WHERE id = $1
-  RETURNING id, user_id, notification_type, opened, created_at
+  RETURNING id, user_id, notification_type_id, opened, created_at
 `
 
 type UpdateUserNotificationParams struct {
@@ -88,7 +88,7 @@ func (q *Queries) UpdateUserNotification(ctx context.Context, arg UpdateUserNoti
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.NotificationType,
+		&i.NotificationTypeID,
 		&i.Opened,
 		&i.CreatedAt,
 	)

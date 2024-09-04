@@ -1,7 +1,7 @@
 -- name: CreateNotification :one 
 INSERT INTO notifications (
   user_id,
-  notification_type
+  notification_type_id
 ) VALUES (
   $1,
   $2
@@ -9,7 +9,7 @@ INSERT INTO notifications (
 
 -- name: GetUserNotifications :many
 SELECT * FROM notifications 
-WHERE user_id = $1 LIMIT 1;
+WHERE user_id = $1;
 
 -- name: UpdateUserNotification :one
 UPDATE notifications

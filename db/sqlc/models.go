@@ -71,11 +71,11 @@ type LikedFlavour struct {
 }
 
 type Notification struct {
-	ID               uuid.UUID `json:"id"`
-	UserID           uuid.UUID `json:"user_id"`
-	NotificationType uuid.UUID `json:"notification_type"`
-	Opened           bool      `json:"opened"`
-	CreatedAt        time.Time `json:"created_at"`
+	ID                 uuid.UUID `json:"id"`
+	UserID             uuid.UUID `json:"user_id"`
+	NotificationTypeID uuid.UUID `json:"notification_type_id"`
+	Opened             bool      `json:"opened"`
+	CreatedAt          time.Time `json:"created_at"`
 }
 
 type NotificationType struct {
