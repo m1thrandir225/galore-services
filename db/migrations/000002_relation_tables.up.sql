@@ -17,12 +17,6 @@ CREATE TABLE fcm_tokens (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE liked_cocktails (
-  cocktail_id TEXT NOT NULL, 
-  user_id UUID REFERENCES users (id) ON DELETE CASCADE NOT NULL,
-  PRIMARY KEY(cocktail_id, user_id)
-);
-
 CREATE TABLE liked_flavours (
   flavour_id UUID REFERENCES flavours (id) ON DELETE CASCADE NOT NULL, 
   user_id UUID REFERENCES users (id) ON DELETE CASCADE NOT NULL, 

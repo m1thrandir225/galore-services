@@ -15,7 +15,7 @@ import (
 )
 
 const getLikedCocktail = `-- name: GetLikedCocktail :one
-SELECT id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, cocktail_id, user_id from cocktails c
+SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, lc.id, cocktail_id, user_id from cocktails c
 JOIN liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1 and lc.cocktail_id = $2
 GROUP BY lc.user_id, lc.cocktail_id, c.id
@@ -23,7 +23,7 @@ GROUP BY lc.user_id, lc.cocktail_id, c.id
 
 type GetLikedCocktailParams struct {
 	UserID     uuid.UUID `json:"user_id"`
-	CocktailID string    `json:"cocktail_id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
 }
 
 type GetLikedCocktailRow struct {
@@ -35,7 +35,8 @@ type GetLikedCocktailRow struct {
 	Instructions dto.InstructionDto `json:"instructions"`
 	Ingredients  dto.IngredientDto  `json:"ingredients"`
 	CreatedAt    time.Time          `json:"created_at"`
-	CocktailID   string             `json:"cocktail_id"`
+	ID_2         uuid.UUID          `json:"id_2"`
+	CocktailID   uuid.UUID          `json:"cocktail_id"`
 	UserID       uuid.UUID          `json:"user_id"`
 }
 
@@ -51,6 +52,7 @@ func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailPara
 		&i.Instructions,
 		&i.Ingredients,
 		&i.CreatedAt,
+		&i.ID_2,
 		&i.CocktailID,
 		&i.UserID,
 	)
@@ -58,7 +60,7 @@ func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailPara
 }
 
 const getLikedCocktails = `-- name: GetLikedCocktails :many
-SELECt id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, cocktail_id, user_id from cocktails c
+SELECt c.id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, lc.id, cocktail_id, user_id from cocktails c
 JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
 GROUP BY lc.user_id
@@ -73,7 +75,8 @@ type GetLikedCocktailsRow struct {
 	Instructions dto.InstructionDto `json:"instructions"`
 	Ingredients  dto.IngredientDto  `json:"ingredients"`
 	CreatedAt    time.Time          `json:"created_at"`
-	CocktailID   string             `json:"cocktail_id"`
+	ID_2         uuid.UUID          `json:"id_2"`
+	CocktailID   uuid.UUID          `json:"cocktail_id"`
 	UserID       uuid.UUID          `json:"user_id"`
 }
 
@@ -95,6 +98,7 @@ func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]Ge
 			&i.Instructions,
 			&i.Ingredients,
 			&i.CreatedAt,
+			&i.ID_2,
 			&i.CocktailID,
 			&i.UserID,
 		); err != nil {
@@ -115,18 +119,18 @@ INSERT INTO liked_cocktails (
 ) VALUES (
   $1,
   $2
-) RETURNING cocktail_id, user_id
+) RETURNING id, cocktail_id, user_id
 `
 
 type LikeCocktailParams struct {
-	CocktailID string    `json:"cocktail_id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
 	UserID     uuid.UUID `json:"user_id"`
 }
 
 func (q *Queries) LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error) {
 	row := q.db.QueryRow(ctx, likeCocktail, arg.CocktailID, arg.UserID)
 	var i LikedCocktail
-	err := row.Scan(&i.CocktailID, &i.UserID)
+	err := row.Scan(&i.ID, &i.CocktailID, &i.UserID)
 	return i, err
 }
 
@@ -136,7 +140,7 @@ WHERE cocktail_id = $1 AND user_id = $2
 `
 
 type UnlikeCocktailParams struct {
-	CocktailID string    `json:"cocktail_id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
 	UserID     uuid.UUID `json:"user_id"`
 }
 

@@ -61,7 +61,8 @@ type Flavour struct {
 }
 
 type LikedCocktail struct {
-	CocktailID string    `json:"cocktail_id"`
+	ID         uuid.UUID `json:"id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
 	UserID     uuid.UUID `json:"user_id"`
 }
 
