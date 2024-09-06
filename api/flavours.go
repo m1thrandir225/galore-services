@@ -20,6 +20,14 @@ func (server *Server) createFlavour(ctx *gin.Context) {
 		return
 	}
 
+	flavour, err := server.store.CreateFlavour(ctx, requestData.Name)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, flavour)
 }
 
 func (server *Server) updateFlavour(ctx *gin.Context) {
