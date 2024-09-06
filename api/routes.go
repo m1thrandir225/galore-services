@@ -37,14 +37,18 @@ func (server *Server) setupRouter() {
 	 * Notification Type routes (Private)
 	 */
 	authRoutes.GET("/notification_types", server.getNotificationTypes)
-	authRoutes.DELETE("/notification_types/:id", server.getNotificationType)
+	authRoutes.DELETE("/notification_types/:id", server.deleteNotificationType)
 	authRoutes.PUT("/notification_types/:id", server.updateNotificationType)
+	authRoutes.GET("/notification_types/:id", server.getNotificationType)
 	authRoutes.POST("/notification_types", server.createNotificationType)
 
 	/*
 	 * Notifications routes (Private)
 	 */
 
+	authRoutes.GET("/users/:id/notifications", server.getUserNotifications)
+	authRoutes.POST("/notifications", server.createNotification)
+	authRoutes.PUT("/notifications/:id", server.updateNotificationStatus)
 	/*
 	 * Cocktail routes (Private)
 	 */

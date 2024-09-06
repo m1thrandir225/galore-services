@@ -13,7 +13,7 @@ type GetNotificationTypesResponse struct {
 }
 
 type NotificationTypeIDUri struct {
-	ID uuid.UUID `uri:"id" binding:"required,uuid"`
+	ID string `uri:"id" binding:"required,uuid"`
 }
 
 type UpdateNotificationTypeRequest struct {
@@ -68,12 +68,18 @@ func (server *Server) getNotificationTypes(ctx *gin.Context) {
 func (server *Server) getNotificationType(ctx *gin.Context) {
 	var requestData NotificationTypeIDUri
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.ShouldBindUri(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
 
-	notification_type, err := server.store.GetNotificationType(ctx, requestData.ID)
+	id, err := uuid.Parse(requestData.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	notification_type, err := server.store.GetNotificationType(ctx, id)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -86,12 +92,18 @@ func (server *Server) getNotificationType(ctx *gin.Context) {
 func (server *Server) deleteNotificationType(ctx *gin.Context) {
 	var requestData NotificationTypeIDUri
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.ShouldBindUri(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
+	id, err := uuid.Parse(requestData.ID)
 
-	err := server.store.DeleteNotificationType(ctx, requestData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err = server.store.DeleteNotificationType(ctx, id)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -104,18 +116,25 @@ func (server *Server) deleteNotificationType(ctx *gin.Context) {
 func (server *Server) updateNotificationType(ctx *gin.Context) {
 	var uriData NotificationTypeIDUri
 	var requestData UpdateNotificationTypeRequest
-	if err := ctx.Bind(&uriData); err != nil {
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.ShouldBindJSON(&requestData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	id, err := uuid.Parse(uriData.ID)
+
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	args := db.UpdateNotificationTypeParams{
-		ID:      uriData.ID,
+		ID:      id,
 		Title:   requestData.Title,
 		Content: requestData.Content,
 		Tag:     requestData.Tag,
