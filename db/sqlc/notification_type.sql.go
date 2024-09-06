@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const createNotifcationType = `-- name: CreateNotifcationType :one
+const createNotificationType = `-- name: CreateNotificationType :one
 INSERT INTO notification_types (
   title,
   content,
@@ -23,14 +23,14 @@ INSERT INTO notification_types (
 ) RETURNING id, title, content, tag, created_at
 `
 
-type CreateNotifcationTypeParams struct {
+type CreateNotificationTypeParams struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 	Tag     string `json:"tag"`
 }
 
-func (q *Queries) CreateNotifcationType(ctx context.Context, arg CreateNotifcationTypeParams) (NotificationType, error) {
-	row := q.db.QueryRow(ctx, createNotifcationType, arg.Title, arg.Content, arg.Tag)
+func (q *Queries) CreateNotificationType(ctx context.Context, arg CreateNotificationTypeParams) (NotificationType, error) {
+	row := q.db.QueryRow(ctx, createNotificationType, arg.Title, arg.Content, arg.Tag)
 	var i NotificationType
 	err := row.Scan(
 		&i.ID,
@@ -89,6 +89,38 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetNotificationType(ctx context.Context, id uuid.UUID) (NotificationType, error) {
 	row := q.db.QueryRow(ctx, getNotificationType, id)
+	var i NotificationType
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Content,
+		&i.Tag,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateNotificationType = `-- name: UpdateNotificationType :one
+UPDATE notification_types
+SET title = $2, content = $3, tag = $4
+WHERE id = $1
+RETURNING id, title, content, tag, created_at
+`
+
+type UpdateNotificationTypeParams struct {
+	ID      uuid.UUID `json:"id"`
+	Title   string    `json:"title"`
+	Content string    `json:"content"`
+	Tag     string    `json:"tag"`
+}
+
+func (q *Queries) UpdateNotificationType(ctx context.Context, arg UpdateNotificationTypeParams) (NotificationType, error) {
+	row := q.db.QueryRow(ctx, updateNotificationType,
+		arg.ID,
+		arg.Title,
+		arg.Content,
+		arg.Tag,
+	)
 	var i NotificationType
 	err := row.Scan(
 		&i.ID,

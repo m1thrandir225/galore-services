@@ -16,8 +16,8 @@ type Querier interface {
 	CreateCocktailCategory(ctx context.Context, arg CreateCocktailCategoryParams) (CocktailCategory, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
-	CreateNotifcationType(ctx context.Context, arg CreateNotifcationTypeParams) (NotificationType, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
+	CreateNotificationType(ctx context.Context, arg CreateNotificationTypeParams) (NotificationType, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
@@ -57,6 +57,7 @@ type Querier interface {
 	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
+	UpdateNotificationType(ctx context.Context, arg UpdateNotificationTypeParams) (NotificationType, error)
 	UpdateUserEmailNotifications(ctx context.Context, arg UpdateUserEmailNotificationsParams) (bool, error)
 	UpdateUserInformation(ctx context.Context, arg UpdateUserInformationParams) (UpdateUserInformationRow, error)
 	UpdateUserNotification(ctx context.Context, arg UpdateUserNotificationParams) (Notification, error)

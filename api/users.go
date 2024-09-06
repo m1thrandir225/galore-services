@@ -19,3 +19,9 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 func (server *Server) changeUserPassword(ctx *gin.Context) {
 	//Verify if the id is the same from the URI as in the token
 }
+
+func (server *Server) updateUserInformation(ctx *gin.Context) {}
+
+func (server *Server) updateUserPushNotifications(ctx *gin.Context) {}
+
+func (server *Server) updateUserEmailNotifications(ctx *gin.Context) {}

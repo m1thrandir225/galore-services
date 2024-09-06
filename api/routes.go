@@ -21,10 +21,40 @@ func (server *Server) setupRouter() {
 	 * Private routes
 	 */
 	authRoutes.POST("/logout", server.logout)
-	authRoutes.GET("/users/:id/profile", server.getUserDetails)
-	authRoutes.DELETE("/users/:id/profile", server.deleteUser)
-	authRoutes.POST("/users/:id/profile", server.editUser)
-	authRoutes.POST("/users/:id/change-password", server.changeUserPassword)
 
+	/*
+	 * User routes (Private)
+	 *
+	 */
+	authRoutes.GET("/users/:id", server.getUserDetails)
+	authRoutes.DELETE("/users/:id", server.deleteUser)
+	authRoutes.POST("/users/:id", server.updateUserInformation)
+	authRoutes.PUT("/users/:id/password", server.changeUserPassword)
+	authRoutes.PUT("/users/:id/push-notifications", server.updateUserPushNotifications)
+	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
+
+	/*
+	 * Notification Type routes (Private)
+	 */
+	authRoutes.GET("/notification_types", server.getNotificationTypes)
+	authRoutes.DELETE("/notification_types/:id", server.getNotificationType)
+	authRoutes.PUT("/notification_types/:id", server.updateNotificationType)
+	authRoutes.POST("/notification_types", server.createNotificationType)
+
+	/*
+	 * Notifications routes (Private)
+	 */
+
+	/*
+	 * Cocktail routes (Private)
+	 */
+
+	/*
+	 * AI Cocktail routes (Private)
+	 */
+
+	/*
+	 * Flavour routes (Private)
+	 */
 	server.router = router
 }

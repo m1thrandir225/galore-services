@@ -9,13 +9,13 @@ import (
 )
 
 func createRandomNotificationType(t *testing.T) NotificationType {
-	arg := CreateNotifcationTypeParams{
+	arg := CreateNotificationTypeParams{
 		Title:   util.RandomString(10),
 		Content: util.RandomString(64),
 		Tag:     util.RandomString(3),
 	}
 
-	notification_type, err := testStore.CreateNotifcationType(context.Background(), arg)
+	notification_type, err := testStore.CreateNotificationType(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, notification_type)
 
@@ -64,4 +64,30 @@ func TestDeleteNotificationType(t *testing.T) {
 	require.Error(t, err)
 	require.Empty(t, selected_type)
 	require.EqualError(t, err, ErrRecordNotFound.Error())
+}
+
+func TestUpdateNotificationType(t *testing.T) {
+	nt := createRandomNotificationType(t)
+
+	arg := UpdateNotificationTypeParams{
+		ID:      nt.ID,
+		Title:   util.RandomString(32),
+		Content: util.RandomString(128),
+		Tag:     util.RandomString(16),
+	}
+
+	updated, err := testStore.UpdateNotificationType(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updated)
+
+	require.Equal(t, nt.ID, updated.ID)
+	require.Equal(t, nt.CreatedAt, updated.CreatedAt)
+	require.NotEqual(t, nt.Title, updated.Title)
+	require.NotEqual(t, nt.Content, updated.Content)
+	require.NotEqual(t, nt.Tag, updated.Tag)
+
+	require.Equal(t, arg.Title, updated.Title)
+	require.Equal(t, arg.Content, updated.Content)
+	require.Equal(t, arg.Tag, updated.Tag)
 }

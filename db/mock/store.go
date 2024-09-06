@@ -41,6 +41,66 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// CreateCategory mocks base method.
+func (m *MockStore) CreateCategory(arg0 context.Context, arg1 string) (db.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCategory", arg0, arg1)
+	ret0, _ := ret[0].(db.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCategory indicates an expected call of CreateCategory.
+func (mr *MockStoreMockRecorder) CreateCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCategory", reflect.TypeOf((*MockStore)(nil).CreateCategory), arg0, arg1)
+}
+
+// CreateCocktail mocks base method.
+func (m *MockStore) CreateCocktail(arg0 context.Context, arg1 db.CreateCocktailParams) (db.Cocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCocktail", arg0, arg1)
+	ret0, _ := ret[0].(db.Cocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCocktail indicates an expected call of CreateCocktail.
+func (mr *MockStoreMockRecorder) CreateCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCocktail", reflect.TypeOf((*MockStore)(nil).CreateCocktail), arg0, arg1)
+}
+
+// CreateCocktailCategory mocks base method.
+func (m *MockStore) CreateCocktailCategory(arg0 context.Context, arg1 db.CreateCocktailCategoryParams) (db.CocktailCategory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCocktailCategory", arg0, arg1)
+	ret0, _ := ret[0].(db.CocktailCategory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCocktailCategory indicates an expected call of CreateCocktailCategory.
+func (mr *MockStoreMockRecorder) CreateCocktailCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCocktailCategory", reflect.TypeOf((*MockStore)(nil).CreateCocktailCategory), arg0, arg1)
+}
+
+// CreateFCMToken mocks base method.
+func (m *MockStore) CreateFCMToken(arg0 context.Context, arg1 db.CreateFCMTokenParams) (db.FcmToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFCMToken", arg0, arg1)
+	ret0, _ := ret[0].(db.FcmToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFCMToken indicates an expected call of CreateFCMToken.
+func (mr *MockStoreMockRecorder) CreateFCMToken(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFCMToken", reflect.TypeOf((*MockStore)(nil).CreateFCMToken), arg0, arg1)
+}
+
 // CreateFlavour mocks base method.
 func (m *MockStore) CreateFlavour(arg0 context.Context, arg1 string) (db.Flavour, error) {
 	m.ctrl.T.Helper()
@@ -56,19 +116,34 @@ func (mr *MockStoreMockRecorder) CreateFlavour(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFlavour", reflect.TypeOf((*MockStore)(nil).CreateFlavour), arg0, arg1)
 }
 
-// CreateNotifcationType mocks base method.
-func (m *MockStore) CreateNotifcationType(arg0 context.Context, arg1 db.CreateNotifcationTypeParams) (db.NotificationType, error) {
+// CreateNotification mocks base method.
+func (m *MockStore) CreateNotification(arg0 context.Context, arg1 db.CreateNotificationParams) (db.Notification, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNotifcationType", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateNotification", arg0, arg1)
+	ret0, _ := ret[0].(db.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateNotification indicates an expected call of CreateNotification.
+func (mr *MockStoreMockRecorder) CreateNotification(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNotification", reflect.TypeOf((*MockStore)(nil).CreateNotification), arg0, arg1)
+}
+
+// CreateNotificationType mocks base method.
+func (m *MockStore) CreateNotificationType(arg0 context.Context, arg1 db.CreateNotificationTypeParams) (db.NotificationType, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateNotificationType", arg0, arg1)
 	ret0, _ := ret[0].(db.NotificationType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateNotifcationType indicates an expected call of CreateNotifcationType.
-func (mr *MockStoreMockRecorder) CreateNotifcationType(arg0, arg1 any) *gomock.Call {
+// CreateNotificationType indicates an expected call of CreateNotificationType.
+func (mr *MockStoreMockRecorder) CreateNotificationType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNotifcationType", reflect.TypeOf((*MockStore)(nil).CreateNotifcationType), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNotificationType", reflect.TypeOf((*MockStore)(nil).CreateNotificationType), arg0, arg1)
 }
 
 // CreateSession mocks base method.
@@ -114,6 +189,62 @@ func (m *MockStore) CreateUserCocktail(arg0 context.Context, arg1 db.CreateUserC
 func (mr *MockStoreMockRecorder) CreateUserCocktail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserCocktail", reflect.TypeOf((*MockStore)(nil).CreateUserCocktail), arg0, arg1)
+}
+
+// DeleteCategory mocks base method.
+func (m *MockStore) DeleteCategory(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCategory", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCategory indicates an expected call of DeleteCategory.
+func (mr *MockStoreMockRecorder) DeleteCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCategory", reflect.TypeOf((*MockStore)(nil).DeleteCategory), arg0, arg1)
+}
+
+// DeleteCocktail mocks base method.
+func (m *MockStore) DeleteCocktail(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCocktail", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCocktail indicates an expected call of DeleteCocktail.
+func (mr *MockStoreMockRecorder) DeleteCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCocktail", reflect.TypeOf((*MockStore)(nil).DeleteCocktail), arg0, arg1)
+}
+
+// DeleteCocktailCategory mocks base method.
+func (m *MockStore) DeleteCocktailCategory(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCocktailCategory", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCocktailCategory indicates an expected call of DeleteCocktailCategory.
+func (mr *MockStoreMockRecorder) DeleteCocktailCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCocktailCategory", reflect.TypeOf((*MockStore)(nil).DeleteCocktailCategory), arg0, arg1)
+}
+
+// DeleteFCMToken mocks base method.
+func (m *MockStore) DeleteFCMToken(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFCMToken", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFCMToken indicates an expected call of DeleteFCMToken.
+func (mr *MockStoreMockRecorder) DeleteFCMToken(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFCMToken", reflect.TypeOf((*MockStore)(nil).DeleteFCMToken), arg0, arg1)
 }
 
 // DeleteFlavour mocks base method.
@@ -201,19 +332,124 @@ func (mr *MockStoreMockRecorder) GetAllTypes(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTypes", reflect.TypeOf((*MockStore)(nil).GetAllTypes), arg0)
 }
 
-// GetCreatedCocktails mocks base method.
-func (m *MockStore) GetCreatedCocktails(arg0 context.Context, arg1 uuid.UUID) ([]db.CreatedCocktail, error) {
+// GetAllUserSessions mocks base method.
+func (m *MockStore) GetAllUserSessions(arg0 context.Context, arg1 string) ([]db.Session, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCreatedCocktails", arg0, arg1)
-	ret0, _ := ret[0].([]db.CreatedCocktail)
+	ret := m.ctrl.Call(m, "GetAllUserSessions", arg0, arg1)
+	ret0, _ := ret[0].([]db.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCreatedCocktails indicates an expected call of GetCreatedCocktails.
-func (mr *MockStoreMockRecorder) GetCreatedCocktails(arg0, arg1 any) *gomock.Call {
+// GetAllUserSessions indicates an expected call of GetAllUserSessions.
+func (mr *MockStoreMockRecorder) GetAllUserSessions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCreatedCocktails", reflect.TypeOf((*MockStore)(nil).GetCreatedCocktails), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserSessions", reflect.TypeOf((*MockStore)(nil).GetAllUserSessions), arg0, arg1)
+}
+
+// GetCategoriesForCocktail mocks base method.
+func (m *MockStore) GetCategoriesForCocktail(arg0 context.Context, arg1 uuid.UUID) ([]db.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCategoriesForCocktail", arg0, arg1)
+	ret0, _ := ret[0].([]db.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCategoriesForCocktail indicates an expected call of GetCategoriesForCocktail.
+func (mr *MockStoreMockRecorder) GetCategoriesForCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategoriesForCocktail", reflect.TypeOf((*MockStore)(nil).GetCategoriesForCocktail), arg0, arg1)
+}
+
+// GetCategoryById mocks base method.
+func (m *MockStore) GetCategoryById(arg0 context.Context, arg1 uuid.UUID) (db.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCategoryById", arg0, arg1)
+	ret0, _ := ret[0].(db.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCategoryById indicates an expected call of GetCategoryById.
+func (mr *MockStoreMockRecorder) GetCategoryById(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategoryById", reflect.TypeOf((*MockStore)(nil).GetCategoryById), arg0, arg1)
+}
+
+// GetCategoryByName mocks base method.
+func (m *MockStore) GetCategoryByName(arg0 context.Context, arg1 string) (db.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCategoryByName", arg0, arg1)
+	ret0, _ := ret[0].(db.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCategoryByName indicates an expected call of GetCategoryByName.
+func (mr *MockStoreMockRecorder) GetCategoryByName(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategoryByName", reflect.TypeOf((*MockStore)(nil).GetCategoryByName), arg0, arg1)
+}
+
+// GetCocktail mocks base method.
+func (m *MockStore) GetCocktail(arg0 context.Context, arg1 uuid.UUID) (db.Cocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCocktail", arg0, arg1)
+	ret0, _ := ret[0].(db.Cocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCocktail indicates an expected call of GetCocktail.
+func (mr *MockStoreMockRecorder) GetCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCocktail", reflect.TypeOf((*MockStore)(nil).GetCocktail), arg0, arg1)
+}
+
+// GetCocktailCategory mocks base method.
+func (m *MockStore) GetCocktailCategory(arg0 context.Context, arg1 uuid.UUID) (db.CocktailCategory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCocktailCategory", arg0, arg1)
+	ret0, _ := ret[0].(db.CocktailCategory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCocktailCategory indicates an expected call of GetCocktailCategory.
+func (mr *MockStoreMockRecorder) GetCocktailCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCocktailCategory", reflect.TypeOf((*MockStore)(nil).GetCocktailCategory), arg0, arg1)
+}
+
+// GetCocktailsForCategory mocks base method.
+func (m *MockStore) GetCocktailsForCategory(arg0 context.Context, arg1 uuid.UUID) ([]db.Cocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCocktailsForCategory", arg0, arg1)
+	ret0, _ := ret[0].([]db.Cocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCocktailsForCategory indicates an expected call of GetCocktailsForCategory.
+func (mr *MockStoreMockRecorder) GetCocktailsForCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCocktailsForCategory", reflect.TypeOf((*MockStore)(nil).GetCocktailsForCategory), arg0, arg1)
+}
+
+// GetFCMTokenById mocks base method.
+func (m *MockStore) GetFCMTokenById(arg0 context.Context, arg1 uuid.UUID) (db.FcmToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFCMTokenById", arg0, arg1)
+	ret0, _ := ret[0].(db.FcmToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFCMTokenById indicates an expected call of GetFCMTokenById.
+func (mr *MockStoreMockRecorder) GetFCMTokenById(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFCMTokenById", reflect.TypeOf((*MockStore)(nil).GetFCMTokenById), arg0, arg1)
 }
 
 // GetFlavourId mocks base method.
@@ -244,6 +480,66 @@ func (m *MockStore) GetFlavourName(arg0 context.Context, arg1 string) (db.Flavou
 func (mr *MockStoreMockRecorder) GetFlavourName(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFlavourName", reflect.TypeOf((*MockStore)(nil).GetFlavourName), arg0, arg1)
+}
+
+// GetLikedCocktail mocks base method.
+func (m *MockStore) GetLikedCocktail(arg0 context.Context, arg1 db.GetLikedCocktailParams) (db.GetLikedCocktailRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLikedCocktail", arg0, arg1)
+	ret0, _ := ret[0].(db.GetLikedCocktailRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLikedCocktail indicates an expected call of GetLikedCocktail.
+func (mr *MockStoreMockRecorder) GetLikedCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikedCocktail", reflect.TypeOf((*MockStore)(nil).GetLikedCocktail), arg0, arg1)
+}
+
+// GetLikedCocktails mocks base method.
+func (m *MockStore) GetLikedCocktails(arg0 context.Context, arg1 uuid.UUID) ([]db.GetLikedCocktailsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLikedCocktails", arg0, arg1)
+	ret0, _ := ret[0].([]db.GetLikedCocktailsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLikedCocktails indicates an expected call of GetLikedCocktails.
+func (mr *MockStoreMockRecorder) GetLikedCocktails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikedCocktails", reflect.TypeOf((*MockStore)(nil).GetLikedCocktails), arg0, arg1)
+}
+
+// GetLikedFlavour mocks base method.
+func (m *MockStore) GetLikedFlavour(arg0 context.Context, arg1 db.GetLikedFlavourParams) (db.Flavour, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLikedFlavour", arg0, arg1)
+	ret0, _ := ret[0].(db.Flavour)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLikedFlavour indicates an expected call of GetLikedFlavour.
+func (mr *MockStoreMockRecorder) GetLikedFlavour(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikedFlavour", reflect.TypeOf((*MockStore)(nil).GetLikedFlavour), arg0, arg1)
+}
+
+// GetNotificationType mocks base method.
+func (m *MockStore) GetNotificationType(arg0 context.Context, arg1 uuid.UUID) (db.NotificationType, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotificationType", arg0, arg1)
+	ret0, _ := ret[0].(db.NotificationType)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotificationType indicates an expected call of GetNotificationType.
+func (mr *MockStoreMockRecorder) GetNotificationType(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotificationType", reflect.TypeOf((*MockStore)(nil).GetNotificationType), arg0, arg1)
 }
 
 // GetSession mocks base method.
@@ -306,19 +602,107 @@ func (mr *MockStoreMockRecorder) GetUserCocktail(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCocktail", reflect.TypeOf((*MockStore)(nil).GetUserCocktail), arg0, arg1)
 }
 
-// GetUserFCMTokens mocks base method.
-func (m *MockStore) GetUserFCMTokens(arg0 context.Context, arg1 uuid.UUID) ([]db.FcmToken, error) {
+// GetUserLikedFlavours mocks base method.
+func (m *MockStore) GetUserLikedFlavours(arg0 context.Context, arg1 uuid.UUID) ([]db.Flavour, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserFCMTokens", arg0, arg1)
-	ret0, _ := ret[0].([]db.FcmToken)
+	ret := m.ctrl.Call(m, "GetUserLikedFlavours", arg0, arg1)
+	ret0, _ := ret[0].([]db.Flavour)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserFCMTokens indicates an expected call of GetUserFCMTokens.
-func (mr *MockStoreMockRecorder) GetUserFCMTokens(arg0, arg1 any) *gomock.Call {
+// GetUserLikedFlavours indicates an expected call of GetUserLikedFlavours.
+func (mr *MockStoreMockRecorder) GetUserLikedFlavours(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFCMTokens", reflect.TypeOf((*MockStore)(nil).GetUserFCMTokens), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserLikedFlavours", reflect.TypeOf((*MockStore)(nil).GetUserLikedFlavours), arg0, arg1)
+}
+
+// GetUserNotifications mocks base method.
+func (m *MockStore) GetUserNotifications(arg0 context.Context, arg1 uuid.UUID) ([]db.Notification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserNotifications", arg0, arg1)
+	ret0, _ := ret[0].([]db.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserNotifications indicates an expected call of GetUserNotifications.
+func (mr *MockStoreMockRecorder) GetUserNotifications(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserNotifications", reflect.TypeOf((*MockStore)(nil).GetUserNotifications), arg0, arg1)
+}
+
+// LikeCocktail mocks base method.
+func (m *MockStore) LikeCocktail(arg0 context.Context, arg1 db.LikeCocktailParams) (db.LikedCocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeCocktail", arg0, arg1)
+	ret0, _ := ret[0].(db.LikedCocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LikeCocktail indicates an expected call of LikeCocktail.
+func (mr *MockStoreMockRecorder) LikeCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeCocktail", reflect.TypeOf((*MockStore)(nil).LikeCocktail), arg0, arg1)
+}
+
+// LikeFlavour mocks base method.
+func (m *MockStore) LikeFlavour(arg0 context.Context, arg1 db.LikeFlavourParams) (db.LikedFlavour, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeFlavour", arg0, arg1)
+	ret0, _ := ret[0].(db.LikedFlavour)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LikeFlavour indicates an expected call of LikeFlavour.
+func (mr *MockStoreMockRecorder) LikeFlavour(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeFlavour", reflect.TypeOf((*MockStore)(nil).LikeFlavour), arg0, arg1)
+}
+
+// UnlikeCocktail mocks base method.
+func (m *MockStore) UnlikeCocktail(arg0 context.Context, arg1 db.UnlikeCocktailParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnlikeCocktail", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnlikeCocktail indicates an expected call of UnlikeCocktail.
+func (mr *MockStoreMockRecorder) UnlikeCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlikeCocktail", reflect.TypeOf((*MockStore)(nil).UnlikeCocktail), arg0, arg1)
+}
+
+// UnlikeFlavour mocks base method.
+func (m *MockStore) UnlikeFlavour(arg0 context.Context, arg1 db.UnlikeFlavourParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnlikeFlavour", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnlikeFlavour indicates an expected call of UnlikeFlavour.
+func (mr *MockStoreMockRecorder) UnlikeFlavour(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlikeFlavour", reflect.TypeOf((*MockStore)(nil).UnlikeFlavour), arg0, arg1)
+}
+
+// UpdateCategory mocks base method.
+func (m *MockStore) UpdateCategory(arg0 context.Context, arg1 db.UpdateCategoryParams) (db.Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCategory", arg0, arg1)
+	ret0, _ := ret[0].(db.Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCategory indicates an expected call of UpdateCategory.
+func (mr *MockStoreMockRecorder) UpdateCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCategory", reflect.TypeOf((*MockStore)(nil).UpdateCategory), arg0, arg1)
 }
 
 // UpdateFlavour mocks base method.
@@ -334,4 +718,93 @@ func (m *MockStore) UpdateFlavour(arg0 context.Context, arg1 db.UpdateFlavourPar
 func (mr *MockStoreMockRecorder) UpdateFlavour(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFlavour", reflect.TypeOf((*MockStore)(nil).UpdateFlavour), arg0, arg1)
+}
+
+// UpdateNotificationType mocks base method.
+func (m *MockStore) UpdateNotificationType(arg0 context.Context, arg1 db.UpdateNotificationTypeParams) (db.NotificationType, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNotificationType", arg0, arg1)
+	ret0, _ := ret[0].(db.NotificationType)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateNotificationType indicates an expected call of UpdateNotificationType.
+func (mr *MockStoreMockRecorder) UpdateNotificationType(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationType", reflect.TypeOf((*MockStore)(nil).UpdateNotificationType), arg0, arg1)
+}
+
+// UpdateUserEmailNotifications mocks base method.
+func (m *MockStore) UpdateUserEmailNotifications(arg0 context.Context, arg1 db.UpdateUserEmailNotificationsParams) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserEmailNotifications", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserEmailNotifications indicates an expected call of UpdateUserEmailNotifications.
+func (mr *MockStoreMockRecorder) UpdateUserEmailNotifications(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserEmailNotifications", reflect.TypeOf((*MockStore)(nil).UpdateUserEmailNotifications), arg0, arg1)
+}
+
+// UpdateUserInformation mocks base method.
+func (m *MockStore) UpdateUserInformation(arg0 context.Context, arg1 db.UpdateUserInformationParams) (db.UpdateUserInformationRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserInformation", arg0, arg1)
+	ret0, _ := ret[0].(db.UpdateUserInformationRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserInformation indicates an expected call of UpdateUserInformation.
+func (mr *MockStoreMockRecorder) UpdateUserInformation(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserInformation", reflect.TypeOf((*MockStore)(nil).UpdateUserInformation), arg0, arg1)
+}
+
+// UpdateUserNotification mocks base method.
+func (m *MockStore) UpdateUserNotification(arg0 context.Context, arg1 db.UpdateUserNotificationParams) (db.Notification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserNotification", arg0, arg1)
+	ret0, _ := ret[0].(db.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserNotification indicates an expected call of UpdateUserNotification.
+func (mr *MockStoreMockRecorder) UpdateUserNotification(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserNotification", reflect.TypeOf((*MockStore)(nil).UpdateUserNotification), arg0, arg1)
+}
+
+// UpdateUserPassword mocks base method.
+func (m *MockStore) UpdateUserPassword(arg0 context.Context, arg1 db.UpdateUserPasswordParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPassword", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockStoreMockRecorder) UpdateUserPassword(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockStore)(nil).UpdateUserPassword), arg0, arg1)
+}
+
+// UpdateUserPushNotifications mocks base method.
+func (m *MockStore) UpdateUserPushNotifications(arg0 context.Context, arg1 db.UpdateUserPushNotificationsParams) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPushNotifications", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserPushNotifications indicates an expected call of UpdateUserPushNotifications.
+func (mr *MockStoreMockRecorder) UpdateUserPushNotifications(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPushNotifications", reflect.TypeOf((*MockStore)(nil).UpdateUserPushNotifications), arg0, arg1)
 }
