@@ -22,3 +22,6 @@ WHERE id = $1 LIMIT 1;
 -- name: GetFlavourName :one
 SELECT * FROM flavours
 WHERE name = $1 LIMIT 1;
+
+-- name: GetAllFlavours :many 
+SELECT * FROM flavours;

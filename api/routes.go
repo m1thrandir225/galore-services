@@ -49,6 +49,17 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/users/:id/notifications", server.getUserNotifications)
 	authRoutes.POST("/notifications", server.createNotification)
 	authRoutes.PATCH("/notifications/:id", server.updateNotificationStatus)
+
+	/*
+	* Flavour routes (Private)
+	 */
+
+	authRoutes.GET("/flavours/:id", server.getFlavourId)
+	authRoutes.POST("/flavours", server.createFlavour)
+	authRoutes.DELETE("/flavours/:id", server.deleteFlavour)
+	authRoutes.PATCH("/flavours/:id", server.updateFlavour)
+	authRoutes.GET("/flavours", server.getAllFlavours)
+
 	/*
 	 * Cocktail routes (Private)
 	 */

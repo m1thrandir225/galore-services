@@ -12,10 +12,6 @@ type GetNotificationTypesResponse struct {
 	Types []db.NotificationType `json:"notification_types"`
 }
 
-type NotificationTypeIDUri struct {
-	ID string `uri:"id" binding:"required,uuid"`
-}
-
 type UpdateNotificationTypeRequest struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
@@ -66,7 +62,7 @@ func (server *Server) getNotificationTypes(ctx *gin.Context) {
 }
 
 func (server *Server) getNotificationType(ctx *gin.Context) {
-	var requestData NotificationTypeIDUri
+	var requestData UriId
 
 	if err := ctx.ShouldBindUri(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
@@ -90,7 +86,7 @@ func (server *Server) getNotificationType(ctx *gin.Context) {
 }
 
 func (server *Server) deleteNotificationType(ctx *gin.Context) {
-	var requestData NotificationTypeIDUri
+	var requestData UriId
 
 	if err := ctx.ShouldBindUri(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
@@ -114,7 +110,7 @@ func (server *Server) deleteNotificationType(ctx *gin.Context) {
 }
 
 func (server *Server) updateNotificationType(ctx *gin.Context) {
-	var uriData NotificationTypeIDUri
+	var uriData UriId
 	var requestData UpdateNotificationTypeRequest
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

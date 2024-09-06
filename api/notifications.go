@@ -17,10 +17,6 @@ type UpdateNotificationStatusRequest struct {
 	Opened *bool `json:"opened" binding:"required"`
 }
 
-type UUIDUri struct {
-	ID string `uri:"id" binding:"required,uuid"`
-}
-
 func (server *Server) createNotification(ctx *gin.Context) {
 	var requestData CreateNotificationRequest
 
@@ -61,7 +57,7 @@ func (server *Server) createNotification(ctx *gin.Context) {
 }
 
 func (server *Server) updateNotificationStatus(ctx *gin.Context) {
-	var uriData UUIDUri
+	var uriData UriId
 	var requestData UpdateNotificationStatusRequest
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
@@ -96,7 +92,7 @@ func (server *Server) updateNotificationStatus(ctx *gin.Context) {
 }
 
 func (server *Server) getUserNotifications(ctx *gin.Context) {
-	var uriData UUIDUri
+	var uriData UriId
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

@@ -36,6 +36,30 @@ func (q *Queries) DeleteFlavour(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getAllFlavours = `-- name: GetAllFlavours :many
+SELECT id, name, created_at FROM flavours
+`
+
+func (q *Queries) GetAllFlavours(ctx context.Context) ([]Flavour, error) {
+	rows, err := q.db.Query(ctx, getAllFlavours)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Flavour{}
+	for rows.Next() {
+		var i Flavour
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFlavourId = `-- name: GetFlavourId :one
 SELECT id, name, created_at FROM flavours
 WHERE id = $1 LIMIT 1
