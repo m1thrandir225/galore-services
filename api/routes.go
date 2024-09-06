@@ -48,7 +48,7 @@ func (server *Server) setupRouter() {
 
 	authRoutes.GET("/users/:id/notifications", server.getUserNotifications)
 	authRoutes.POST("/notifications", server.createNotification)
-	authRoutes.PUT("/notifications/:id", server.updateNotificationStatus)
+	authRoutes.PATCH("/notifications/:id", server.updateNotificationStatus)
 	/*
 	 * Cocktail routes (Private)
 	 */

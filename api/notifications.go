@@ -14,11 +14,11 @@ type CreateNotificationRequest struct {
 }
 
 type UpdateNotificationStatusRequest struct {
-	Opened bool `json:"opened" binding:"required"`
+	Opened *bool `json:"opened" binding:"required"`
 }
 
 type UUIDUri struct {
-	ID string `uri:"id" binding:"required, uuid"`
+	ID string `uri:"id" binding:"required,uuid"`
 }
 
 func (server *Server) createNotification(ctx *gin.Context) {
@@ -82,7 +82,7 @@ func (server *Server) updateNotificationStatus(ctx *gin.Context) {
 
 	arg := db.UpdateUserNotificationParams{
 		ID:     notification_id,
-		Opened: requestData.Opened,
+		Opened: *requestData.Opened,
 	}
 
 	updated, err := server.store.UpdateUserNotification(ctx, arg)
