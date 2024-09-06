@@ -11,7 +11,7 @@ import (
 )
 
 type Querier interface {
-	CreateCategory(ctx context.Context, name string) (Category, error)
+	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error)
 	CreateCocktailCategory(ctx context.Context, arg CreateCocktailCategoryParams) (CocktailCategory, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
@@ -35,7 +35,7 @@ type Querier interface {
 	GetAllUserSessions(ctx context.Context, email string) ([]Session, error)
 	GetCategoriesForCocktail(ctx context.Context, cocktailID uuid.UUID) ([]Category, error)
 	GetCategoryById(ctx context.Context, id uuid.UUID) (Category, error)
-	GetCategoryByName(ctx context.Context, name string) (Category, error)
+	GetCategoryByTag(ctx context.Context, tag string) (Category, error)
 	GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, error)
 	GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error)
 	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]Cocktail, error)

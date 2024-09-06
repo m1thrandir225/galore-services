@@ -15,6 +15,7 @@ import (
 type Category struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
+	Tag       string    `json:"tag"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

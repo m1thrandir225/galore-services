@@ -42,7 +42,7 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 }
 
 // CreateCategory mocks base method.
-func (m *MockStore) CreateCategory(arg0 context.Context, arg1 string) (db.Category, error) {
+func (m *MockStore) CreateCategory(arg0 context.Context, arg1 db.CreateCategoryParams) (db.Category, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCategory", arg0, arg1)
 	ret0, _ := ret[0].(db.Category)
@@ -317,6 +317,21 @@ func (mr *MockStoreMockRecorder) DeleteUserCocktail(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserCocktail", reflect.TypeOf((*MockStore)(nil).DeleteUserCocktail), arg0, arg1)
 }
 
+// GetAllFlavours mocks base method.
+func (m *MockStore) GetAllFlavours(arg0 context.Context) ([]db.Flavour, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllFlavours", arg0)
+	ret0, _ := ret[0].([]db.Flavour)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllFlavours indicates an expected call of GetAllFlavours.
+func (mr *MockStoreMockRecorder) GetAllFlavours(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllFlavours", reflect.TypeOf((*MockStore)(nil).GetAllFlavours), arg0)
+}
+
 // GetAllTypes mocks base method.
 func (m *MockStore) GetAllTypes(arg0 context.Context) ([]db.NotificationType, error) {
 	m.ctrl.T.Helper()
@@ -377,19 +392,19 @@ func (mr *MockStoreMockRecorder) GetCategoryById(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategoryById", reflect.TypeOf((*MockStore)(nil).GetCategoryById), arg0, arg1)
 }
 
-// GetCategoryByName mocks base method.
-func (m *MockStore) GetCategoryByName(arg0 context.Context, arg1 string) (db.Category, error) {
+// GetCategoryByTag mocks base method.
+func (m *MockStore) GetCategoryByTag(arg0 context.Context, arg1 string) (db.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCategoryByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetCategoryByTag", arg0, arg1)
 	ret0, _ := ret[0].(db.Category)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCategoryByName indicates an expected call of GetCategoryByName.
-func (mr *MockStoreMockRecorder) GetCategoryByName(arg0, arg1 any) *gomock.Call {
+// GetCategoryByTag indicates an expected call of GetCategoryByTag.
+func (mr *MockStoreMockRecorder) GetCategoryByTag(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategoryByName", reflect.TypeOf((*MockStore)(nil).GetCategoryByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCategoryByTag", reflect.TypeOf((*MockStore)(nil).GetCategoryByTag), arg0, arg1)
 }
 
 // GetCocktail mocks base method.

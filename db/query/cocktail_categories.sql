@@ -12,7 +12,7 @@ SELECT * from cocktail_categories
 WHERE id = $1 LIMIT 1;
 
 -- name: GetCategoriesForCocktail :many 
-SELECT c.id, name, created_at from categories c
+SELECT c.id, name, tag, created_at from categories c
 JOIN cocktail_categories cc ON cc.category_id = c.id 
 WHERE cc.cocktail_id = $1
 GROUP BY cc.cocktail_id, cc.category_id, c.id;

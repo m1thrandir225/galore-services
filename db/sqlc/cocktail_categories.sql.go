@@ -44,7 +44,7 @@ func (q *Queries) DeleteCocktailCategory(ctx context.Context, id uuid.UUID) erro
 }
 
 const getCategoriesForCocktail = `-- name: GetCategoriesForCocktail :many
-SELECT c.id, name, created_at from categories c
+SELECT c.id, name, tag, created_at from categories c
 JOIN cocktail_categories cc ON cc.category_id = c.id 
 WHERE cc.cocktail_id = $1
 GROUP BY cc.cocktail_id, cc.category_id, c.id
@@ -59,7 +59,12 @@ func (q *Queries) GetCategoriesForCocktail(ctx context.Context, cocktailID uuid.
 	items := []Category{}
 	for rows.Next() {
 		var i Category
-		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Tag,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

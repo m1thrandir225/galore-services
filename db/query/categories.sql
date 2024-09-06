@@ -1,13 +1,15 @@
 -- name: CreateCategory :one 
 INSERT INTO categories (
-  name
+  name,
+  tag
 ) VALUES (
-  $1
+  $1,
+  $2
 ) RETURNING *;
 
--- name: GetCategoryByName :one
+-- name: GetCategoryByTag :one
 SELECT * FROM categories
-WHERE name = $1 LIMIT 1;
+WHERE tag = $1 LIMIT 1;
 
 -- name: GetCategoryById :one
 SELECT * FROM categories
@@ -15,7 +17,7 @@ WHERE id = $1 LIMIT 1;
 
 -- name: UpdateCategory :one
 UPDATE categories
-SET name = $2
+SET name = $2, tag = $3
 WHERE id = $1
 RETURNING *;
 
