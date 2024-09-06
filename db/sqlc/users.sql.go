@@ -124,3 +124,105 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 	)
 	return i, err
 }
+
+const updateUserEmailNotifications = `-- name: UpdateUserEmailNotifications :one
+UPDATE users
+SET enabled_email_notifications = $2
+WHERE id = $1
+RETURNING enabled_email_notifications
+`
+
+type UpdateUserEmailNotificationsParams struct {
+	ID                        uuid.UUID `json:"id"`
+	EnabledEmailNotifications bool      `json:"enabled_email_notifications"`
+}
+
+func (q *Queries) UpdateUserEmailNotifications(ctx context.Context, arg UpdateUserEmailNotificationsParams) (bool, error) {
+	row := q.db.QueryRow(ctx, updateUserEmailNotifications, arg.ID, arg.EnabledEmailNotifications)
+	var enabled_email_notifications bool
+	err := row.Scan(&enabled_email_notifications)
+	return enabled_email_notifications, err
+}
+
+const updateUserInformation = `-- name: UpdateUserInformation :one
+UPDATE users
+SET email=$2, avatar_url=$3, name=$4, birthday=$5
+WHERE id = $1
+RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at
+`
+
+type UpdateUserInformationParams struct {
+	ID        uuid.UUID   `json:"id"`
+	Email     string      `json:"email"`
+	AvatarUrl string      `json:"avatar_url"`
+	Name      string      `json:"name"`
+	Birthday  pgtype.Date `json:"birthday"`
+}
+
+type UpdateUserInformationRow struct {
+	ID                        uuid.UUID   `json:"id"`
+	Name                      string      `json:"name"`
+	Email                     string      `json:"email"`
+	AvatarUrl                 string      `json:"avatar_url"`
+	Birthday                  pgtype.Date `json:"birthday"`
+	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
+	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`
+	CreatedAt                 time.Time   `json:"created_at"`
+}
+
+func (q *Queries) UpdateUserInformation(ctx context.Context, arg UpdateUserInformationParams) (UpdateUserInformationRow, error) {
+	row := q.db.QueryRow(ctx, updateUserInformation,
+		arg.ID,
+		arg.Email,
+		arg.AvatarUrl,
+		arg.Name,
+		arg.Birthday,
+	)
+	var i UpdateUserInformationRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.AvatarUrl,
+		&i.Birthday,
+		&i.EnabledPushNotifications,
+		&i.EnabledEmailNotifications,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users
+SET password = $2
+WHERE id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID       uuid.UUID `json:"id"`
+	Password string    `json:"password"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.Password)
+	return err
+}
+
+const updateUserPushNotifications = `-- name: UpdateUserPushNotifications :one
+UPDATE users 
+SET enabled_push_notifications = $2
+WHERE id = $1
+RETURNING enabled_push_notifications
+`
+
+type UpdateUserPushNotificationsParams struct {
+	ID                       uuid.UUID `json:"id"`
+	EnabledPushNotifications bool      `json:"enabled_push_notifications"`
+}
+
+func (q *Queries) UpdateUserPushNotifications(ctx context.Context, arg UpdateUserPushNotificationsParams) (bool, error) {
+	row := q.db.QueryRow(ctx, updateUserPushNotifications, arg.ID, arg.EnabledPushNotifications)
+	var enabled_push_notifications bool
+	err := row.Scan(&enabled_push_notifications)
+	return enabled_push_notifications, err
+}

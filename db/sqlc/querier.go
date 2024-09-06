@@ -57,7 +57,11 @@ type Querier interface {
 	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
+	UpdateUserEmailNotifications(ctx context.Context, arg UpdateUserEmailNotificationsParams) (bool, error)
+	UpdateUserInformation(ctx context.Context, arg UpdateUserInformationParams) (UpdateUserInformationRow, error)
 	UpdateUserNotification(ctx context.Context, arg UpdateUserNotificationParams) (Notification, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	UpdateUserPushNotifications(ctx context.Context, arg UpdateUserPushNotificationsParams) (bool, error)
 }
 
 var _ Querier = (*Queries)(nil)
