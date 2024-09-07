@@ -20,6 +20,17 @@ type UpdateCategoryRequest struct {
 	Tag  string `json:"tag" binding:"required"`
 }
 
+func (server *Server) getAllCategories(ctx *gin.Context) {
+	categories, err := server.store.GetAllCategories(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, categories)
+}
+
 func (server *Server) createCategory(ctx *gin.Context) {
 	var requestData CreateCategoryRequest
 

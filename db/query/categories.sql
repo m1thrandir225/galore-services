@@ -7,6 +7,10 @@ INSERT INTO categories (
   $2
 ) RETURNING *;
 
+-- name: GetAllCategories :many
+SELECT * FROM categories
+ORDER BY created_at DESC;
+
 -- name: GetCategoryByTag :one
 SELECT * FROM categories
 WHERE tag = $1 LIMIT 1;

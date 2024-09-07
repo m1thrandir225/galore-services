@@ -31,41 +31,41 @@ func TestCreateCategory(t *testing.T) {
 func TestGetCategoryById(t *testing.T) {
 	category := createRandomCategory(t)
 
-	selected_category, err := testStore.GetCategoryById(context.Background(), category.ID)
+	selectedCategory, err := testStore.GetCategoryById(context.Background(), category.ID)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, selected_category)
+	require.NotEmpty(t, selectedCategory)
 
-	require.Equal(t, category.ID, selected_category.ID)
-	require.Equal(t, category.Name, selected_category.Name)
-	require.Equal(t, category.CreatedAt, selected_category.CreatedAt)
+	require.Equal(t, category.ID, selectedCategory.ID)
+	require.Equal(t, category.Name, selectedCategory.Name)
+	require.Equal(t, category.CreatedAt, selectedCategory.CreatedAt)
 }
 
 func TestGetCategoryByName(t *testing.T) {
 
 	category := createRandomCategory(t)
 
-	selected_category, err := testStore.GetCategoryByTag(context.Background(), category.Tag)
+	selectedCategory, err := testStore.GetCategoryByTag(context.Background(), category.Tag)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, selected_category)
+	require.NotEmpty(t, selectedCategory)
 
-	require.Equal(t, category.ID, selected_category.ID)
-	require.Equal(t, category.Name, selected_category.Name)
-	require.Equal(t, category.Tag, selected_category.Tag)
-	require.Equal(t, category.CreatedAt, selected_category.CreatedAt)
+	require.Equal(t, category.ID, selectedCategory.ID)
+	require.Equal(t, category.Name, selectedCategory.Name)
+	require.Equal(t, category.Tag, selectedCategory.Tag)
+	require.Equal(t, category.CreatedAt, selectedCategory.CreatedAt)
 }
 
 func TestUpdateCategory(t *testing.T) {
 	category := createRandomCategory(t)
 
-	new_name := util.RandomString(48)
-	new_tag := util.RandomString(18)
+	newName := util.RandomString(48)
+	newTag := util.RandomString(18)
 
 	arg := UpdateCategoryParams{
 		ID:   category.ID,
-		Name: new_name,
-		Tag:  new_tag,
+		Name: newName,
+		Tag:  newTag,
 	}
 
 	updated, err := testStore.UpdateCategory(context.Background(), arg)
@@ -86,8 +86,24 @@ func TestDeleteCategory(t *testing.T) {
 
 	err := testStore.DeleteCategory(context.Background(), category.ID)
 	require.NoError(t, err)
-	selected_category, err := testStore.GetCategoryById(context.Background(), category.ID)
+	selectedCategory, err := testStore.GetCategoryById(context.Background(), category.ID)
 	require.Error(t, err)
-	require.Empty(t, selected_category)
+	require.Empty(t, selectedCategory)
 	require.EqualError(t, err, ErrRecordNotFound.Error())
+}
+
+func TestGetAllCategories(t *testing.T) {
+	category := createRandomCategory(t)
+
+	categories, err := testStore.GetAllCategories(context.Background())
+
+	require.NoError(t, err)
+	require.NotEmpty(t, categories)
+	require.Equal(t, category.ID, categories[0].ID)
+	require.Equal(t, category.Name, categories[0].Name)
+	require.Equal(t, category.CreatedAt, categories[0].CreatedAt)
+	require.Equal(t, category.Tag, categories[0].Tag)
+	require.Equal(t, category.CreatedAt, categories[0].CreatedAt)
+
+	require.True(t, len(categories) > 0)
 }

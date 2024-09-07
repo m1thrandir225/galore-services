@@ -48,6 +48,36 @@ func (q *Queries) DeleteCategory(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getAllCategories = `-- name: GetAllCategories :many
+SELECT id, name, tag, created_at FROM categories
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.Query(ctx, getAllCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Tag,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCategoryById = `-- name: GetCategoryById :one
 SELECT id, name, tag, created_at FROM categories
 WHERE id = $1 LIMIT 1
