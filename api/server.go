@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
@@ -14,6 +15,7 @@ type Server struct {
 	store      db.Store
 	router     *gin.Engine
 	tokenMaker token.Maker
+	storage    storage.FileService
 }
 
 func NewServer(config util.Config, store db.Store) (*Server, error) {

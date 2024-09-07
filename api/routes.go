@@ -65,7 +65,6 @@ func (server *Server) setupRouter() {
 	 */
 	authRoutes.GET("/categories", server.getAllCategories)
 	authRoutes.GET("/categories/:id", server.getCategoryById)
-	authRoutes.GET("/categories/:tag", server.getCategoryByTag)
 	authRoutes.POST("/categories", server.createCategory)
 	authRoutes.DELETE("/categories/:id", server.deleteCategory)
 	authRoutes.PATCH("/categories/:id", server.updateCategory)
@@ -73,6 +72,7 @@ func (server *Server) setupRouter() {
 	/*
 	 * Cocktail routes (Private)
 	 */
+	authRoutes.POST("/cocktails", server.createCocktail)
 
 	/*
 	 * AI Cocktail routes (Private)

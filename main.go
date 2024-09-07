@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/m1thrandir225/galore-services/storage"
 	"os"
 
 	"github.com/jackc/pgx/v5"
@@ -36,13 +37,15 @@ func main() {
 		return nil
 	}
 
+	localStorage := storage.NewLocalStorage("/public")
+
 	store := db.NewStore(connPool)
 
-	runGinServer(config, store)
+	runGinServer(config, store, localStorage)
 
 }
 
-func runGinServer(config util.Config, store db.Store) {
+func runGinServer(config util.Config, store db.Store, storage storage.FileService) {
 	server, err := api.NewServer(config, store)
 
 	if err != nil {
