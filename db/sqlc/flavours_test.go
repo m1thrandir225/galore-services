@@ -57,3 +57,13 @@ func TestDeleteFlavour(t *testing.T) {
 	require.Empty(t, selectedFlavour)
 	require.EqualError(t, err, ErrRecordNotFound.Error())
 }
+
+func TestGetAllFlavours(t *testing.T) {
+	flavours, err := testStore.GetAllFlavours(context.Background())
+
+	require.NoError(t, err)
+
+	require.NotEmpty(t, flavours)
+
+	require.True(t, len(flavours) > 0)
+}

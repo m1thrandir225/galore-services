@@ -44,14 +44,14 @@ func (server *Server) updateFlavour(ctx *gin.Context) {
 		return
 	}
 
-	flavour_id, err := uuid.Parse(uriData.ID)
+	flavourId, err := uuid.Parse(uriData.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 	arg := db.UpdateFlavourParams{
-		ID:   flavour_id,
+		ID:   flavourId,
 		Name: requestData.Name,
 	}
 
@@ -74,14 +74,14 @@ func (server *Server) getFlavourId(ctx *gin.Context) {
 		return
 	}
 
-	flavour_id, err := uuid.Parse(uriData.ID)
+	flavourId, err := uuid.Parse(uriData.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	flavour, err := server.store.GetFlavourId(ctx, flavour_id)
+	flavour, err := server.store.GetFlavourId(ctx, flavourId)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -99,14 +99,14 @@ func (server *Server) deleteFlavour(ctx *gin.Context) {
 		return
 	}
 
-	flavour_id, err := uuid.Parse(uriData.ID)
+	flavourId, err := uuid.Parse(uriData.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	err = server.store.DeleteFlavour(ctx, flavour_id)
+	err = server.store.DeleteFlavour(ctx, flavourId)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -117,5 +117,12 @@ func (server *Server) deleteFlavour(ctx *gin.Context) {
 }
 
 func (server *Server) getAllFlavours(ctx *gin.Context) {
+	flavours, err := server.store.GetAllFlavours(ctx)
 
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, flavours)
 }
