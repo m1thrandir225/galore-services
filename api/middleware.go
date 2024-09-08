@@ -19,21 +19,27 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		authHeader := ctx.GetHeader(authorizationHeaderKey)
 
 		if len(authHeader) == 0 {
-			err := errors.New("Authorization Header not provided.")
+			err := errors.New("authorization Header not provided")
 			ctx.AbortWithStatusJSON(401, errorResponse(err))
 			return
 		}
 
 		fields := strings.Fields(authHeader)
 		if len(fields) < 2 {
-			err := errors.New("Invalid header format")
+			err := errors.New("invalid header format")
 			ctx.AbortWithStatusJSON(401, errorResponse(err))
 			return
 		}
 
-		token := fields[1]
+		authorizationType := fields[0]
+		if strings.ToLower(authorizationType) != authorizationTypeBearer {
+			err := errors.New("invalid authorization type")
+			ctx.AbortWithStatusJSON(401, errorResponse(err))
+			return
+		}
 
-		payload, err := tokenMaker.VerifyToken(token)
+		authToken := fields[1]
+		payload, err := tokenMaker.VerifyToken(authToken)
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(401, errorResponse(err))

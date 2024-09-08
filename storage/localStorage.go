@@ -15,11 +15,20 @@ func NewLocalStorage(basePath string) *LocalStorage {
 	}
 }
 
-func (storage *LocalStorage) UploadFile(data []byte, filename string) (string, error) {
+func (storage *LocalStorage) UploadFile(data []byte, folder, filename string) (string, error) {
 	permissions := os.FileMode(0644)
 
-	filePath := path.Join(storage.BasePath, filename)
-	err := os.WriteFile(filePath, data, permissions)
+	folderPath := path.Join(storage.BasePath, folder)
+
+	err := os.MkdirAll(folderPath, os.FileMode(0700))
+
+	if err != nil {
+		return "", err
+	}
+
+	filePath := path.Join(folderPath, filename)
+
+	err = os.WriteFile(filePath, data, permissions)
 
 	if err != nil {
 		return "", err

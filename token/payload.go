@@ -15,8 +15,8 @@ type Payload struct {
 }
 
 var (
-	ErrExpiredToken = errors.New("The token has expired.")
-	ErrInvalidToken = errors.New("The token is invalid.")
+	ErrExpiredToken = errors.New("the token has expired")
+	ErrInvalidToken = errors.New("the token is invalid")
 )
 
 func NewPayload(email string, duration time.Duration) (*Payload, error) {

@@ -6,8 +6,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/dto"
+	"github.com/m1thrandir225/galore-services/token"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 )
@@ -69,11 +69,21 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	/*
+	* Get the id of the currently logged-in user to use as a name for the folder that the uploaded file will be placed in.
+	 */
+	data, exists := ctx.Get(authorizationPayloadKey)
+	payload := data.(*token.Payload)
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
 
-	filePath, err := server.storage.UploadFile(fileData, file.Filename)
-
-	log.Println(filePath)
-
+	filePath, err := server.storage.UploadFile(fileData, payload.ID.String(), file.Filename)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	arg := db.CreateCocktailParams{
 		Name:         requestData.Name,
 		Image:        filePath,
