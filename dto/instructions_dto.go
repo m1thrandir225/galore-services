@@ -9,10 +9,6 @@ type AiInstructionDto struct {
 	Instructions []AiInstructionData `json:"instructions"`
 }
 
-type InstructionData struct {
-	Instruction string `json:"instruction" binding:"required"`
-}
-
 type InstructionDto struct {
-	Instructions []InstructionData `json:"instructions" binding:"required"`
+	Instructions []string `json:"instructions" binding:"required"`
 }

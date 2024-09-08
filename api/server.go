@@ -18,7 +18,7 @@ type Server struct {
 	storage    storage.FileService
 }
 
-func NewServer(config util.Config, store db.Store) (*Server, error) {
+func NewServer(config util.Config, store db.Store, storageService storage.FileService) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 
 	if err != nil {
@@ -29,6 +29,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		config:     config,
 		store:      store,
 		tokenMaker: tokenMaker,
+		storage:    storageService,
 	}
 
 	server.setupRouter()

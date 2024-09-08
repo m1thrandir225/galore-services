@@ -37,7 +37,7 @@ func main() {
 		return nil
 	}
 
-	localStorage := storage.NewLocalStorage("/public")
+	localStorage := storage.NewLocalStorage("./public")
 
 	store := db.NewStore(connPool)
 
@@ -46,7 +46,7 @@ func main() {
 }
 
 func runGinServer(config util.Config, store db.Store, storage storage.FileService) {
-	server, err := api.NewServer(config, store)
+	server, err := api.NewServer(config, store, storage)
 
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")

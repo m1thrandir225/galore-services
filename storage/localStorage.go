@@ -17,6 +17,7 @@ func NewLocalStorage(basePath string) *LocalStorage {
 
 func (storage *LocalStorage) UploadFile(data []byte, filename string) (string, error) {
 	permissions := os.FileMode(0644)
+
 	filePath := path.Join(storage.BasePath, filename)
 	err := os.WriteFile(filePath, data, permissions)
 

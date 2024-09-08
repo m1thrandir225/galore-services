@@ -85,15 +85,12 @@ func RandomAiInstructions() []dto.AiInstructionData {
 	return instructions
 }
 
-func RandomInstructions() []dto.InstructionData {
-	var instructions []dto.InstructionData
+func RandomInstructions() []string {
+	var instructions []string
 
 	for i := 0; i < 10; i++ {
-		new_instruction := dto.InstructionData{
-			Instruction: RandomString(64),
-		}
-
-		instructions = append(instructions, new_instruction)
+		string := RandomString(32)
+		instructions = append(instructions, string)
 	}
 
 	return instructions
