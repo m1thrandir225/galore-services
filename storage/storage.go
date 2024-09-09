@@ -1,6 +1,7 @@
 package storage
 
 type FileService interface {
-	UploadFile(data []byte, folder, filename string) (string, error)
-	DeleteFile(filename string) (bool, error)
+	UploadFile(data []byte, folder, fileName string) (string, error)
+	DeleteFile(filePath string) error
+	ReplaceFile(filePath string, data []byte) (string, error)
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/dto"
@@ -91,3 +92,51 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, cocktail)
 }
+
+/*
+* To delete a cocktail we first must:
+* 1.  Get the id
+* 2. Get the cocktail
+* 3. Delete the image from any storage
+* 4. Delete the cocktail itself
+ */
+func (server *Server) deleteCocktail(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	// 1. Get cocktail id
+	cocktailId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	//2. Get the cocktail data
+	cocktail, err := server.store.GetCocktail(ctx, cocktailId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	//3. Delete the associated image
+	err = server.storage.DeleteFile(cocktail.Image)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	//4. Delete the cocktail itself
+	err = server.store.DeleteCocktail(ctx, cocktailId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.Status(http.StatusOK)
+
+}
+
+func (server *Server) getCocktail(ctx *gin.Context) {}
+
+func (server *Server) updateCocktail(ctx *gin.Context) {}

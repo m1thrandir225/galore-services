@@ -4,6 +4,7 @@ import (
 	"github.com/m1thrandir225/galore-services/util"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 type LocalStorage struct {
@@ -16,7 +17,7 @@ func NewLocalStorage(basePath string) *LocalStorage {
 	}
 }
 
-func (storage *LocalStorage) UploadFile(data []byte, folder, filename string) (string, error) {
+func (storage *LocalStorage) UploadFile(data []byte, folder, fileName string) (string, error) {
 	permissions := os.FileMode(0644)
 
 	folderPath := path.Join(storage.BasePath, folder)
@@ -27,7 +28,7 @@ func (storage *LocalStorage) UploadFile(data []byte, folder, filename string) (s
 		return "", err
 	}
 
-	uniqueFilename, err := util.UuidFileRename(filename)
+	uniqueFilename, err := util.UuidFileRename(fileName)
 
 	if err != nil {
 		return "", err
@@ -43,20 +44,38 @@ func (storage *LocalStorage) UploadFile(data []byte, folder, filename string) (s
 	return filePath, nil
 }
 
-func (storage *LocalStorage) DeleteFile(filename string) (bool, error) {
-	filePath := path.Join(storage.BasePath, filename)
-
+func (storage *LocalStorage) DeleteFile(filePath string) error {
 	_, err := os.Stat(filePath)
 
 	if err != nil {
-		return false, os.ErrNotExist
+		return os.ErrNotExist
 	}
 
 	err = os.Remove(filePath)
 
 	if err != nil {
-		return false, err
+		return err
+	}
+	return nil
+}
+
+func (storage *LocalStorage) ReplaceFile(filePath string, data []byte) (string, error) {
+	dirs := filepath.Dir(filePath)
+
+	userIdFolder := filepath.Base(dirs)
+
+	fileName := filepath.Base(filePath)
+
+	err := storage.DeleteFile(filePath)
+
+	if err != nil {
+		return "", err
 	}
 
-	return true, nil
+	newFilePath, err := storage.UploadFile(data, userIdFolder, fileName)
+
+	if err != nil {
+		return "", err
+	}
+	return newFilePath, nil
 }
