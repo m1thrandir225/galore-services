@@ -29,7 +29,7 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/users/:id", server.getUserDetails)
 	authRoutes.DELETE("/users/:id", server.deleteUser)
 	authRoutes.POST("/users/:id", server.updateUserInformation)
-	authRoutes.PUT("/users/:id/password", server.changeUserPassword)
+	authRoutes.PUT("/users/:id/password", server.updateUserPassword)
 	authRoutes.PUT("/users/:id/push-notifications", server.updateUserPushNotifications)
 	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
 

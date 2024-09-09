@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"testing"
 
 	"github.com/m1thrandir225/galore-services/util"
@@ -20,6 +21,7 @@ func createRandomUser(t *testing.T) CreateUserRow {
 	name := util.RandomString(12)
 
 	arg := CreateUserParams{
+		ID:        uuid.New(),
 		Email:     util.RandomEmail(),
 		Name:      name,
 		Birthday:  dbDate,
@@ -81,18 +83,18 @@ func TestUpdateEmailNotifications(t *testing.T) {
 		ID:                        user.ID,
 		EnabledEmailNotifications: !user.EnabledEmailNotifications,
 	}
-	updated_value, err := testStore.UpdateUserEmailNotifications(context.Background(), arg)
+	updatedValue, err := testStore.UpdateUserEmailNotifications(context.Background(), arg)
 
 	require.NoError(t, err)
 
-	require.NotEqual(t, user.EnabledEmailNotifications, updated_value)
-	require.NotEmpty(t, updated_value)
+	require.NotEqual(t, user.EnabledEmailNotifications, updatedValue)
+	require.NotEmpty(t, updatedValue)
 
-	updated_user, err := testStore.GetUser(context.Background(), user.ID)
+	updatedUser, err := testStore.GetUser(context.Background(), user.ID)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, updated_user)
-	require.Equal(t, arg.EnabledEmailNotifications, updated_user.EnabledEmailNotifications)
+	require.NotEmpty(t, updatedUser)
+	require.Equal(t, arg.EnabledEmailNotifications, updatedUser.EnabledEmailNotifications)
 }
 
 func TestUpdatePushNotifications(t *testing.T) {
@@ -103,18 +105,18 @@ func TestUpdatePushNotifications(t *testing.T) {
 		ID:                       user.ID,
 		EnabledPushNotifications: !user.EnabledPushNotifications,
 	}
-	updated_value, err := testStore.UpdateUserPushNotifications(context.Background(), arg)
+	updatedValue, err := testStore.UpdateUserPushNotifications(context.Background(), arg)
 
 	require.NoError(t, err)
 
-	require.NotEqual(t, user.EnabledPushNotifications, updated_value)
-	require.NotEmpty(t, updated_value)
+	require.NotEqual(t, user.EnabledPushNotifications, updatedValue)
+	require.NotEmpty(t, updatedValue)
 
-	updated_user, err := testStore.GetUser(context.Background(), user.ID)
+	updatedUser, err := testStore.GetUser(context.Background(), user.ID)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, updated_user)
-	require.Equal(t, arg.EnabledPushNotifications, updated_user.EnabledPushNotifications)
+	require.NotEmpty(t, updatedUser)
+	require.Equal(t, arg.EnabledPushNotifications, updatedUser.EnabledPushNotifications)
 
 }
 
@@ -130,34 +132,34 @@ func TestUpdateUserInformation(t *testing.T) {
 		Birthday:  newBirthday,
 	}
 
-	updated_user, err := testStore.UpdateUserInformation(context.Background(), arg)
+	updatedUser, err := testStore.UpdateUserInformation(context.Background(), arg)
 	require.NoError(t, err)
-	require.NotEmpty(t, updated_user)
+	require.NotEmpty(t, updatedUser)
 
-	require.Equal(t, user.ID, updated_user.ID)
-	require.Equal(t, user.CreatedAt, updated_user.CreatedAt)
-	require.Equal(t, user.EnabledEmailNotifications, updated_user.EnabledEmailNotifications)
-	require.Equal(t, user.EnabledPushNotifications, updated_user.EnabledPushNotifications)
-	require.NotEqual(t, user.Email, updated_user.Email)
-	require.NotEqual(t, user.AvatarUrl, updated_user.AvatarUrl)
-	require.NotEqual(t, user.Name, updated_user.Name)
-	require.NotEqual(t, user.Birthday, updated_user.Birthday)
+	require.Equal(t, user.ID, updatedUser.ID)
+	require.Equal(t, user.CreatedAt, updatedUser.CreatedAt)
+	require.Equal(t, user.EnabledEmailNotifications, updatedUser.EnabledEmailNotifications)
+	require.Equal(t, user.EnabledPushNotifications, updatedUser.EnabledPushNotifications)
+	require.NotEqual(t, user.Email, updatedUser.Email)
+	require.NotEqual(t, user.AvatarUrl, updatedUser.AvatarUrl)
+	require.NotEqual(t, user.Name, updatedUser.Name)
+	require.NotEqual(t, user.Birthday, updatedUser.Birthday)
 
-	require.Equal(t, arg.Name, updated_user.Name)
-	require.Equal(t, arg.Email, updated_user.Email)
-	require.Equal(t, arg.AvatarUrl, updated_user.AvatarUrl)
-	require.Equal(t, arg.Birthday, updated_user.Birthday)
+	require.Equal(t, arg.Name, updatedUser.Name)
+	require.Equal(t, arg.Email, updatedUser.Email)
+	require.Equal(t, arg.AvatarUrl, updatedUser.AvatarUrl)
+	require.Equal(t, arg.Birthday, updatedUser.Birthday)
 }
 
 func TestUpdateUserPassword(t *testing.T) {
 	user := createRandomUser(t)
 
-	new_password, err := util.HashPassowrd(util.RandomString(32))
+	newPassword, err := util.HashPassowrd(util.RandomString(32))
 	require.NoError(t, err)
 
 	arg := UpdateUserPasswordParams{
 		ID:       user.ID,
-		Password: new_password,
+		Password: newPassword,
 	}
 
 	err = testStore.UpdateUserPassword(context.Background(), arg)

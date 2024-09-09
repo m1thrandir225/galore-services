@@ -1,16 +1,18 @@
 -- name: CreateUser :one
 INSERT INTO users (
+  id,
   email,
   name,
   password,
   avatar_url,
   birthday
 ) VALUES (
-  $1,
+    $1,
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
 ) RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at;
 
 -- name: GetUser :one 

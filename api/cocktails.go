@@ -61,11 +61,11 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	* Get the id of the currently logged-in user to use as a name for the folder that the uploaded file will be placed in.
 	 */
 	data, exists := ctx.Get(authorizationPayloadKey)
-	payload := data.(*token.Payload)
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
+	payload := data.(*token.Payload)
 
 	//Upload the file to the public/user_id/file
 	filePath, err := server.storage.UploadFile(fileData, payload.ID.String(), requestData.Image.Filename)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"mime/multipart"
 	"net/http"
 	"time"
 
@@ -11,11 +12,11 @@ import (
 )
 
 type registerUserRequest struct {
-	Name      string `json:"name" binding:"required"`
-	Email     string `json:"email" binding:"required,email"`
-	AvatarUrl string `json:"avatar_url" binding:"required"`
-	Password  string `json:"password" binding:"required"`
-	Birthday  string `json:"birthday" binding:"required"`
+	Name      string                `form:"name" json:"name" binding:"required"`
+	Email     string                `form:"email" json:"email" binding:"required,email"`
+	AvatarUrl *multipart.FileHeader `form:"avatar_url" json:"avatar_url" binding:"required"`
+	Password  string                `form:"password" json:"password" binding:"required"`
+	Birthday  string                `form:"birthday" json:"birthday" binding:"required"`
 }
 
 type registerUserResponse struct {
@@ -61,11 +62,22 @@ func (server *Server) registerUser(ctx *gin.Context) {
 
 	hashedPassword, err := util.HashPassowrd(requestData.Password)
 
+	imageData, err := util.BytesFromFile(requestData.AvatarUrl)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	userId := uuid.New()
+
+	avatarUrl, err := server.storage.UploadFile(imageData, userId.String(), requestData.AvatarUrl.Filename)
+
 	args := db.CreateUserParams{
+		ID:        userId,
 		Email:     requestData.Email,
 		Birthday:  dbDate,
 		Name:      requestData.Name,
-		AvatarUrl: requestData.AvatarUrl,
+		AvatarUrl: avatarUrl,
 		Password:  hashedPassword,
 	}
 
