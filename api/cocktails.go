@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-type CreateCocktailRequest struct {
+type CreateOrUpdateCocktailRequest struct {
 	Name         string                `form:"name" binding:"required"`
 	IsAlcoholic  bool                  `form:"isAlcoholic" binding:"required"`
 	Glass        string                `form:"glass" binding:"required"`
@@ -23,7 +23,7 @@ type CreateCocktailRequest struct {
 }
 
 func (server *Server) createCocktail(ctx *gin.Context) {
-	var requestData CreateCocktailRequest
+	var requestData CreateOrUpdateCocktailRequest
 	var isAlcoholic pgtype.Bool
 	var ingredientDto dto.IngredientDto
 	var instructionDto dto.InstructionDto
@@ -137,6 +137,100 @@ func (server *Server) deleteCocktail(ctx *gin.Context) {
 
 }
 
-func (server *Server) getCocktail(ctx *gin.Context) {}
+func (server *Server) getCocktail(ctx *gin.Context) {
+	var uriData UriId
 
-func (server *Server) updateCocktail(ctx *gin.Context) {}
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cocktailId, err := uuid.Parse(uriData.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	cocktail, err := server.store.GetCocktail(ctx, cocktailId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, cocktail)
+
+}
+
+func (server *Server) updateCocktail(ctx *gin.Context) {
+	var uriData UriId
+	var requestData CreateOrUpdateCocktailRequest
+	var isAlcoholic pgtype.Bool
+	var ingredientDto dto.IngredientDto
+	var instructionDto dto.InstructionDto
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBind(&requestData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Unmarshal ingredients and instructions to dto objects
+	if err := json.Unmarshal([]byte(requestData.Ingredients), &ingredientDto); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredients format"})
+		return
+	}
+	if err := json.Unmarshal([]byte(requestData.Instructions), &instructionDto); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid instructions format"})
+		return
+	}
+
+	err := isAlcoholic.Scan(requestData.IsAlcoholic)
+
+	cocktailId, err := uuid.Parse(uriData.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	cocktail, err := server.store.GetCocktail(ctx, cocktailId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	newImageData, err := util.BytesFromFile(requestData.Image)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	newFilePath, err := server.storage.ReplaceFile(cocktail.Image, newImageData)
+
+	arg := db.UpdateCocktailParams{
+		ID:           cocktailId,
+		Name:         requestData.Name,
+		Instructions: instructionDto,
+		Ingredients:  ingredientDto,
+		Image:        newFilePath,
+		Glass:        requestData.Glass,
+		IsAlcoholic:  isAlcoholic,
+	}
+
+	updated, err := server.store.UpdateCocktail(ctx, arg)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updated)
+}

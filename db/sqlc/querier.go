@@ -58,6 +58,7 @@ type Querier interface {
 	UnlikeCocktail(ctx context.Context, arg UnlikeCocktailParams) error
 	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
+	UpdateCocktail(ctx context.Context, arg UpdateCocktailParams) (Cocktail, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
 	UpdateNotificationType(ctx context.Context, arg UpdateNotificationTypeParams) (NotificationType, error)
 	UpdateUserEmailNotifications(ctx context.Context, arg UpdateUserEmailNotificationsParams) (bool, error)

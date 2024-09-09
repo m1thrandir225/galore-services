@@ -93,3 +93,44 @@ func (q *Queries) GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, erro
 	)
 	return i, err
 }
+
+const updateCocktail = `-- name: UpdateCocktail :one
+UPDATE cocktails
+SET name=$2, is_alcoholic=$3, glass=$4, image=$5, instructions=$6, ingredients=$7
+WHERE id = $1
+RETURNING id, name, is_alcoholic, glass, image, instructions, ingredients, created_at
+`
+
+type UpdateCocktailParams struct {
+	ID           uuid.UUID          `json:"id"`
+	Name         string             `json:"name"`
+	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
+	Glass        string             `json:"glass"`
+	Image        string             `json:"image"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
+}
+
+func (q *Queries) UpdateCocktail(ctx context.Context, arg UpdateCocktailParams) (Cocktail, error) {
+	row := q.db.QueryRow(ctx, updateCocktail,
+		arg.ID,
+		arg.Name,
+		arg.IsAlcoholic,
+		arg.Glass,
+		arg.Image,
+		arg.Instructions,
+		arg.Ingredients,
+	)
+	var i Cocktail
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.IsAlcoholic,
+		&i.Glass,
+		&i.Image,
+		&i.Instructions,
+		&i.Ingredients,
+		&i.CreatedAt,
+	)
+	return i, err
+}
