@@ -11,7 +11,7 @@ import (
 
 type UpdateUserInformationRequest struct {
 	Email     string                `form:"email" json:"email" binding:"required"`
-	AvatarUrl *multipart.FileHeader `form:"avatar_url" json:"avatar_url" binding:"required"`
+	AvatarUrl *multipart.FileHeader `form:"avatar_url" json:"avatar_url" binding:"omitempty"`
 	Name      string                `form:"name" json:"name" binding:"required"`
 	Birthday  string                `form:"birthday" json:"birthday" binding:"required"`
 }
@@ -124,6 +124,7 @@ func (server *Server) updateUserPassword(ctx *gin.Context) {
 func (server *Server) updateUserInformation(ctx *gin.Context) {
 	var uriData UriId
 	var requestData UpdateUserInformationRequest
+	var avatarFilePath string
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -149,15 +150,27 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	if requestData.AvatarUrl == nil {
+		avatarFilePath = userInformation.AvatarUrl
+	} else {
+		newAvatarData, err2 := util.BytesFromFile(requestData.AvatarUrl)
+		if err2 != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
 
-	newAvatarData, err := util.BytesFromFile(requestData.AvatarUrl)
-
-	newFilePath, err := server.storage.ReplaceFile(userInformation.AvatarUrl, newAvatarData)
+		newFilePath, err2 := server.storage.ReplaceFile(userInformation.AvatarUrl, newAvatarData)
+		if err2 != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		avatarFilePath = newFilePath
+	}
 
 	arg := db.UpdateUserInformationParams{
 		ID:        userId,
 		Birthday:  newBirthday,
-		AvatarUrl: newFilePath,
+		AvatarUrl: avatarFilePath,
 		Name:      requestData.Name,
 		Email:     requestData.Email,
 	}
