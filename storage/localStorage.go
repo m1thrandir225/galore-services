@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/m1thrandir225/galore-services/util"
 	"os"
 	"path"
 )
@@ -26,7 +27,13 @@ func (storage *LocalStorage) UploadFile(data []byte, folder, filename string) (s
 		return "", err
 	}
 
-	filePath := path.Join(folderPath, filename)
+	uniqueFilename, err := util.UuidFileRename(filename)
+
+	if err != nil {
+		return "", err
+	}
+
+	filePath := path.Join(folderPath, uniqueFilename)
 
 	err = os.WriteFile(filePath, data, permissions)
 

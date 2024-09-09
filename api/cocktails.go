@@ -7,7 +7,7 @@ import (
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/dto"
 	"github.com/m1thrandir225/galore-services/token"
-	"io"
+	"github.com/m1thrandir225/galore-services/util"
 	"mime/multipart"
 	"net/http"
 )
@@ -23,13 +23,14 @@ type CreateCocktailRequest struct {
 
 func (server *Server) createCocktail(ctx *gin.Context) {
 	var requestData CreateCocktailRequest
+	var isAlcoholic pgtype.Bool
+	var ingredientDto dto.IngredientDto
+	var instructionDto dto.InstructionDto
 
 	if err := ctx.ShouldBind(&requestData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	var isAlcoholic pgtype.Bool
 
 	err := isAlcoholic.Scan(requestData.IsAlcoholic)
 
@@ -38,32 +39,18 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		return
 	}
 
-	// Unmarshal ingredients JSON string to IngredientDto
-	var ingredientDto dto.IngredientDto
+	// Unmarshal ingredients and instructions to dto objects
 	if err = json.Unmarshal([]byte(requestData.Ingredients), &ingredientDto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredients format"})
 		return
 	}
-
-	var instructionDto dto.InstructionDto
 	if err = json.Unmarshal([]byte(requestData.Instructions), &instructionDto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid instructions format"})
 		return
 	}
 
-	file, err := ctx.FormFile("file")
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	openedFile, err := file.Open()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	defer openedFile.Close()
-
-	fileData, err := io.ReadAll(openedFile)
+	//Unload the bytes from the uploaded file
+	fileData, err := util.BytesFromFile(requestData.Image)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -79,7 +66,9 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		return
 	}
 
-	filePath, err := server.storage.UploadFile(fileData, payload.ID.String(), file.Filename)
+	//Upload the file to the public/user_id/file
+	filePath, err := server.storage.UploadFile(fileData, payload.ID.String(), requestData.Image.Filename)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
