@@ -88,14 +88,14 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(args.Email, server.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.AccessTokenDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(args.Email, server.config.RefreshTokenDuration)
+	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.RefreshTokenDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -152,13 +152,13 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(requestData.Email, server.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(user.ID, server.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(requestData.Email, server.config.RefreshTokenDuration)
+	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(user.ID, server.config.RefreshTokenDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -233,7 +233,7 @@ func (server *Server) logout(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
-	//No need to return aynthing
+	//No need to return anything
 	ctx.Status(http.StatusNoContent)
 }
 

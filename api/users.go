@@ -24,7 +24,7 @@ type UpdateUserPushNotificationsRequest struct {
 }
 
 type UpdateUserPasswordRequest struct {
-	NewPassword string `json:"new_password"`
+	NewPassword string `json:"new_password" binding:"required"`
 }
 
 func (server *Server) getUserDetails(ctx *gin.Context) {
@@ -39,6 +39,12 @@ func (server *Server) getUserDetails(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err = verifyUserIdWithToken(userId, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -64,6 +70,12 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	userId, err := uuid.Parse(uriData.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err = verifyUserIdWithToken(userId, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -95,6 +107,12 @@ func (server *Server) updateUserPassword(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = verifyUserIdWithToken(userId, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -136,6 +154,12 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 	userId, err := uuid.Parse(uriData.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = verifyUserIdWithToken(userId, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -202,6 +226,13 @@ func (server *Server) updateUserPushNotifications(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	err = verifyUserIdWithToken(userId, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	arg := db.UpdateUserPushNotificationsParams{
 		ID:                       userId,
 		EnabledPushNotifications: requestData.Enabled,
@@ -233,6 +264,12 @@ func (server *Server) updateUserEmailNotifications(ctx *gin.Context) {
 	userId, err := uuid.Parse(uriData.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = verifyUserIdWithToken(userId, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
