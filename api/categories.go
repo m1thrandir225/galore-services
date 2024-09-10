@@ -107,7 +107,14 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 		return
 	}
 
+	categoryId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	arg := db.UpdateCategoryParams{
+		ID:   categoryId,
 		Name: requestData.Name,
 		Tag:  requestData.Tag,
 	}
