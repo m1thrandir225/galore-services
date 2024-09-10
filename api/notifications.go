@@ -25,14 +25,14 @@ func (server *Server) createNotification(ctx *gin.Context) {
 		return
 	}
 
-	user_id, err := uuid.Parse(requestData.UserID)
+	userId, err := uuid.Parse(requestData.UserID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	notification_type_id, err := uuid.Parse(requestData.NotificationTypeId)
+	notificationTypeId, err := uuid.Parse(requestData.NotificationTypeId)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -40,8 +40,8 @@ func (server *Server) createNotification(ctx *gin.Context) {
 	}
 
 	arg := db.CreateNotificationParams{
-		UserID:             user_id,
-		NotificationTypeID: notification_type_id,
+		UserID:             userId,
+		NotificationTypeID: notificationTypeId,
 	}
 
 	notification, err := server.store.CreateNotification(ctx, arg)
@@ -70,14 +70,14 @@ func (server *Server) updateNotificationStatus(ctx *gin.Context) {
 		return
 	}
 
-	notification_id, err := uuid.Parse(uriData.ID)
+	notificationId, err := uuid.Parse(uriData.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	arg := db.UpdateUserNotificationParams{
-		ID:     notification_id,
+		ID:     notificationId,
 		Opened: *requestData.Opened,
 	}
 
@@ -99,14 +99,14 @@ func (server *Server) getUserNotifications(ctx *gin.Context) {
 		return
 	}
 
-	user_id, err := uuid.Parse(uriData.ID)
+	userId, err := uuid.Parse(uriData.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	notifications, err := server.store.GetUserNotifications(ctx, user_id)
+	notifications, err := server.store.GetUserNotifications(ctx, userId)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

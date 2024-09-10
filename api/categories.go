@@ -54,6 +54,7 @@ func (server *Server) createCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, category)
 }
 
+// TODO: deprecate
 func (server *Server) getCategoryByTag(ctx *gin.Context) {
 	var uriData GetCategoryByTagRequest
 

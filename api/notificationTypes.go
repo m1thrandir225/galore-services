@@ -38,18 +38,18 @@ func (server *Server) createNotificationType(ctx *gin.Context) {
 		Title:   requestData.Title,
 	}
 
-	notification_type, err := server.store.CreateNotificationType(ctx, arg)
+	notificationType, err := server.store.CreateNotificationType(ctx, arg)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, notification_type)
+	ctx.JSON(http.StatusOK, notificationType)
 }
 
 func (server *Server) getNotificationTypes(ctx *gin.Context) {
-	notification_types, err := server.store.GetAllTypes(ctx)
+	notificationTypes, err := server.store.GetAllTypes(ctx)
 
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -57,7 +57,7 @@ func (server *Server) getNotificationTypes(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, GetNotificationTypesResponse{
-		Types: notification_types,
+		Types: notificationTypes,
 	})
 }
 
@@ -75,14 +75,14 @@ func (server *Server) getNotificationType(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	notification_type, err := server.store.GetNotificationType(ctx, id)
+	notificationType, err := server.store.GetNotificationType(ctx, id)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, notification_type)
+	ctx.JSON(http.StatusOK, notificationType)
 }
 
 func (server *Server) deleteNotificationType(ctx *gin.Context) {

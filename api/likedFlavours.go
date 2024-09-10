@@ -43,8 +43,98 @@ func (server *Server) LikeFlavour(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, likedFlavour)
 }
 
-func (server *Server) GetLikedFlavour(ctx *gin.Context) {}
+func (server *Server) GetLikedFlavour(ctx *gin.Context) {
+	var uriData UriId
 
-func (server *Server) GetUserLikedFlavours(ctx *gin.Context) {}
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
 
-func (server *Server) UnlikeFlavour(ctx *gin.Context) {}
+	flavourId, err := uuid.Parse(uriData.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	payload, err := getPayloadFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := db.GetLikedFlavourParams{
+		UserID:    payload.UserId,
+		FlavourID: flavourId,
+	}
+
+	flavour, err := server.store.GetLikedFlavour(ctx, arg)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, flavour)
+}
+
+func (server *Server) GetUserLikedFlavours(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	flavours, err := server.store.GetUserLikedFlavours(ctx, userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, flavours)
+}
+
+func (server *Server) UnlikeFlavour(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	flavourId, err := uuid.Parse(uriData.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	payload, err := getPayloadFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := db.UnlikeFlavourParams{
+		FlavourID: flavourId,
+		UserID:    payload.UserId,
+	}
+
+	err = server.store.UnlikeFlavour(ctx, arg)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}

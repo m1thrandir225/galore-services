@@ -32,6 +32,8 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/users/:id/password", server.updateUserPassword)
 	authRoutes.PUT("/users/:id/push-notifications", server.updateUserPushNotifications)
 	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
+	authRoutes.GET("/users/:id/flavours", server.GetUserLikedFlavours)
+	authRoutes.GET("/users/:id/cocktails", server.getUserLikedCocktails)
 
 	/*
 	 * Notification Type routes (Private)
@@ -78,11 +80,30 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)
 
 	/*
+	* Liked Cocktail Routes (Private)
+	 */
+	authRoutes.POST("/cocktails/:id/like", server.likeCocktail)
+	authRoutes.POST("/cocktails/:id/unlike", server.unlikeCocktail)
+
+	/*
 	 * AI Cocktail routes (Private)
 	 */
 
 	/*
 	 * Flavour routes (Private)
 	 */
+	authRoutes.GET("/flavours", server.getAllFlavours)
+	authRoutes.POST("/flavours", server.createFlavour)
+	authRoutes.DELETE("/flavours/:id", server.deleteFlavour)
+	authRoutes.PATCH("/flavours/:id", server.updateFlavour)
+	authRoutes.GET("/flavours/:id", server.getFlavourId)
+
+	/*
+	* Liked Flavours (Private)
+	 */
+	authRoutes.POST("/flavours/:id/like", server.LikeFlavour)
+	authRoutes.POST("/flavours/:id/unlike", server.UnlikeFlavour)
+	authRoutes.GET("/flavours/:id/like", server.GetLikedFlavour)
+
 	server.router = router
 }
