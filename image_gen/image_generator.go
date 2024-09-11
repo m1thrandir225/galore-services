@@ -1,4 +1,4 @@
-package imageGen
+package image_gen
 
 import "net/http"
 

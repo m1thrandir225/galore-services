@@ -1,4 +1,4 @@
-package imageGen
+package image_gen
 
 import (
 	"bytes"
@@ -95,7 +95,7 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 
 }
 
-// TODO: if an error pops up stop the context execution, current implementation will spend credits even if there is an error.
+// GenerateImages TODO: if an error pops up stop the context execution, current implementation will spend credits even if there is an error.
 func (generator *StableDiffusionGenerator) GenerateImages(prompts []string, httpClient *http.Client) ([]*GeneratedImage, error) {
 	var waitGroup sync.WaitGroup
 	imageChannel := make(chan *GeneratedImage, len(prompts))
