@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -34,12 +35,12 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	SessionID             uuid.UUID        `json:"session_id"`
 	User                  db.CreateUserRow `json:"user"`
-	AccessToken           string           `json:"access_token"`
-	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
 	RefreshToken          string           `json:"refresh_token"`
+	AccessToken           string           `json:"access_token"`
 	RefreshTokenExpiresAt time.Time        `json:"refresh_token_expires_at"`
+	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
+	SessionID             uuid.UUID        `json:"session_id"`
 }
 
 type logoutRequest struct {
@@ -54,13 +55,15 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 	dbDate, err := util.TimeToDbDate(requestData.Birthday)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	hashedPassword, err := util.HashPassowrd(requestData.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
 
 	imageData, err := util.BytesFromFile(requestData.AvatarUrl)
 	if err != nil {
@@ -71,7 +74,9 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	userId := uuid.New()
 
 	avatarUrl, err := server.storage.UploadFile(imageData, userId.String(), requestData.AvatarUrl.Filename)
-
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
 	args := db.CreateUserParams{
 		ID:        userId,
 		Email:     requestData.Email,
@@ -82,21 +87,18 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	}
 
 	newEntry, err := server.store.CreateUser(ctx, args)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.AccessTokenDuration)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.RefreshTokenDuration)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -111,6 +113,16 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		IsBlocked:    false,
 		ExpiresAt:    refreshTokenPayload.ExpiredAt,
 	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	b, err := json.Marshal(session)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	server.cache.SaveItem(ctx, args.Email, string(b))
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -130,7 +142,6 @@ func (server *Server) registerUser(ctx *gin.Context) {
 }
 
 func (server *Server) loginUser(ctx *gin.Context) {
-
 	var requestData loginUserRequest
 
 	if err := ctx.Bind(&requestData); err != nil {
@@ -139,14 +150,12 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	user, err := server.store.GetUserByEmail(ctx, requestData.Email)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	err = util.ComparePassword(user.Password, requestData.Password)
-
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
@@ -159,7 +168,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(user.ID, server.config.RefreshTokenDuration)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -173,7 +181,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		UserAgent:    ctx.Request.UserAgent(),
 		ExpiresAt:    time.Now().Add(server.config.RefreshTokenDuration),
 	})
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -198,13 +205,12 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, response)
-
 }
 
 func (server *Server) logout(ctx *gin.Context) {
-	//This will be an auth only route so you would need to send a acces token, and as a specific meter need to send the session id
-	//so when you logout the session can be deleted or maybe set it to blocked, let it be for the time being just be deleted
-	//TODO: set the session to blocked instead of deleting it so the user can see his own previous sessions.
+	// This will be an auth only route so you would need to send a acces token, and as a specific meter need to send the session id
+	// so when you logout the session can be deleted or maybe set it to blocked, let it be for the time being just be deleted
+	// TODO: set the session to blocked instead of deleting it so the user can see his own previous sessions.
 
 	var requestData logoutRequest
 
@@ -214,26 +220,23 @@ func (server *Server) logout(ctx *gin.Context) {
 	}
 
 	session, err := server.store.GetSession(ctx, requestData.SessionID)
-
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
 	_, err = server.tokenMaker.VerifyToken(session.RefreshToken)
-
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
 	err = server.store.DeleteSession(ctx, requestData.SessionID)
-
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
-	//No need to return anything
+	// No need to return anything
 	ctx.Status(http.StatusNoContent)
 }
 
@@ -244,9 +247,5 @@ func (server *Server) verifyAuthCookie(cookie string) bool {
 	}
 	err = payload.Valid()
 
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }

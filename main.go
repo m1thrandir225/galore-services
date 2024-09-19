@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/m1thrandir225/galore-services/storage"
 	"os"
+
+	"github.com/m1thrandir225/galore-services/cache"
+	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,7 +19,6 @@ import (
 
 func main() {
 	config, err := util.LoadConfig(".")
-
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot load config")
 	}
@@ -27,7 +28,6 @@ func main() {
 	}
 
 	connPool, err := pgxpool.New(context.Background(), config.DBSource)
-
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot connect to database.")
 	}
@@ -40,20 +40,18 @@ func main() {
 	localStorage := storage.NewLocalStorage("./public")
 
 	store := db.NewStore(connPool)
+	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
 
-	runGinServer(config, store, localStorage)
-
+	runGinServer(config, store, localStorage, cacheStore)
 }
 
-func runGinServer(config util.Config, store db.Store, storage storage.FileService) {
-	server, err := api.NewServer(config, store, storage)
-
+func runGinServer(config util.Config, store db.Store, storage storage.FileService, cacheStore cache.KeyValueStore) {
+	server, err := api.NewServer(config, store, storage, cacheStore)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")
 	}
 
 	err = server.Start(config.HTTPServerAddress)
-
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot start server")
 	}

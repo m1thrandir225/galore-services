@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+
+	"github.com/m1thrandir225/galore-services/cache"
 	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/gin-gonic/gin"
@@ -16,11 +18,11 @@ type Server struct {
 	router     *gin.Engine
 	tokenMaker token.Maker
 	storage    storage.FileService
+	cache      cache.KeyValueStore
 }
 
-func NewServer(config util.Config, store db.Store, storageService storage.FileService) (*Server, error) {
+func NewServer(config util.Config, store db.Store, storageService storage.FileService, cacheStore cache.KeyValueStore) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -30,6 +32,7 @@ func NewServer(config util.Config, store db.Store, storageService storage.FileSe
 		store:      store,
 		tokenMaker: tokenMaker,
 		storage:    storageService,
+		cache:      cacheStore,
 	}
 
 	server.setupRouter()

@@ -22,10 +22,10 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 	5. return the prompt recipe.
 	*/
 	var recipe PromptRecipe
-	//1. Create a prompt
+	// 1. Create a prompt
 	prompt := generatePrompt(referenceFlavours, referenceCocktails)
 	httpClient := &http.Client{}
-	//2. Create a new thread
+	// 2. Create a new thread
 	req, err := http.NewRequest("POST", generator.ThreadUrl, bytes.NewBuffer([]byte("")))
 	if err != nil {
 		return nil, err

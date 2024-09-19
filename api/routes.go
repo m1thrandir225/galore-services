@@ -90,15 +90,6 @@ func (server *Server) setupRouter() {
 	 */
 
 	/*
-	 * Flavour routes (Private)
-	 */
-	authRoutes.GET("/flavours", server.getAllFlavours)
-	authRoutes.POST("/flavours", server.createFlavour)
-	authRoutes.DELETE("/flavours/:id", server.deleteFlavour)
-	authRoutes.PATCH("/flavours/:id", server.updateFlavour)
-	authRoutes.GET("/flavours/:id", server.getFlavourId)
-
-	/*
 	* Liked Flavours (Private)
 	 */
 	authRoutes.POST("/flavours/:id/like", server.LikeFlavour)
