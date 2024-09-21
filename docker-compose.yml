@@ -30,16 +30,15 @@ services:
     networks:
       - app-network
   cache:
-    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    image: "docker.dragonflydb.io/dragonflydb/dragonfly"
     ulimits:
       memlock: -1
     ports:
-        - "6379:6379"
+      - "6379:6379"
     volumes:
       - cache-data:/data
     networks:
       - app-network
-
 networks:
   app-network:
     driver: bridge

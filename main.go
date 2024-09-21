@@ -12,6 +12,7 @@ import (
 	"github.com/m1thrandir225/galore-services/api"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/util"
+	pgxvector "github.com/pgvector/pgvector-go/pgx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
@@ -34,6 +35,7 @@ func main() {
 
 	connPool.Config().AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 		pgxUUID.Register(conn.TypeMap())
+		pgxvector.RegisterTypes(context.Background(), conn)
 		return nil
 	}
 
