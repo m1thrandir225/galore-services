@@ -3,9 +3,10 @@ package token
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	"time"
 )
 
 const minSecretSize = 32
@@ -24,7 +25,6 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 
 func (maker *JWTMaker) CreateToken(userId uuid.UUID, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(userId, duration)
-
 	if err != nil {
 		return "", payload, err
 	}
@@ -34,11 +34,9 @@ func (maker *JWTMaker) CreateToken(userId uuid.UUID, duration time.Duration) (st
 	token, err := jwtToken.SignedString([]byte(maker.secretKey))
 
 	return token, payload, err
-
 }
 
 func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
-
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 
@@ -50,7 +48,6 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	}
 
 	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
-
 	if err != nil {
 		verr, ok := err.(*jwt.ValidationError)
 

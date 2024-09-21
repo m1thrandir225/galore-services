@@ -1,0 +1,49 @@
+services:
+  app:
+    build: . # Your Go (Gin) application Dockerfile location
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - cache
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER= ${POSTGRES_USER}
+      - DB_PASSWORD= ${POSTGRES_PASSWORD}
+      - DB_NAME= ${POSTGRES_DB}
+    networks:
+      - app-network
+  db:
+    image: postgres-with-pgvector
+    build:
+      context: ./db/
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+  cache:
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    ulimits:
+      memlock: -1
+    ports:
+        - "6379:6379"
+    volumes:
+      - cache-data:/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  cache-data:
