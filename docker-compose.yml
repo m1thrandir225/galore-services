@@ -14,6 +14,21 @@ services:
       - DB_NAME= ${POSTGRES_DB}
     networks:
       - app-network
+  migrate:
+    image: migrate/migrate
+    networks:
+      - app-network
+    volumes:
+      - ./db:/db
+    links:
+      - db
+    depends_on:
+      - db
+    command: [
+      "-path", "/db/migrations"
+      "-database", "postgresql://root:secret@localhost:5432/galore_db?sslmode=disable"
+      "up"
+    ]
   db:
     image: postgres-with-pgvector
     build:
