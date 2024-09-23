@@ -13,13 +13,14 @@ type OpenAiEmbeddingGenerator struct {
 	Model              string
 }
 
+// OpenAiEmbeddingResponse TODO: REFACTOR
 type OpenAiEmbeddingResponse struct {
 	Data []struct {
 		Embedding []float64 `json:"embedding"`
 	} `json:"data"`
 }
 
-func (generator *OpenAiEmbeddingGenerator) GenerateEmbedding(text string) ([]float64, error) {
+func (generator *OpenAiEmbeddingGenerator) GenerateEmbedding(text string, client *http.Client) ([]float64, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"input": text,
 		"model": generator.Model,
@@ -35,8 +36,6 @@ func (generator *OpenAiEmbeddingGenerator) GenerateEmbedding(text string) ([]flo
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", generator.AuthorizationToken)
-
-	client := &http.Client{}
 
 	resp, err := client.Do(req)
 	if err != nil {

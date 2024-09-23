@@ -1,5 +1,7 @@
 package embedding
 
-type EmbeddingGenerator interface {
-	GenerateEmbedding(text string) ([]float64, error)
+import "net/http"
+
+type Generator interface {
+	GenerateEmbedding(text string, client *http.Client) ([]float64, error)
 }
