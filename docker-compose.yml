@@ -1,0 +1,20 @@
+services:
+  # api:
+  # build:
+  #  context: galore-backend-service
+  # ports:
+  #  - "8080:8080"
+  # - "5432:5432"
+  # networks:
+  #  - app-network
+
+  embedding-service:
+    build:
+      context: embedding-service
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
