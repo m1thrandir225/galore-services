@@ -2,6 +2,7 @@ package cocktail_gen
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 )
@@ -11,6 +12,8 @@ type OpenAIPromptGenerator struct {
 	AssistantId string
 	ThreadUrl   string
 }
+
+type OpenAiPromptResponse struct{}
 
 func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, referenceCocktails []string) (*PromptRecipe, error) {
 	/**
@@ -24,9 +27,11 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 	var recipe PromptRecipe
 	// 1. Create a prompt
 	prompt := generatePrompt(referenceFlavours, referenceCocktails)
+
 	httpClient := &http.Client{}
+
 	// 2. Create a new thread
-	req, err := http.NewRequest("POST", generator.ThreadUrl, bytes.NewBuffer([]byte("")))
+	req, err := http.NewRequest("POST", generator.ThreadUrl, bytes.NewBuffer([]byte(prompt)))
 	if err != nil {
 		return nil, err
 	}
@@ -47,5 +52,12 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 		return nil, err
 	}
 
+	var promptResponse OpenAiPromptResponse
+	err = json.Unmarshal(body, &promptResponse)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: I don't know if i should return a pointer here or the
+	// object(investigate)
 	return &recipe, nil
 }

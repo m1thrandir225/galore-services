@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type StableDiffusionGenerator struct {
@@ -25,7 +26,7 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 	var imageGenerated GeneratedImage
 	mpw := multipart.NewWriter(buffer)
 
-	//1. Add prompt field to multipart form
+	// 1. Add prompt field to multipart form
 	promptField, err := mpw.CreateFormField("prompt")
 	if err != nil {
 		return nil, err
@@ -35,7 +36,7 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 		return nil, err
 	}
 
-	//2. Add aspect ratio to multipart form
+	// 2. Add aspect ratio to multipart form
 	aspectRatioField, err := mpw.CreateFormField("aspect_ratio")
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 		return nil, err
 	}
 
-	//3. Add output to multipart form
+	// 3. Add output to multipart form
 	outputFormatField, err := mpw.CreateFormField("output_format")
 	if err != nil {
 		return nil, err
@@ -92,7 +93,6 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 	}
 
 	return &imageGenerated, nil
-
 }
 
 // GenerateImages TODO: if an error pops up stop the context execution, current implementation will spend credits even if there is an error.
