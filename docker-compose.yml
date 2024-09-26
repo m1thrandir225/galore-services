@@ -1,13 +1,18 @@
 services:
-  # api:
-  # build:
-  #  context: galore-backend-service
-  # ports:
-  #  - "8080:8080"
-  # - "5432:5432"
-  # networks:
-  #  - app-network
-
+  api-service:
+    build:
+      context: api-service
+    depends_on:
+      - db
+      - cache
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER= ${POSTGRES_USER}
+      - DB_PASSWORD= ${POSTGRES_PASSWORD}
+      - DB_NAME= ${POSTGRES_DB}
+    networks:
+      - app-network
   embedding-service:
     build:
       context: embedding-service
@@ -15,6 +20,33 @@ services:
       - "8000:8000"
     networks:
       - app-network
+  db:
+    image: postgres-with-pgvector
+    build:
+      context: api-service/db/
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+  cache:
+    image: "docker.dragonflydb.io/dragonflydb/dragonfly"
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache-data:/data
+    networks:
+      - app-network
 networks:
   app-network:
     driver: bridge
+volumes:
+  postgres-data:
+  cache-data:

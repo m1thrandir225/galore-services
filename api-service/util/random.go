@@ -27,6 +27,7 @@ func RandomString(n int) string {
 
 	return sb.String()
 }
+
 func RandomBool() bool {
 	return rand.Uint64()%2 == 1
 }
@@ -64,7 +65,6 @@ func RandomIngredients() []dto.IngredientData {
 	}
 
 	return ingredients
-
 }
 
 /*

@@ -7,6 +7,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+/**
+* Store that should work with any db that supports the redis protocol (Dragonfly
+  * etc..)
+*/
 type RedisStore struct {
 	store *redis.Client
 }
