@@ -9,12 +9,15 @@ from models.model import TextEmbeddingModel
 app = FastAPI()
 model = TextEmbeddingModel()
 
+
 class TextData(BaseModel):
     text: str
+
 
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
 
 @app.post("/generate-embedding")
 async def generate_embedding(data: TextData):
@@ -23,3 +26,4 @@ async def generate_embedding(data: TextData):
         return {"embedding": embedding.tolist()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
