@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	dto "github.com/m1thrandir225/galore-services/dto"
+	"github.com/pgvector/pgvector-go"
 )
 
 const createCocktail = `-- name: CreateCocktail :one
@@ -20,15 +21,17 @@ INSERT INTO cocktails (
   glass,
   image,
   instructions,
-  ingredients
+  ingredients,
+  embedding
 ) VALUES (
   $1,
   $2,
   $3,
   $4,
   $5,
-  $6
-) RETURNING id, name, is_alcoholic, glass, image, instructions, ingredients, created_at
+  $6,
+  $7
+) RETURNING id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at
 `
 
 type CreateCocktailParams struct {
@@ -38,6 +41,7 @@ type CreateCocktailParams struct {
 	Image        string             `json:"image"`
 	Instructions dto.InstructionDto `json:"instructions"`
 	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	Embedding    pgvector.Vector    `json:"embedding"`
 }
 
 func (q *Queries) CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error) {
@@ -48,6 +52,7 @@ func (q *Queries) CreateCocktail(ctx context.Context, arg CreateCocktailParams) 
 		arg.Image,
 		arg.Instructions,
 		arg.Ingredients,
+		arg.Embedding,
 	)
 	var i Cocktail
 	err := row.Scan(
@@ -58,6 +63,7 @@ func (q *Queries) CreateCocktail(ctx context.Context, arg CreateCocktailParams) 
 		&i.Image,
 		&i.Instructions,
 		&i.Ingredients,
+		&i.Embedding,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -74,7 +80,7 @@ func (q *Queries) DeleteCocktail(ctx context.Context, id uuid.UUID) error {
 }
 
 const getCocktail = `-- name: GetCocktail :one
-SELECT id, name, is_alcoholic, glass, image, instructions, ingredients, created_at FROM cocktails
+SELECT id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at FROM cocktails
 WHERE id = $1 LIMIT 1
 `
 
@@ -89,6 +95,7 @@ func (q *Queries) GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, erro
 		&i.Image,
 		&i.Instructions,
 		&i.Ingredients,
+		&i.Embedding,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -98,7 +105,7 @@ const updateCocktail = `-- name: UpdateCocktail :one
 UPDATE cocktails
 SET name=$2, is_alcoholic=$3, glass=$4, image=$5, instructions=$6, ingredients=$7
 WHERE id = $1
-RETURNING id, name, is_alcoholic, glass, image, instructions, ingredients, created_at
+RETURNING id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at
 `
 
 type UpdateCocktailParams struct {
@@ -130,6 +137,7 @@ func (q *Queries) UpdateCocktail(ctx context.Context, arg UpdateCocktailParams) 
 		&i.Image,
 		&i.Instructions,
 		&i.Ingredients,
+		&i.Embedding,
 		&i.CreatedAt,
 	)
 	return i, err

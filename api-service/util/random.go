@@ -15,6 +15,14 @@ func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 
+func RandomFloatArray(min, max float32, n int) []float32 {
+	res := make([]float32, n)
+	for i := range res {
+		res[i] = min + rand.Float32()*(max-min)
+	}
+	return res
+}
+
 func RandomString(n int) string {
 	var sb strings.Builder
 

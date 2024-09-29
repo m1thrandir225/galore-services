@@ -39,7 +39,7 @@ type Querier interface {
 	GetCategoryByTag(ctx context.Context, tag string) (Category, error)
 	GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, error)
 	GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error)
-	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]Cocktail, error)
+	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error)
 	GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, error)
 	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)

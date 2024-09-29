@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	dto "github.com/m1thrandir225/galore-services/dto"
+	"github.com/pgvector/pgvector-go"
 )
 
 type Category struct {
@@ -27,6 +28,7 @@ type Cocktail struct {
 	Image        string             `json:"image"`
 	Instructions dto.InstructionDto `json:"instructions"`
 	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	Embedding    pgvector.Vector    `json:"embedding"`
 	CreatedAt    time.Time          `json:"created_at"`
 }
 
@@ -44,6 +46,7 @@ type CreatedCocktail struct {
 	Instructions dto.AiInstructionDto `json:"instructions"`
 	Description  string               `json:"description"`
 	UserID       uuid.UUID            `json:"user_id"`
+	Embedding    pgvector.Vector      `json:"embedding"`
 	CreatedAt    time.Time            `json:"created_at"`
 }
 

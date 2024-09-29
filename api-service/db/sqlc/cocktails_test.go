@@ -8,11 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/m1thrandir225/galore-services/dto"
 	"github.com/m1thrandir225/galore-services/util"
+	"github.com/pgvector/pgvector-go"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomCocktail(t *testing.T) Cocktail {
-
 	var is_alcoholic pgtype.Bool
 
 	is_alcoholic.Scan(util.RandomBool())
@@ -25,6 +25,10 @@ func createRandomCocktail(t *testing.T) Cocktail {
 		Instructions: util.RandomInstructions(),
 	}
 
+	floatArr := util.RandomFloatArray(0.1, 1.0, 768)
+
+	embedding := pgvector.NewVector(floatArr)
+
 	arg := CreateCocktailParams{
 		Name:         util.RandomString(40),
 		Image:        util.RandomString(80),
@@ -32,6 +36,7 @@ func createRandomCocktail(t *testing.T) Cocktail {
 		Instructions: instructions,
 		Ingredients:  ingredients,
 		IsAlcoholic:  is_alcoholic,
+		Embedding:    embedding,
 	}
 
 	cocktail, err := testStore.CreateCocktail(context.Background(), arg)
@@ -45,6 +50,7 @@ func createRandomCocktail(t *testing.T) Cocktail {
 	require.Equal(t, arg.Instructions, cocktail.Instructions)
 	require.Equal(t, arg.Ingredients, cocktail.Ingredients)
 	require.Equal(t, arg.IsAlcoholic, cocktail.IsAlcoholic)
+	require.Equal(t, arg.Embedding, cocktail.Embedding)
 
 	return cocktail
 }
@@ -88,11 +94,11 @@ func TestUpdateCocktail(t *testing.T) {
 	cocktail := createRandomCocktail(t)
 
 	var isAlcoholic pgtype.Bool
-	var ingredients = dto.IngredientDto{
+	ingredients := dto.IngredientDto{
 		Ingredients: util.RandomIngredients(),
 	}
 
-	var instructions = dto.InstructionDto{
+	instructions := dto.InstructionDto{
 		Instructions: util.RandomInstructions(),
 	}
 	err := isAlcoholic.Scan(!cocktail.IsAlcoholic.Bool)

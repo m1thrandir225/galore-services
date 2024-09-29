@@ -7,11 +7,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/m1thrandir225/galore-services/dto"
 	"github.com/m1thrandir225/galore-services/util"
+	"github.com/pgvector/pgvector-go"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
-
 	ingredients := dto.IngredientDto{
 		Ingredients: util.RandomIngredients(),
 	}
@@ -20,6 +20,10 @@ func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
 		Instructions: util.RandomAiInstructions(),
 	}
 
+	floatArr := util.RandomFloatArray(0.1, 1.0, 768)
+
+	embedding := pgvector.NewVector(floatArr)
+
 	arg := CreateUserCocktailParams{
 		Name:         util.RandomString(10),
 		Image:        util.RandomString(24),
@@ -27,6 +31,7 @@ func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
 		Instructions: instructions,
 		UserID:       user_id,
 		Description:  util.RandomString(256),
+		Embedding:    embedding,
 	}
 
 	cocktail, err := testStore.CreateUserCocktail(context.Background(), arg)
@@ -40,6 +45,7 @@ func createRandomUserCocktail(user_id uuid.UUID, t *testing.T) CreatedCocktail {
 	require.Equal(t, arg.Instructions, cocktail.Instructions)
 	require.Equal(t, arg.UserID, cocktail.UserID)
 	require.Equal(t, arg.Description, cocktail.Description)
+	require.Equal(t, arg.Embedding, cocktail.Embedding)
 
 	return cocktail
 }

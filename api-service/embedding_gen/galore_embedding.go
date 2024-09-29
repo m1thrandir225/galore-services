@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -49,10 +48,11 @@ func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *
 	}
 
 	var embeddingResponse GaloreEmbeddingServiceResponse
+
 	err = json.Unmarshal(body, &embeddingResponse)
 	if err != nil {
 		return nil, err
 	}
-	log.Println(embeddingResponse.Embedding[0])
+
 	return embeddingResponse.Embedding[0], nil
 }

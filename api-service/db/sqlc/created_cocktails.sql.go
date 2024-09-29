@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	dto "github.com/m1thrandir225/galore-services/dto"
+	"github.com/pgvector/pgvector-go"
 )
 
 const createUserCocktail = `-- name: CreateUserCocktail :one
@@ -19,15 +20,17 @@ INSERT INTO created_cocktails (
   ingredients,
   instructions, 
   description,
-  user_id
+  user_id,
+  embedding
 ) VALUES (
   $1,
   $2,
   $3,
   $4,
   $5,
-  $6
-) RETURNING id, name, image, ingredients, instructions, description, user_id, created_at
+  $6,
+  $7
+) RETURNING id, name, image, ingredients, instructions, description, user_id, embedding, created_at
 `
 
 type CreateUserCocktailParams struct {
@@ -37,6 +40,7 @@ type CreateUserCocktailParams struct {
 	Instructions dto.AiInstructionDto `json:"instructions"`
 	Description  string               `json:"description"`
 	UserID       uuid.UUID            `json:"user_id"`
+	Embedding    pgvector.Vector      `json:"embedding"`
 }
 
 func (q *Queries) CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error) {
@@ -47,6 +51,7 @@ func (q *Queries) CreateUserCocktail(ctx context.Context, arg CreateUserCocktail
 		arg.Instructions,
 		arg.Description,
 		arg.UserID,
+		arg.Embedding,
 	)
 	var i CreatedCocktail
 	err := row.Scan(
@@ -57,6 +62,7 @@ func (q *Queries) CreateUserCocktail(ctx context.Context, arg CreateUserCocktail
 		&i.Instructions,
 		&i.Description,
 		&i.UserID,
+		&i.Embedding,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -73,7 +79,7 @@ func (q *Queries) DeleteUserCocktail(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUserCocktail = `-- name: GetUserCocktail :one
-SELECT id, name, image, ingredients, instructions, description, user_id, created_at from created_cocktails 
+SELECT id, name, image, ingredients, instructions, description, user_id, embedding, created_at from created_cocktails 
 WHERE id = $1 LIMIT 1
 `
 
@@ -88,6 +94,7 @@ func (q *Queries) GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCoc
 		&i.Instructions,
 		&i.Description,
 		&i.UserID,
+		&i.Embedding,
 		&i.CreatedAt,
 	)
 	return i, err

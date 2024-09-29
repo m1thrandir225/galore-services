@@ -5,14 +5,16 @@ INSERT INTO created_cocktails (
   ingredients,
   instructions, 
   description,
-  user_id
+  user_id,
+  embedding
 ) VALUES (
   $1,
   $2,
   $3,
   $4,
   $5,
-  $6
+  $6,
+  $7
 ) RETURNING *;
 
 -- name: GetUserCocktail :one

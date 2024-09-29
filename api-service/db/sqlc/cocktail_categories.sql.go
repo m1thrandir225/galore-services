@@ -7,8 +7,11 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	dto "github.com/m1thrandir225/galore-services/dto"
 )
 
 const createCocktailCategory = `-- name: CreateCocktailCategory :one
@@ -94,15 +97,26 @@ WHERE cc.category_id = $1
 GROUP BY cc.category_id, cc.cocktail_id, c.id
 `
 
-func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]Cocktail, error) {
+type GetCocktailsForCategoryRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Name         string             `json:"name"`
+	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
+	Glass        string             `json:"glass"`
+	Image        string             `json:"image"`
+	Instructions dto.InstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	CreatedAt    time.Time          `json:"created_at"`
+}
+
+func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error) {
 	rows, err := q.db.Query(ctx, getCocktailsForCategory, categoryID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Cocktail{}
+	items := []GetCocktailsForCategoryRow{}
 	for rows.Next() {
-		var i Cocktail
+		var i GetCocktailsForCategoryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

@@ -12,10 +12,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	dto "github.com/m1thrandir225/galore-services/dto"
+	"github.com/pgvector/pgvector-go"
 )
 
 const getLikedCocktail = `-- name: GetLikedCocktail :one
-SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, lc.id, cocktail_id, user_id from cocktails c
+SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at, lc.id, cocktail_id, user_id from cocktails c
 JOIN liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1 and lc.cocktail_id = $2
 GROUP BY lc.user_id, lc.cocktail_id, c.id
@@ -34,6 +35,7 @@ type GetLikedCocktailRow struct {
 	Image        string             `json:"image"`
 	Instructions dto.InstructionDto `json:"instructions"`
 	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	Embedding    pgvector.Vector    `json:"embedding"`
 	CreatedAt    time.Time          `json:"created_at"`
 	ID_2         uuid.UUID          `json:"id_2"`
 	CocktailID   uuid.UUID          `json:"cocktail_id"`
@@ -51,6 +53,7 @@ func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailPara
 		&i.Image,
 		&i.Instructions,
 		&i.Ingredients,
+		&i.Embedding,
 		&i.CreatedAt,
 		&i.ID_2,
 		&i.CocktailID,
@@ -60,7 +63,7 @@ func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailPara
 }
 
 const getLikedCocktails = `-- name: GetLikedCocktails :many
-SELECt c.id, name, is_alcoholic, glass, image, instructions, ingredients, created_at, lc.id, cocktail_id, user_id from cocktails c
+SELECt c.id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at, lc.id, cocktail_id, user_id from cocktails c
 JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
 GROUP BY lc.user_id
@@ -74,6 +77,7 @@ type GetLikedCocktailsRow struct {
 	Image        string             `json:"image"`
 	Instructions dto.InstructionDto `json:"instructions"`
 	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	Embedding    pgvector.Vector    `json:"embedding"`
 	CreatedAt    time.Time          `json:"created_at"`
 	ID_2         uuid.UUID          `json:"id_2"`
 	CocktailID   uuid.UUID          `json:"cocktail_id"`
@@ -97,6 +101,7 @@ func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]Ge
 			&i.Image,
 			&i.Instructions,
 			&i.Ingredients,
+			&i.Embedding,
 			&i.CreatedAt,
 			&i.ID_2,
 			&i.CocktailID,

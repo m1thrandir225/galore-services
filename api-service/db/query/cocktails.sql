@@ -5,14 +5,16 @@ INSERT INTO cocktails (
   glass,
   image,
   instructions,
-  ingredients
+  ingredients,
+  embedding
 ) VALUES (
   $1,
   $2,
   $3,
   $4,
   $5,
-  $6
+  $6,
+  $7
 ) RETURNING *;
 
 -- name: GetCocktail :one
