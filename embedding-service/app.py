@@ -26,4 +26,3 @@ async def generate_embedding(data: TextData):
         return {"embedding": embedding.tolist()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

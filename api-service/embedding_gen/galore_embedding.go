@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -16,7 +17,7 @@ type GaloreEmbeddingServiceRequest struct {
 }
 
 type GaloreEmbeddingServiceResponse struct {
-	Embedding []float64 `json:"embedding" binding:"required"`
+	Embedding [][]float64 `json:"embedding" binding:"required"`
 }
 
 func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *http.Client) ([]float64, error) {
@@ -52,5 +53,6 @@ func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *
 	if err != nil {
 		return nil, err
 	}
-	return embeddingResponse.Embedding, nil
+	log.Println(embeddingResponse.Embedding[0])
+	return embeddingResponse.Embedding[0], nil
 }
