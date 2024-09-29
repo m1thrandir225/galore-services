@@ -6,6 +6,7 @@ CREATE TABLE created_cocktails (
   instructions JSONB NOT NULL, 
   description TEXT NOT NULL, 
   user_id UUID REFERENCES users (id) ON DELETE CASCADE NOT NULL,
+  embedding vector(768) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

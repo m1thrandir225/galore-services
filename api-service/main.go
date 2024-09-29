@@ -32,10 +32,15 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot connect to database.")
 	}
-
+	// Connection pool to databse
 	connPool.Config().AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 		pgxUUID.Register(conn.TypeMap())
-		pgxvector.RegisterTypes(context.Background(), conn)
+
+		err = pgxvector.RegisterTypes(context.Background(), conn)
+		if err != nil {
+			log.Fatal().Err(err).Msg("There was an error registering vector types.")
+		}
+
 		return nil
 	}
 

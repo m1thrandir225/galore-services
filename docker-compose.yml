@@ -5,6 +5,7 @@ services:
     depends_on:
       - db
       - cache
+      - embedding-service
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -21,9 +22,7 @@ services:
     networks:
       - app-network
   db:
-    image: postgres-with-pgvector
-    build:
-      context: api-service/db/
+    image: pgvector/pgvector:pg15
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

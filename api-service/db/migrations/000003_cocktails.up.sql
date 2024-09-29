@@ -6,6 +6,7 @@ CREATE TABLE cocktails (
   image TEXT NOT NULL,
   instructions JSONB NOT NULL,
   ingredients JSONB NOT NULL,
+  embedding vector(768) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
