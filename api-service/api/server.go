@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/m1thrandir225/galore-services/cache"
+	embedding "github.com/m1thrandir225/galore-services/embedding_service"
 	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/gin-gonic/gin"
@@ -19,9 +20,10 @@ type Server struct {
 	tokenMaker token.Maker
 	storage    storage.FileService
 	cache      cache.KeyValueStore
+	embedding  embedding.EmbeddingService
 }
 
-func NewServer(config util.Config, store db.Store, storageService storage.FileService, cacheStore cache.KeyValueStore) (*Server, error) {
+func NewServer(config util.Config, store db.Store, storageService storage.FileService, cacheStore cache.KeyValueStore, embedding embedding.EmbeddingService) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -33,6 +35,7 @@ func NewServer(config util.Config, store db.Store, storageService storage.FileSe
 		tokenMaker: tokenMaker,
 		storage:    storageService,
 		cache:      cacheStore,
+		embedding:  embedding,
 	}
 
 	server.setupRouter()

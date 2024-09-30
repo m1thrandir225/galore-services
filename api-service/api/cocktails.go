@@ -12,6 +12,7 @@ import (
 	"github.com/m1thrandir225/galore-services/dto"
 	"github.com/m1thrandir225/galore-services/token"
 	"github.com/m1thrandir225/galore-services/util"
+	"github.com/pgvector/pgvector-go"
 )
 
 type CreateOrUpdateCocktailRequest struct {
@@ -72,6 +73,16 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	httpClient := &http.Client{}
+
+	nameEmbedding, err := server.embedding.GenerateEmbedding(requestData.Name, httpClient)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	arg := db.CreateCocktailParams{
 		Name:         requestData.Name,
 		Image:        filePath,
@@ -79,6 +90,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		Ingredients:  ingredientDto,
 		Instructions: instructionDto,
 		IsAlcoholic:  isAlcoholic,
+		Embedding:    pgvector.NewVector(nameEmbedding),
 	}
 
 	cocktail, err := server.store.CreateCocktail(ctx, arg)

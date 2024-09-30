@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/m1thrandir225/galore-services/cache"
+	embedding "github.com/m1thrandir225/galore-services/embedding_service"
 	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/jackc/pgx/v5"
@@ -17,6 +18,14 @@ import (
 	"github.com/rs/zerolog/log"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 )
+
+type ginServerConfig struct {
+	Config     util.Config
+	Store      db.Store
+	Storage    storage.FileService
+	CacheStore cache.KeyValueStore
+	Embedding  embedding.EmbeddingService
+}
 
 func main() {
 	config, err := util.LoadConfig(".")
@@ -48,17 +57,25 @@ func main() {
 
 	store := db.NewStore(connPool)
 	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
+	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServerAddress)
 
-	runGinServer(config, store, localStorage, cacheStore)
+	serverConfig := ginServerConfig{
+		Config:     config,
+		Store:      store,
+		CacheStore: cacheStore,
+		Storage:    localStorage,
+		Embedding:  embeddingService,
+	}
+	runGinServer(serverConfig)
 }
 
-func runGinServer(config util.Config, store db.Store, storage storage.FileService, cacheStore cache.KeyValueStore) {
-	server, err := api.NewServer(config, store, storage, cacheStore)
+func runGinServer(serverConfig ginServerConfig) {
+	server, err := api.NewServer(serverConfig.Config, serverConfig.Store, serverConfig.Storage, serverConfig.CacheStore, serverConfig.Embedding)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")
 	}
 
-	err = server.Start(config.HTTPServerAddress)
+	err = server.Start(serverConfig.Config.HTTPServerAddress)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot start server")
 	}

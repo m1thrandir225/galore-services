@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/galore-services/cache"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	embedding "github.com/m1thrandir225/galore-services/embedding_service"
 	"github.com/m1thrandir225/galore-services/storage"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
@@ -15,13 +16,15 @@ import (
 
 func newTestServer(t *testing.T, store db.Store, cacheStore cache.KeyValueStore) *Server {
 	config := util.Config{
-		TokenSymmetricKey:   util.RandomString(32),
-		AccessTokenDuration: time.Minute,
+		TokenSymmetricKey:      util.RandomString(32),
+		AccessTokenDuration:    time.Minute,
+		EmbeddingServerAddress: "http://localhost:8000",
 	}
 
 	localStorage := storage.NewLocalStorage("./public")
+	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServerAddress)
 
-	server, err := NewServer(config, store, localStorage, cacheStore)
+	server, err := NewServer(config, store, localStorage, cacheStore, embeddingService)
 	require.NoError(t, err)
 	return server
 }

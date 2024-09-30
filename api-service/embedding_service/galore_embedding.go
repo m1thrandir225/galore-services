@@ -16,10 +16,16 @@ type GaloreEmbeddingServiceRequest struct {
 }
 
 type GaloreEmbeddingServiceResponse struct {
-	Embedding [][]float64 `json:"embedding" binding:"required"`
+	Embedding [][]float32 `json:"embedding" binding:"required"`
 }
 
-func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *http.Client) ([]float64, error) {
+func NewGaloreEmbeddingService(url string) *GaloreEmbeddingService {
+	return &GaloreEmbeddingService{
+		Url: url,
+	}
+}
+
+func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *http.Client) ([]float32, error) {
 	request := GaloreEmbeddingServiceRequest{
 		Text: text,
 	}
