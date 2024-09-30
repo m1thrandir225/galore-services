@@ -25,7 +25,7 @@ func NewGaloreEmbeddingService(url string) *GaloreEmbeddingService {
 	}
 }
 
-func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *http.Client) ([]float32, error) {
+func (generator *GaloreEmbeddingService) GenerateEmbedding(text string) ([]float32, error) {
 	request := GaloreEmbeddingServiceRequest{
 		Text: text,
 	}
@@ -40,6 +40,8 @@ func (generator *GaloreEmbeddingService) GenerateEmbedding(text string, client *
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
 
 	resp, err := client.Do(req)
 	if err != nil {

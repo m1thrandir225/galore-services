@@ -74,9 +74,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		return
 	}
 
-	httpClient := &http.Client{}
-
-	nameEmbedding, err := server.embedding.GenerateEmbedding(requestData.Name, httpClient)
+	nameEmbedding, err := server.embedding.GenerateEmbedding(requestData.Name)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
