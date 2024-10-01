@@ -8,7 +8,8 @@ class Parser:
     def __init__(self, url: str):
         self.url = url
 
-    # TODO: rewrite this, this will be a cron job
+    # TODO: rewrite this, this will be a cron job I don't know if it is smart to
+    # be saved in a file
     def get_cocktails(self):
         response = requests.get(self.url)
 
