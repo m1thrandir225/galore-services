@@ -19,5 +19,5 @@ class SingleCocktail:
         self.idDrink = idDrink
 
     def get_cocktail():
-        r = requests.get(url)
+        r = requests.get("")
         data = r.json()
