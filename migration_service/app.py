@@ -19,7 +19,6 @@ c_data = single_cocktail.json()["drinks"][0]
 
 ingredients = format_ingredients(c_data)
 
-print(ingredients_json(ingredients))
 # for cocktail in data:
 # cocktail_id = cocktail["idDrink"]
 # print(cocktail_id)
