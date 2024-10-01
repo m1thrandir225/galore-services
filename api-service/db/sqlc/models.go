@@ -21,15 +21,15 @@ type Category struct {
 }
 
 type Cocktail struct {
-	ID           uuid.UUID          `json:"id"`
-	Name         string             `json:"name"`
-	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
-	Glass        string             `json:"glass"`
-	Image        string             `json:"image"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
-	Embedding    pgvector.Vector    `json:"embedding"`
-	CreatedAt    time.Time          `json:"created_at"`
+	ID           uuid.UUID         `json:"id"`
+	Name         string            `json:"name"`
+	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
+	Glass        string            `json:"glass"`
+	Image        string            `json:"image"`
+	Instructions string            `json:"instructions"`
+	Ingredients  dto.IngredientDto `json:"ingredients"`
+	Embedding    pgvector.Vector   `json:"embedding"`
+	CreatedAt    time.Time         `json:"created_at"`
 }
 
 type CocktailCategory struct {

@@ -4,7 +4,7 @@ CREATE TABLE cocktails (
   is_alcoholic BOOLEAN DEFAULT TRUE,
   glass TEXT NOT NULL,
   image TEXT NOT NULL,
-  instructions JSONB NOT NULL,
+  instructions TEXT NOT NULL,
   ingredients JSONB NOT NULL,
   embedding vector(768) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

@@ -98,14 +98,14 @@ GROUP BY cc.category_id, cc.cocktail_id, c.id
 `
 
 type GetCocktailsForCategoryRow struct {
-	ID           uuid.UUID          `json:"id"`
-	Name         string             `json:"name"`
-	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
-	Glass        string             `json:"glass"`
-	Image        string             `json:"image"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
-	CreatedAt    time.Time          `json:"created_at"`
+	ID           uuid.UUID         `json:"id"`
+	Name         string            `json:"name"`
+	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
+	Glass        string            `json:"glass"`
+	Image        string            `json:"image"`
+	Instructions string            `json:"instructions"`
+	Ingredients  dto.IngredientDto `json:"ingredients"`
+	CreatedAt    time.Time         `json:"created_at"`
 }
 
 func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error) {

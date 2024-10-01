@@ -28,7 +28,6 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	var requestData CreateOrUpdateCocktailRequest
 	var isAlcoholic pgtype.Bool
 	var ingredientDto dto.IngredientDto
-	var instructionDto dto.InstructionDto
 
 	if err := ctx.ShouldBind(&requestData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -44,10 +43,6 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	// Unmarshal ingredients and instructions to dto objects
 	if err = json.Unmarshal([]byte(requestData.Ingredients), &ingredientDto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredients format"})
-		return
-	}
-	if err = json.Unmarshal([]byte(requestData.Instructions), &instructionDto); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid instructions format"})
 		return
 	}
 
@@ -86,7 +81,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		Image:        filePath,
 		Glass:        requestData.Glass,
 		Ingredients:  ingredientDto,
-		Instructions: instructionDto,
+		Instructions: requestData.Instructions,
 		IsAlcoholic:  isAlcoholic,
 		Embedding:    pgvector.NewVector(nameEmbedding),
 	}
@@ -169,7 +164,6 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 	var requestData CreateOrUpdateCocktailRequest
 	var isAlcoholic pgtype.Bool
 	var ingredientDto dto.IngredientDto
-	var instructionDto dto.InstructionDto
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -186,11 +180,6 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredients format"})
 		return
 	}
-	if err := json.Unmarshal([]byte(requestData.Instructions), &instructionDto); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid instructions format"})
-		return
-	}
-
 	err := isAlcoholic.Scan(requestData.IsAlcoholic)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -222,7 +211,7 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 	arg := db.UpdateCocktailParams{
 		ID:           cocktailId,
 		Name:         requestData.Name,
-		Instructions: instructionDto,
+		Instructions: requestData.Instructions,
 		Ingredients:  ingredientDto,
 		Image:        newFilePath,
 		Glass:        requestData.Glass,

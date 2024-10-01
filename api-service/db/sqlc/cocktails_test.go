@@ -21,9 +21,7 @@ func createRandomCocktail(t *testing.T) Cocktail {
 		Ingredients: util.RandomIngredients(),
 	}
 
-	instructions := dto.InstructionDto{
-		Instructions: util.RandomInstructions(),
-	}
+	instructions := util.RandomString(466)
 
 	floatArr := util.RandomFloatArray(0.1, 1.0, 768)
 
@@ -98,9 +96,7 @@ func TestUpdateCocktail(t *testing.T) {
 		Ingredients: util.RandomIngredients(),
 	}
 
-	instructions := dto.InstructionDto{
-		Instructions: util.RandomInstructions(),
-	}
+	instructions := util.RandomString(512)
 	err := isAlcoholic.Scan(!cocktail.IsAlcoholic.Bool)
 	require.NoError(t, err)
 

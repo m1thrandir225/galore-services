@@ -35,13 +35,13 @@ INSERT INTO cocktails (
 `
 
 type CreateCocktailParams struct {
-	Name         string             `json:"name"`
-	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
-	Glass        string             `json:"glass"`
-	Image        string             `json:"image"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
-	Embedding    pgvector.Vector    `json:"embedding"`
+	Name         string            `json:"name"`
+	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
+	Glass        string            `json:"glass"`
+	Image        string            `json:"image"`
+	Instructions string            `json:"instructions"`
+	Ingredients  dto.IngredientDto `json:"ingredients"`
+	Embedding    pgvector.Vector   `json:"embedding"`
 }
 
 func (q *Queries) CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error) {
@@ -109,13 +109,13 @@ RETURNING id, name, is_alcoholic, glass, image, instructions, ingredients, embed
 `
 
 type UpdateCocktailParams struct {
-	ID           uuid.UUID          `json:"id"`
-	Name         string             `json:"name"`
-	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
-	Glass        string             `json:"glass"`
-	Image        string             `json:"image"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
+	ID           uuid.UUID         `json:"id"`
+	Name         string            `json:"name"`
+	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
+	Glass        string            `json:"glass"`
+	Image        string            `json:"image"`
+	Instructions string            `json:"instructions"`
+	Ingredients  dto.IngredientDto `json:"ingredients"`
 }
 
 func (q *Queries) UpdateCocktail(ctx context.Context, arg UpdateCocktailParams) (Cocktail, error) {

@@ -28,18 +28,18 @@ type GetLikedCocktailParams struct {
 }
 
 type GetLikedCocktailRow struct {
-	ID           uuid.UUID          `json:"id"`
-	Name         string             `json:"name"`
-	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
-	Glass        string             `json:"glass"`
-	Image        string             `json:"image"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
-	Embedding    pgvector.Vector    `json:"embedding"`
-	CreatedAt    time.Time          `json:"created_at"`
-	ID_2         uuid.UUID          `json:"id_2"`
-	CocktailID   uuid.UUID          `json:"cocktail_id"`
-	UserID       uuid.UUID          `json:"user_id"`
+	ID           uuid.UUID         `json:"id"`
+	Name         string            `json:"name"`
+	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
+	Glass        string            `json:"glass"`
+	Image        string            `json:"image"`
+	Instructions string            `json:"instructions"`
+	Ingredients  dto.IngredientDto `json:"ingredients"`
+	Embedding    pgvector.Vector   `json:"embedding"`
+	CreatedAt    time.Time         `json:"created_at"`
+	ID_2         uuid.UUID         `json:"id_2"`
+	CocktailID   uuid.UUID         `json:"cocktail_id"`
+	UserID       uuid.UUID         `json:"user_id"`
 }
 
 func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error) {
@@ -70,18 +70,18 @@ GROUP BY lc.user_id
 `
 
 type GetLikedCocktailsRow struct {
-	ID           uuid.UUID          `json:"id"`
-	Name         string             `json:"name"`
-	IsAlcoholic  pgtype.Bool        `json:"is_alcoholic"`
-	Glass        string             `json:"glass"`
-	Image        string             `json:"image"`
-	Instructions dto.InstructionDto `json:"instructions"`
-	Ingredients  dto.IngredientDto  `json:"ingredients"`
-	Embedding    pgvector.Vector    `json:"embedding"`
-	CreatedAt    time.Time          `json:"created_at"`
-	ID_2         uuid.UUID          `json:"id_2"`
-	CocktailID   uuid.UUID          `json:"cocktail_id"`
-	UserID       uuid.UUID          `json:"user_id"`
+	ID           uuid.UUID         `json:"id"`
+	Name         string            `json:"name"`
+	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
+	Glass        string            `json:"glass"`
+	Image        string            `json:"image"`
+	Instructions string            `json:"instructions"`
+	Ingredients  dto.IngredientDto `json:"ingredients"`
+	Embedding    pgvector.Vector   `json:"embedding"`
+	CreatedAt    time.Time         `json:"created_at"`
+	ID_2         uuid.UUID         `json:"id_2"`
+	CocktailID   uuid.UUID         `json:"cocktail_id"`
+	UserID       uuid.UUID         `json:"user_id"`
 }
 
 func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error) {
