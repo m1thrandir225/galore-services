@@ -3,10 +3,6 @@ from typing import Dict
 import utils
 from utils import download_image
 
-
-
-
-
 class DetailedCocktail:
     def __init__(self, json_data: Dict[str, str]):
         self.id = json_data["idDrink"]

@@ -5,6 +5,7 @@ from typing import Dict, List
 import requests
 from models.detailed_cocktail import DetailedCocktail
 
+
 class Parser:
     def __init__(self):
         self.url: str = (
@@ -27,8 +28,10 @@ class Parser:
         data = self.get_cocktails()
         for item in data:
             drink_id = item["idDrink"]
-            headers = {'Accept': 'application/json'}
-            response = requests.get("{}{}".format(self.single_cocktail_url, drink_id), headers=headers)
+            headers = {"Accept": "application/json"}
+            response = requests.get(
+                "{}{}".format(self.single_cocktail_url, drink_id), headers=headers
+            )
 
             single_cocktail_data = response.json()["drinks"][0]
             detailed_cocktail = DetailedCocktail(single_cocktail_data)
