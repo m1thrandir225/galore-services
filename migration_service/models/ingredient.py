@@ -1,10 +1,13 @@
 import json
+from dataclasses import dataclass
+from typing import List
 
 
-class Ingredient:
-    def __init__(self, name, amount):
-        self.name = name
-        self.amount = amount
+@dataclass
+class IngredientData:
+    name: str
+    amount: str
 
-    def to_dict(self):
-        return {"name": self.name, "amount": self.amount}
+@dataclass
+class IngredientDto:
+    ingredients: List[IngredientData]

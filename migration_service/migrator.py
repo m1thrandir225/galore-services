@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict
 
 import requests
 import logging
@@ -27,18 +28,17 @@ class Migrator:
                 }
                 data = {
                     "name": cocktail.name,
-                    "ingredients": json.dumps(json.dumps({
-                        "ingredients": [ingredient.__dict__ for ingredient in cocktail.ingredients]
-                    })),
+                    "ingredients": json.dumps(asdict(cocktail.ingredients)),
                     "instructions": cocktail.instructions,
                     "glass": cocktail.glass,
-                    "isAlcoholic": cocktail.is_alcoholic
+                    "isAlcoholic": cocktail.isAlcoholic
                 }
 
                 response = requests.post(
                     self.url,
                     files=files,
                     data=data,
+                    headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYyMmQ1NDVkLTczOTQtNGQ1NS05Mzk0LTZlMDY5YjE4YTIzYiIsImVtYWlsIjoiMjJiYTk4NWItYTI3Yy00Y2M5LWEwMmYtMzdlZDFkY2Q0YjcwIiwiaXNzdWVkX2F0IjoiMjAyNC0xMC0wM1QxOTozMDoyMC40NDczMTcrMDI6MDAiLCJleHBpcmVkX2F0IjoiMjAyNC0xMC0wM1QxOTo0NToyMC40NDczMTcrMDI6MDAifQ.d129BJlcHPh7nrcJpjE-P1CYqBGcjit07qHMoNqhPs8"}
                 )
                 files["file"][1].close()
                 print(response.json())

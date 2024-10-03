@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"mime/multipart"
 	"net/http"
 
@@ -39,6 +40,8 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	log.Print(ctx.Request)
 
 	// Unmarshal ingredients and instructions to dto objects
 	if err = json.Unmarshal([]byte(requestData.Ingredients), &ingredientDto); err != nil {

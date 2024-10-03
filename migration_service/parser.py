@@ -3,6 +3,8 @@ import time
 from os.path import isfile
 from typing import Dict, List, Optional
 import requests
+
+import utils
 from models.detailed_cocktail import DetailedCocktail
 import logging
 
@@ -39,7 +41,7 @@ class Parser:
 
     def parse_cocktails(self) -> List["DetailedCocktail"]:
         """Fetch detailed data for each cocktail, using caching."""
-        cocktails: List["DetailedCocktail"] = []
+        cocktails: List[DetailedCocktail] = []
 
         data = self.get_cocktails()
         if data is None:
@@ -61,7 +63,15 @@ class Parser:
                     )
                     response.raise_for_status()
                     single_cocktail_data = response.json()["drinks"][0]
-                    detailed_cocktail = DetailedCocktail(single_cocktail_data)
+                    detailed_cocktail = DetailedCocktail(
+                        id=single_cocktail_data["idDrink"],
+                        name=single_cocktail_data["strDrink"],
+                        ingredients=utils.format_ingredients(single_cocktail_data),
+                        instructions=single_cocktail_data["strInstructions"],
+                        image=utils.download_image(single_cocktail_data["strDrinkThumb"]),
+                        glass=single_cocktail_data["strGlass"],
+                        isAlcoholic=utils.has_alc(single_cocktail_data["strAlcoholic"]),
+                    )
 
                     # Cache the cocktail details
                     self.cocktail_details_cache[drink_id] = detailed_cocktail
@@ -74,7 +84,6 @@ class Parser:
 
             cocktails.append(detailed_cocktail)
             time.sleep(0.5)  # Respect API rate limits
-            break
 
         logging.info(f"Fetched details for {len(cocktails)} cocktails.")
         return cocktails

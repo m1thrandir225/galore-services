@@ -1,6 +1,6 @@
 import os
 from typing import Dict, List
-from models.ingredient import Ingredient
+from models.ingredient import IngredientData, IngredientDto
 import requests, json
 
 def has_alc(alcoholic):
@@ -16,17 +16,17 @@ def download_image(url: str):
         exit()
     filename = url.split("/")[-1]
 
-    folderPath = "./temp"
+    folder_path = "./temp"
 
-    os.makedirs(os.path.dirname(folderPath), 511, True)
+    os.makedirs(os.path.dirname(folder_path), 511, True)
 
-    filePath = folderPath + "/" + filename
-    with open(filePath, "wb") as file:
+    file_path = folder_path + "/" + filename
+    with open(file_path, "wb") as file:
         file.write(response.content)
-    return filePath
+    return file_path
 
 
-def format_ingredients(json_data: Dict[str, str]) -> List[Ingredient]:
+def format_ingredients(json_data: Dict[str, str]) -> IngredientDto:
     ingredients = []
     ingredient_name_key = "strIngredient"
     ingredient_amount_key = "strMeasure"
@@ -38,11 +38,7 @@ def format_ingredients(json_data: Dict[str, str]) -> List[Ingredient]:
         name = json_data["{}{}".format(ingredient_name_key, i)]
         amount = json_data["{}{}".format(ingredient_amount_key, i)]
 
-        ingredient = Ingredient(name, amount)
+        ingredient = IngredientData(name, amount)
         ingredients.append(ingredient)
 
-    return ingredients
-
-
-
-#download_image("https://www.thecocktaildb.com/images/media/drink/wysqut1461867176.jpg")
+    return IngredientDto(ingredients)
