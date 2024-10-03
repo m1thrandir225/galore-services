@@ -7,7 +7,7 @@ class DetailedCocktail:
     def __init__(self, json_data: Dict[str, str]):
         self.id = json_data["idDrink"]
         self.name = json_data["strDrink"]
-        self.ingredients = utils.ingredients_json(json_data)
+        self.ingredients = utils.format_ingredients(json_data)
         self.instructions = json_data["strInstructions"]
         self.image = utils.download_image(json_data["strDrinkThumb"])
         self.glass = json_data["strGlass"]
@@ -18,9 +18,6 @@ class DetailedCocktail:
             "name": self.name,
             "ingredients": self.ingredients,
             "instructions": self.instructions,
-            "image": self.image,
             "glass": self.glass,
-            "alcoholic": self.is_alcoholic
+            "isAlcoholic": self.is_alcoholic
         }
-    def to_json(self):
-        return json.dumps(self.to_dict())

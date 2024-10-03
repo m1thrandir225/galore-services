@@ -44,11 +44,5 @@ def format_ingredients(json_data: Dict[str, str]) -> List[Ingredient]:
     return ingredients
 
 
-def ingredients_json(json_data: Dict[str, str]) -> str:
-    ingredients = format_ingredients(json_data)
-    list_json = json.dumps([ingredient.to_dict() for ingredient in ingredients])
-
-    return json.dumps(list_json)
-
 
 #download_image("https://www.thecocktaildb.com/images/media/drink/wysqut1461867176.jpg")

@@ -8,6 +8,3 @@ class Ingredient:
 
     def to_dict(self):
         return {"name": self.name, "amount": self.amount}
-
-    def to_json(self):
-        return json.dumps(self.to_dict())
