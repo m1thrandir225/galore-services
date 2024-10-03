@@ -21,6 +21,13 @@ services:
       - "8000:8000"
     networks:
       - app-network
+  migration-service:
+    build:
+      context: migration-service
+    ports:
+      - "8001:8001"
+    networks:
+      - app-network
   db:
     image: pgvector/pgvector:pg15
     environment:

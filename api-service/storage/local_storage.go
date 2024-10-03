@@ -77,5 +77,5 @@ func (storage *LocalStorage) ReplaceFile(filePath string, data []byte) (string, 
 	if err != nil {
 		return "", err
 	}
-	return fileName, nil
+	return newFilePath, nil
 }
