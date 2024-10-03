@@ -66,7 +66,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	payload := data.(*token.Payload)
 
 	// Upload the file to the public/user_id/file
-	filePath, err := server.storage.UploadFile(fileData, payload.ID.String(), requestData.Image.Filename)
+	fileName, err := server.storage.UploadFile(fileData, payload.ID.String(), requestData.Image.Filename)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -81,7 +81,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 
 	arg := db.CreateCocktailParams{
 		Name:         requestData.Name,
-		Image:        filePath,
+		Image:        fileName,
 		Glass:        requestData.Glass,
 		Ingredients:  ingredientDto,
 		Instructions: requestData.Instructions,
