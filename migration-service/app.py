@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Depends
 
 from config import Settings
 from functools import lru_cache
+from fastapi_utilities import repeat_at
 @lru_cache
 def get_settings():
     return Settings()
@@ -30,6 +31,7 @@ def health_check():
     return {"status": "healthy"}
 
 @app.get("/update-cocktails")
+@repeat_at(cron="0 0 1 * *")
 def update_cocktails(settings: Annotated[Settings, Depends(get_settings)]):
     migrator = Migrator(settings.api_url)
     try:
