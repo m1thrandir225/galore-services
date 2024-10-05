@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -99,6 +100,63 @@ func (q *Queries) GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, erro
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getCocktailAndSimilar = `-- name: GetCocktailAndSimilar :many
+WITH target_cocktail AS (
+    SELECT embedding
+    FROM cocktails
+    WHERE cocktails.id = $1
+    LIMIT 1
+)
+SELECT c.id, c.name, c.is_alcoholic, c.glass, c.image, c.instructions, c.ingredients, c.embedding, c.created_at, c.embedding <=> t.embedding AS similarity_score
+FROM cocktails c, target_cocktail t
+ORDER BY similarity_score
+LIMIT 10
+`
+
+type GetCocktailAndSimilarRow struct {
+	ID              uuid.UUID         `json:"id"`
+	Name            string            `json:"name"`
+	IsAlcoholic     pgtype.Bool       `json:"is_alcoholic"`
+	Glass           string            `json:"glass"`
+	Image           string            `json:"image"`
+	Instructions    string            `json:"instructions"`
+	Ingredients     dto.IngredientDto `json:"ingredients"`
+	Embedding       pgvector.Vector   `json:"embedding"`
+	CreatedAt       time.Time         `json:"created_at"`
+	SimilarityScore interface{}       `json:"similarity_score"`
+}
+
+func (q *Queries) GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]GetCocktailAndSimilarRow, error) {
+	rows, err := q.db.Query(ctx, getCocktailAndSimilar, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCocktailAndSimilarRow{}
+	for rows.Next() {
+		var i GetCocktailAndSimilarRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.IsAlcoholic,
+			&i.Glass,
+			&i.Image,
+			&i.Instructions,
+			&i.Ingredients,
+			&i.Embedding,
+			&i.CreatedAt,
+			&i.SimilarityScore,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateCocktail = `-- name: UpdateCocktail :one
