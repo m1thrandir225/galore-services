@@ -36,5 +36,8 @@ func UuidFileRename(filename string) (string, error) {
 	newName := uuid.New().String()
 
 	return fmt.Sprintf("%s.%s", newName, extension), nil
+}
 
+func UrlFromFilePath(serverAddress, filePath string) string {
+	return fmt.Sprintf("%s/%s", serverAddress, filePath)
 }

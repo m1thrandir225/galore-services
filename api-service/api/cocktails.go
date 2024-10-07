@@ -150,6 +150,8 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 		return
 	}
 
+	cocktail.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, cocktail.Image)
+
 	ctx.JSON(http.StatusOK, cocktail)
 }
 
@@ -217,6 +219,8 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	updated.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, updated.Image)
 
 	ctx.JSON(http.StatusOK, updated)
 }
