@@ -10,7 +10,9 @@ func (server *Server) setupRouter() {
 	v1 := router.Group("/api/v1")
 
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
+	migrationServerRoutes := v1.Group("/migration").Use(microserviceAccessMiddleware(server.config.MigrationServiceKey))
 
+	// embeddingServerRoutes := v1.Group("/embedding").Use(microserviceAccessMiddleware(server.config.EmbeddingServiceKey))
 	/*
 	 * Public routes
 	 */
@@ -18,7 +20,7 @@ func (server *Server) setupRouter() {
 	v1.POST("/login", server.loginUser)
 
 	/*
-	 * Private routes
+	 * Private routes (user routes)
 	 */
 	authRoutes.POST("/logout", server.logout)
 
@@ -74,7 +76,7 @@ func (server *Server) setupRouter() {
 	/*
 	 * Cocktail routes (Private)
 	 */
-	authRoutes.POST("/cocktails", server.createCocktail)
+	migrationServerRoutes.POST("/cocktails", server.createCocktail)
 	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
 	authRoutes.GET("/cocktails/:id", server.getCocktail)
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)

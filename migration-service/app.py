@@ -7,16 +7,14 @@ from fastapi import FastAPI, HTTPException, Depends
 from config import Settings
 from functools import lru_cache
 from fastapi_utilities import repeat_at
+
 @lru_cache
 def get_settings():
     return Settings()
-
 app = FastAPI()
-parser = Parser()
 
-origins = [
-    get_settings().api_url
-]
+
+origins = [get_settings().api_url]
 #
 # app.add_middleware(
 #     CORSMiddleware,
@@ -25,15 +23,14 @@ origins = [
 #     allow_methods=["*"],
 #     allow_headers=["*"],
 # )
-
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 @app.get("/update-cocktails")
-@repeat_at(cron="0 0 1 * *")
 def update_cocktails(settings: Annotated[Settings, Depends(get_settings)]):
-    migrator = Migrator(settings.api_url)
+    parser = Parser(settings.parser_url, settings.parser_single_url)
+    migrator = Migrator(settings.api_url, settings.api_key)
     try:
         cocktails = parser.parse_cocktails()
         migrator.update_cocktails(cocktails)

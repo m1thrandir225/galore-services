@@ -57,7 +57,7 @@ func main() {
 
 	store := db.NewStore(connPool)
 	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
-	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServerAddress)
+	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress)
 
 	serverConfig := ginServerConfig{
 		Config:     config,

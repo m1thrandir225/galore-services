@@ -16,13 +16,13 @@ import (
 
 func newTestServer(t *testing.T, store db.Store, cacheStore cache.KeyValueStore) *Server {
 	config := util.Config{
-		TokenSymmetricKey:      util.RandomString(32),
-		AccessTokenDuration:    time.Minute,
-		EmbeddingServerAddress: "http://localhost:8000",
+		TokenSymmetricKey:       util.RandomString(32),
+		AccessTokenDuration:     time.Minute,
+		EmbeddingServiceAddress: "http://localhost:8000",
 	}
 
 	localStorage := storage.NewLocalStorage("./public")
-	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServerAddress)
+	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress)
 
 	server, err := NewServer(config, store, localStorage, cacheStore, embeddingService)
 	require.NoError(t, err)

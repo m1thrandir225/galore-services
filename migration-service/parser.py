@@ -12,13 +12,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 class Parser:
-    def __init__(self):
-        self.url: str = (
-            "https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Cocktail"
-        )
-        self.single_cocktail_url = (
-            "https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i="
-        )
+    def __init__(self, url: str, single_cocktail_url: str):
+        self.url: str = url
+        self.single_cocktail_url = single_cocktail_url
         self.cocktail_list_cache = None  # Cache for cocktail list
         self.cocktail_details_cache = {}  # Cache for individual cocktail details
 

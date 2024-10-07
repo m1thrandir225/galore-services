@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"mime/multipart"
 	"net/http"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/dto"
-	"github.com/m1thrandir225/galore-services/token"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/pgvector/pgvector-go"
 )
@@ -41,8 +39,6 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		return
 	}
 
-	log.Print(ctx.Request)
-
 	// Unmarshal ingredients and instructions to dto objects
 	if err = json.Unmarshal([]byte(requestData.Ingredients), &ingredientDto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ingredients format"})
@@ -58,15 +54,10 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	/*
 	* Get the id of the currently logged-in user to use as a name for the folder that the uploaded file will be placed in.
 	 */
-	data, exists := ctx.Get(authorizationPayloadKey)
-	if !exists {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-	payload := data.(*token.Payload)
+	apiKey := ctx.GetHeader(apiHeaderKey)
 
 	// Upload the file to the public/user_id/file
-	fileName, err := server.storage.UploadFile(fileData, payload.ID.String(), requestData.Image.Filename)
+	fileName, err := server.storage.UploadFile(fileData, apiKey, requestData.Image.Filename)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
