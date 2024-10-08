@@ -3,4 +3,5 @@ uvicorn==0.15.0
 torch==2.4.1
 transformers==4.38.0
 
-pydantic~=1.10.18
+pydantic<=3.0.0
+pydantic-settings

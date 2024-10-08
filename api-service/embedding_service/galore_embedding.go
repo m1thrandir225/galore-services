@@ -8,7 +8,8 @@ import (
 )
 
 type GaloreEmbeddingService struct {
-	Url string
+	Url    string
+	ApiKey string
 }
 
 type GaloreEmbeddingServiceRequest struct {
@@ -19,9 +20,10 @@ type GaloreEmbeddingServiceResponse struct {
 	Embedding [][]float32 `json:"embedding" binding:"required"`
 }
 
-func NewGaloreEmbeddingService(url string) *GaloreEmbeddingService {
+func NewGaloreEmbeddingService(url, apiKey string) *GaloreEmbeddingService {
 	return &GaloreEmbeddingService{
-		Url: url,
+		Url:    url,
+		ApiKey: apiKey,
 	}
 }
 
@@ -40,6 +42,7 @@ func (generator *GaloreEmbeddingService) GenerateEmbedding(text string) ([]float
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Api-Key", generator.ApiKey)
 
 	client := &http.Client{}
 
