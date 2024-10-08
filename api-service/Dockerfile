@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 
 # Copy the env file
-COPY app.env .
+COPY app.prod.env ./app.env
 
 # Expose the port Gin will run on
 EXPOSE 8080
