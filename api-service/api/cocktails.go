@@ -144,10 +144,37 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 		return
 	}
 
+	cachedCocktailJson, cacheErr := server.cache.GetItem(ctx, cocktailId.String())
+	if cacheErr == nil {
+		//Cache Hit, this was recently accessed
+		var cachedCocktailData db.Cocktail
+		err = json.Unmarshal([]byte(cachedCocktailJson), &cachedCocktailData)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		cachedCocktailData.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, cachedCocktailData.Image)
+		ctx.JSON(http.StatusOK, cachedCocktailData)
+	}
+
 	cocktail, err := server.store.GetCocktail(ctx, cocktailId)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+
+	// Cache Missed we save the cocktail to the cache
+	if cacheErr != nil {
+		cocktailJson, err := json.Marshal(cocktail)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		server.cache.SaveItem(ctx, cocktail.ID.String(), string(cocktailJson))
 	}
 
 	cocktail.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, cocktail.Image)
