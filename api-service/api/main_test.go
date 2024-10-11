@@ -19,10 +19,11 @@ func newTestServer(t *testing.T, store db.Store, cacheStore cache.KeyValueStore)
 		TokenSymmetricKey:       util.RandomString(32),
 		AccessTokenDuration:     time.Minute,
 		EmbeddingServiceAddress: "http://localhost:8000",
+		EmbeddingServiceKey:     "testing",
 	}
 
 	localStorage := storage.NewLocalStorage("./public")
-	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress)
+	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
 
 	server, err := NewServer(config, store, localStorage, cacheStore, embeddingService)
 	require.NoError(t, err)
