@@ -1,8 +1,6 @@
 import os
-from email.header import Header
 from functools import lru_cache
-
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Header
 from pydantic import BaseModel
 from transformers import AutoModel
 
@@ -20,15 +18,18 @@ model = TextEmbeddingModel()
 class TextData(BaseModel):
     text: str
 
+def check_api_key(x_api_key: str = Header(...)):
+    if not x_api_key:
+        raise HTTPException(status_code=400, detail="X-Api-Key header missing")
+    return x_api_key
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 @app.post("/generate-embedding")
-async def generate_embedding(data: TextData, x_api_key: str = Header(None), settings: Settings = Depends(get_settings)):
-    if x_api_key is None:
-        raise HTTPException(status_code=403, detail="X-Api-Key not provided")
-    elif x_api_key != settings.api_key:
+async def generate_embedding(data: TextData, api_key: str = Depends(check_api_key), settings: Settings = Depends(get_settings)):
+    if api_key != settings.api_key:
         raise HTTPException(status_code=403, detail="X-Api-Key not provided")
 
     try:

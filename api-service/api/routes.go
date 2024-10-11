@@ -76,7 +76,9 @@ func (server *Server) setupRouter() {
 	/*
 	 * Cocktail routes (Private)
 	 */
-	migrationServerRoutes.POST("/cocktails", server.createCocktail)
+	migrationServerRoutes.POST("/cocktails", server.createCocktailMigrate)
+
+	authRoutes.POST("/cocktails", server.createCocktail)
 	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
 	authRoutes.GET("/cocktails/:id", server.getCocktail)
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)

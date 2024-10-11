@@ -3,7 +3,9 @@ package embedding
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -42,13 +44,17 @@ func (generator *GaloreEmbeddingService) GenerateEmbedding(text string) ([]float
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Api-Key", generator.ApiKey)
+	req.Header.Set("x-api-key", generator.ApiKey)
 
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 
 	defer resp.Body.Close()
