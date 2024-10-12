@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -53,6 +54,29 @@ func TestCreateCategoryApi(t *testing.T) {
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchCategory(t, recorder.Body, category)
+			},
+		},
+		{
+			name: "Internal Error",
+			body: gin.H{
+				"name": category.Name,
+				"tag":  category.Tag,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.CreateCategoryParams{
+					Tag:  category.Tag,
+					Name: category.Name,
+				}
+				store.EXPECT().
+					CreateCategory(gomock.Any(), arg).
+					Times(1).
+					Return(category, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 	}
