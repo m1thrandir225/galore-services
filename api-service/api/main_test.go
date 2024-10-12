@@ -16,6 +16,7 @@ import (
 
 func newTestServer(t *testing.T, store db.Store, cacheStore cache.KeyValueStore) *Server {
 	config := util.Config{
+
 		TokenSymmetricKey:       util.RandomString(32),
 		AccessTokenDuration:     time.Minute,
 		EmbeddingServiceAddress: "http://localhost:8000",
