@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
@@ -24,6 +26,10 @@ func (server *Server) getAllCategories(ctx *gin.Context) {
 	categories, err := server.store.GetAllCategories(ctx)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -88,6 +94,10 @@ func (server *Server) getCategoryById(ctx *gin.Context) {
 
 	category, err := server.store.GetCategoryById(ctx, categoryId)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -123,6 +133,10 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 	updated, err := server.store.UpdateCategory(ctx, arg)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -149,6 +163,10 @@ func (server *Server) deleteCategory(ctx *gin.Context) {
 	err = server.store.DeleteCategory(ctx, categoryId)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
