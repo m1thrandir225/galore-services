@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
@@ -51,6 +53,11 @@ func (server *Server) getUserDetails(ctx *gin.Context) {
 	userDetails, err := server.store.GetUser(ctx, userId)
 
 	if err != nil {
+		//not found (don't really know if you could actually get here)
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -82,6 +89,10 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	err = server.store.DeleteUser(ctx, userId)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

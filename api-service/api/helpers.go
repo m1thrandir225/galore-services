@@ -28,7 +28,7 @@ func verifyUserIdWithToken(userId uuid.UUID, ctx *gin.Context) error {
 	payload := data.(*token.Payload)
 
 	if payload.UserId != userId {
-		return errors.New(authorizationPayloadKey + " was not found in the request context")
+		return errors.New("context payload doesn't match with header payload")
 	}
 	return nil
 }
