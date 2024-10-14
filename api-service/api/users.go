@@ -154,6 +154,7 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 	var uriData UriId
 	var requestData UpdateUserInformationRequest
 	var avatarFilePath string
+
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -176,6 +177,10 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 
 	userInformation, err := server.store.GetUser(ctx, userId)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

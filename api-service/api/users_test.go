@@ -232,7 +232,63 @@ func TestDeleteUserApi(t *testing.T) {
 	}
 }
 
-func TestUpdateUserDetailsApi(t *testing.T) {}
+func TestUpdateUserDetailsApi(t *testing.T) {
+	user := randomUser(t)
+
+	testCases := []struct {
+		name          string
+		userId        string
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			userId: user.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				var newDate pgtype.Date
+				newDate.Scan(util.RandomDate())
+				arg := db.UpdateUserInformationParams{
+					ID:        user.ID,
+					Name:      util.RandomString(12),
+					AvatarUrl: util.RandomString(10),
+					Email:     util.RandomEmail(),
+					Birthday:  newDate,
+				}
+				store.EXPECT().UpdateUserInformation(gomock.Any(), arg).Times(1).Return(db.User{}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		testCase := testCases[i]
+
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			testCase.buildStubs(store)
+
+			server := newTestServer(t, store, nil)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
+			request, err := http.NewRequest(http.MethodPost, url, nil)
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			testCase.checkResponse(recorder)
+		})
+	}
+}
 
 func TestUpdateUserPasswordApi(t *testing.T) {}
 
