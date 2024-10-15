@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,15 +21,15 @@ type UpdateNotificationTypeRequest struct {
 }
 
 type CreateNotificationTypeRequest struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	Tag     string `json:"tag"`
+	Title   string `json:"title" binding:"required"`
+	Content string `json:"content" binding:"required"`
+	Tag     string `json:"tag" binding:"required"`
 }
 
 func (server *Server) createNotificationType(ctx *gin.Context) {
 	var requestData CreateNotificationTypeRequest
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.BindJSON(&requestData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -37,10 +39,13 @@ func (server *Server) createNotificationType(ctx *gin.Context) {
 		Content: requestData.Content,
 		Title:   requestData.Title,
 	}
-
 	notificationType, err := server.store.CreateNotificationType(ctx, arg)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
