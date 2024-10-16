@@ -83,6 +83,10 @@ func (server *Server) getNotificationType(ctx *gin.Context) {
 	notificationType, err := server.store.GetNotificationType(ctx, id)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
