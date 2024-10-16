@@ -23,7 +23,7 @@ import (
 //TODO: write the tests for the notification types api
 
 func TestCreateNotificationTypeApi(t *testing.T) {
-	//	notificationType := randomNotificationType(t)
+	notificationType := randomNotificationType(t)
 
 	userId := uuid.New()
 
@@ -34,6 +34,28 @@ func TestCreateNotificationTypeApi(t *testing.T) {
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
+		{
+			name: "OK",
+			body: gin.H{
+				"title":   notificationType.Title,
+				"content": notificationType.Content,
+				"tag":     notificationType.Tag,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.CreateNotificationTypeParams{
+					Title:   notificationType.Title,
+					Tag:     notificationType.Tag,
+					Content: notificationType.Content,
+				}
+				store.EXPECT().CreateNotificationType(gomock.Any(), arg).Times(1).Return(notificationType, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
 		{
 			name: "Unauthorized",
 			body: gin.H{},
@@ -54,16 +76,24 @@ func TestCreateNotificationTypeApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().CreateNotificationType(gomock.Any(), gomock.Any()).Times(1).Return(db.NotificationType{}, nil)
+				arg := db.CreateNotificationTypeParams{
+					Title:   notificationType.Title,
+					Content: notificationType.Content,
+					Tag:     notificationType.Tag,
+				}
+				store.EXPECT().CreateNotificationType(gomock.Any(), arg).Times(0).Return(db.NotificationType{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
-
 			},
 		},
 		{
 			name: "Internal Server Error",
-			body: gin.H{},
+			body: gin.H{
+				"title":   notificationType.Title,
+				"content": notificationType.Content,
+				"tag":     notificationType.Tag,
+			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
@@ -72,7 +102,6 @@ func TestCreateNotificationTypeApi(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-
 			},
 		},
 	}
