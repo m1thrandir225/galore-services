@@ -15,9 +15,9 @@ type GetNotificationTypesResponse struct {
 }
 
 type UpdateNotificationTypeRequest struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	Tag     string `json:"tag"`
+	Title   string `json:"title" binding:"required"`
+	Content string `json:"content" binding:"required"`
+	Tag     string `json:"tag" binding:"required"`
 }
 
 type CreateNotificationTypeRequest struct {
@@ -42,10 +42,6 @@ func (server *Server) createNotificationType(ctx *gin.Context) {
 	notificationType, err := server.store.CreateNotificationType(ctx, arg)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -57,7 +53,11 @@ func (server *Server) getNotificationTypes(ctx *gin.Context) {
 	notificationTypes, err := server.store.GetAllTypes(ctx)
 
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
@@ -111,6 +111,11 @@ func (server *Server) deleteNotificationType(ctx *gin.Context) {
 	err = server.store.DeleteNotificationType(ctx, id)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -148,6 +153,10 @@ func (server *Server) updateNotificationType(ctx *gin.Context) {
 	updated, err := server.store.UpdateNotificationType(ctx, args)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

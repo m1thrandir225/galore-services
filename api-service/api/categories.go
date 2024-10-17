@@ -60,24 +60,6 @@ func (server *Server) createCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, category)
 }
 
-// TODO: deprecate
-func (server *Server) getCategoryByTag(ctx *gin.Context) {
-	var uriData GetCategoryByTagRequest
-
-	if err := ctx.ShouldBindUri(&uriData); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	category, err := server.store.GetCategoryByTag(ctx, uriData.Name)
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.JSON(http.StatusOK, category)
-}
-
 func (server *Server) getCategoryById(ctx *gin.Context) {
 	var uriData UriId
 

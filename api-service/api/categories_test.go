@@ -370,6 +370,19 @@ func TestDeleteCategoryApi(t *testing.T) {
 			},
 		},
 		{
+			name:       "Bad Request",
+			categoryId: util.RandomString(10),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteCategory(gomock.Any(), gomock.Any()).Times(0).Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
 			name:       "Internal Error",
 			categoryId: category.ID.String(),
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
