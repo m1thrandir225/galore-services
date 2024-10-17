@@ -30,6 +30,7 @@ server:
 	go run main.go
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/m1thrandir225/galore-services/db/sqlc Store
+	mockgen -package mockstorage -destination storage/mock/storage.go github.com/m1thrandir225/galore-services/storage FileService
 proto:
 	rm -f pb/*.go
 	rm -f doc/swagger/*.swagger.json

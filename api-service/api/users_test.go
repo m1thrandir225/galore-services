@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -133,9 +135,10 @@ func TestGetUserDetailsApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
@@ -236,12 +239,25 @@ func TestDeleteUserApi(t *testing.T) {
 func TestUpdateUserDetailsApi(t *testing.T) {
 	user := randomUser(t)
 
+	var newDate pgtype.Date
+	newDateString := util.RandomDate()
+	avatarUrl := util.RandomString(10)
+	newDate.Scan(newDateString)
+
+	arg := db.UpdateUserInformationParams{
+		ID:        user.ID,
+		Name:      util.RandomString(12),
+		AvatarUrl: avatarUrl,
+		Email:     util.RandomEmail(),
+		Birthday:  newDate,
+	}
+
 	testCases := []struct {
 		name          string
 		userId        string
 		body          gin.H
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs    func(store *mockdb.MockStore)
+		buildStubs    func(store *mockdb.MockStore, storage *mockstorage.MockFileService)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -249,23 +265,17 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 			userId: user.ID.String(),
 			body: gin.H{
 				"id":       user.ID,
-				"name":     util.RandomString(12),
-				"email":    util.RandomEmail(),
-				"birthday": util.RandomDate(),
+				"name":     arg.Name,
+				"email":    arg.Email,
+				"birthday": newDateString,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore) {
-				var newDate pgtype.Date
-				newDate.Scan(util.RandomDate())
-				arg := db.UpdateUserInformationParams{
-					ID:        user.ID,
-					Name:      util.RandomString(12),
-					AvatarUrl: util.RandomString(10),
-					Email:     util.RandomEmail(),
-					Birthday:  newDate,
-				}
+			buildStubs: func(store *mockdb.MockStore, storage *mockstorage.MockFileService) {
+
+				store.EXPECT().GetUser(gomock.Any(), arg.ID).Times(1).Return(user, nil)
+
 				store.EXPECT().UpdateUserInformation(gomock.Any(), arg).Times(1).Return(db.UpdateUserInformationRow{
 					ID:                        user.ID,
 					Name:                      arg.Name,
@@ -276,6 +286,8 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 					EnabledEmailNotifications: user.EnabledEmailNotifications,
 					AvatarUrl:                 arg.AvatarUrl,
 				}, nil)
+
+				storage.EXPECT().ReplaceFile(gomock.Any(), gomock.Any()).Times(1).Return("", nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -287,7 +299,40 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 		testCase := testCases[i]
 
 		t.Run(testCase.name, func(t *testing.T) {
-			//TODO
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			body := new(bytes.Buffer)
+			writer := multipart.NewWriter(body)
+
+			_ = writer.WriteField("email", testCase.body["email"].(string))
+			_ = writer.WriteField("name", testCase.body["name"].(string))
+			_ = writer.WriteField("birthday", testCase.body["birthday"].(string))
+
+			fileWriter, err := writer.CreateFormFile("avatar_url", avatarUrl)
+			require.NoError(t, err)
+			_, err = fileWriter.Write([]byte(util.RandomString(512)))
+			require.NoError(t, err)
+
+			err = writer.Close()
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
+			request, err := http.NewRequest(http.MethodPost, url, body)
+			require.NoError(t, err)
+
+			request.Header.Set("Content-Type", writer.FormDataContentType())
+
+			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+			testCase.buildStubs(store, storage)
+
+			server := newTestServer(t, store, nil, storage)
+			recorder := httptest.NewRecorder()
+
+			testCase.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			testCase.checkResponse(recorder)
 		})
 	}
 }

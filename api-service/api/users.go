@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/util"
+	"log"
 	"mime/multipart"
 	"net/http"
 )
@@ -156,6 +157,7 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 	var avatarFilePath string
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		log.Print(err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}

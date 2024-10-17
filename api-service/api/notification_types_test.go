@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -114,9 +115,11 @@ func TestCreateNotificationTypeApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -218,9 +221,10 @@ func TestGetNotificationTypeApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types/%s", testCase.notificationTypeId)
@@ -304,9 +308,11 @@ func TestGetNotificationTypesApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types")
@@ -406,9 +412,11 @@ func TestDeleteNotificationTypeApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types/%s", testCase.notificationTypeId)
@@ -553,9 +561,11 @@ func TestUpdateNotificationTypeApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)

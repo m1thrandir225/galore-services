@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"github.com/m1thrandir225/galore-services/token"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
@@ -120,9 +121,11 @@ func TestCreateCategoryApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -219,9 +222,11 @@ func TestGetCategoriesApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/categories")
@@ -313,9 +318,11 @@ func TestGetCategoryByIdApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, storage)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/categories/%s", testCase.categoryId)
@@ -419,9 +426,11 @@ func TestDeleteCategoryApi(t *testing.T) {
 				defer ctrl.Finish()
 
 				store := mockdb.NewMockStore(ctrl)
+				storage := mockstorage.NewMockFileService(ctrl)
+
 				testCase.buildStubs(store)
 
-				server := newTestServer(t, store, nil)
+				server := newTestServer(t, store, nil, storage)
 				recorder := httptest.NewRecorder()
 
 				url := fmt.Sprintf("/api/v1/categories/%s", testCase.categoryId)
@@ -551,9 +560,11 @@ func TestUpdateCategoryApi(t *testing.T) {
 		defer ctrl.Finish()
 
 		store := mockdb.NewMockStore(ctrl)
+		storage := mockstorage.NewMockFileService(ctrl)
+
 		testCase.buildStubs(store)
 
-		server := newTestServer(t, store, nil)
+		server := newTestServer(t, store, nil, storage)
 		recorder := httptest.NewRecorder()
 
 		data, err := json.Marshal(testCase.body)
