@@ -32,6 +32,9 @@ mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/m1thrandir225/galore-services/db/sqlc Store
 	mockgen -package mockstorage -destination storage/mock/storage.go github.com/m1thrandir225/galore-services/storage FileService
 	mockgen -package mockcache -destination cache/mock/cache.go github.com/m1thrandir225/galore-services/cache KeyValueStore
+	mockgen -package mockembedding -destination embedding_service/mock/embedding.go github.com/m1thrandir225/galore-services/embedding_service EmbeddingService
+	mockgen -package mockcocktailgen -destination cocktail_gen/mock/cocktail_gen.go github.com/m1thrandir225/galore-services/cocktail_gen CocktailGenerator
+	mockgen -package mockimagegen -destination image_gen/mock/image_gen.go github.com/m1thrandir225/galore-services/image_gen ImageGenerator
 proto:
 	rm -f pb/*.go
 	rm -f doc/swagger/*.swagger.json
