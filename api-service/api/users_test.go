@@ -356,9 +356,12 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 func TestUpdateUserPasswordApi(t *testing.T) {
 	user := randomUser(t)
 
+	newPassword := util.RandomString(10)
+
 	testCases := []struct {
 		name          string
 		userId        string
+		body          gin.H
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
@@ -366,15 +369,15 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 		{
 			name:   "OK",
 			userId: user.ID.String(),
+			body: gin.H{
+				"new_password": newPassword,
+			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPasswordParams{
-					ID:       user.ID,
-					Password: util.RandomString(10),
-				}
-				store.EXPECT().UpdateUserPassword(gomock.Any(), arg).Times(1).Return(nil)
+				//TODO: As the hashing is implemented into the function itself I can't replicate the hash and give it the proper arguments, Any will do
+				store.EXPECT().UpdateUserPassword(gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -383,6 +386,9 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 		{
 			name:   "Unauthorized",
 			userId: user.ID.String(),
+			body: gin.H{
+				"new_password": newPassword,
+			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
@@ -395,23 +401,23 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 		{
 			name:   "Not Found",
 			userId: user.ID.String(),
+			body: gin.H{
+				"new_password": newPassword,
+			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPasswordParams{
-					ID:       user.ID,
-					Password: util.RandomString(10),
-				}
-				store.EXPECT().UpdateUserPassword(gomock.Any(), arg).Times(1).Return(sql.ErrNoRows)
+				store.EXPECT().UpdateUserPassword(gomock.Any(), gomock.Any()).Times(1).Return(sql.ErrNoRows)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
 		{
 			name:   "Bad Request",
-			userId: user.ID.String(),
+			userId: "aaaaa",
+			body:   gin.H{},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
@@ -420,14 +426,27 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 					ID:       user.ID,
 					Password: util.RandomString(10),
 				}
-				store.EXPECT().UpdateUserPassword(gomock.Any(), arg).Times(1).Return(sql.ErrNoRows)
+				store.EXPECT().UpdateUserPassword(gomock.Any(), arg).Times(0).Return(nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
-			name: "Internal Server Error",
+			name:   "Internal Server Error",
+			userId: user.ID.String(),
+			body: gin.H{
+				"new_password": newPassword,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().UpdateUserPassword(gomock.Any(), gomock.Any()).Times(1).Return(sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
 		},
 	}
 
@@ -435,6 +454,26 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 		testCase := testCases[i]
 
 		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+			testCase.buildStubs(store)
+
+			server := newTestServer(t, store, nil, storage)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(testCase.body)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/users/%s/password", testCase.userId)
+			request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			testCase.checkResponse(recorder)
 		})
 	}
 }
