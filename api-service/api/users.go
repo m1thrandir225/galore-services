@@ -147,7 +147,6 @@ func (server *Server) updateUserPassword(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
-
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -264,6 +263,10 @@ func (server *Server) updateUserPushNotifications(ctx *gin.Context) {
 	updated, err := server.store.UpdateUserPushNotifications(ctx, arg)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -304,6 +307,10 @@ func (server *Server) updateUserEmailNotifications(ctx *gin.Context) {
 	updated, err := server.store.UpdateUserEmailNotifications(ctx, arg)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -224,14 +225,32 @@ func TestDeleteUserApi(t *testing.T) {
 					DeleteUser(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 	}
 
 	for i := range testCases {
 		testCase := testCases[i]
-		t.Run(testCase.name, func(t *testing.T) {})
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+			testCase.buildStubs(store)
+
+			server := newTestServer(t, store, nil, storage)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
+			request, err := http.NewRequest(http.MethodDelete, url, nil)
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			testCase.checkResponse(recorder)
+		})
 	}
 }
 
@@ -241,7 +260,10 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 	var newDate pgtype.Date
 	newDateString := util.RandomDate()
 	avatarUrl := util.RandomString(10)
-	newDate.Scan(newDateString)
+	err := newDate.Scan(newDateString)
+	if err != nil {
+		return
+	}
 
 	arg := db.UpdateUserInformationParams{
 		ID:        user.ID,
@@ -478,9 +500,347 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 	}
 }
 
-func TestUpdateUserPushNotificationsApi(t *testing.T) {}
+func TestUpdateUserPushNotificationsApi(t *testing.T) {
+	user := randomUser(t)
 
-func TestUpdateUserEmailNotificationsApi(t *testing.T) {}
+	testCases := []struct {
+		name          string
+		userId        string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserPushNotificationsParams{
+					ID:                       user.ID,
+					EnabledPushNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), arg).
+					Times(1).
+					Return(true, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, strconv.FormatBool(true), recorder.Body.String())
+			},
+		},
+		{
+			name:   "Unauthorized",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserPushNotificationsParams{
+					ID:                       user.ID,
+					EnabledPushNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), arg).
+					Times(0).
+					Return(true, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:   "Bad Request",
+			userId: user.ID.String(),
+			body:   gin.H{},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), gomock.Any()).
+					Times(0)
+
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:   "Bad Request",
+			userId: util.RandomString(10),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:   "Not Found",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserPushNotificationsParams{
+					ID:                       user.ID,
+					EnabledPushNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), arg).
+					Times(1).Return(true, sql.ErrNoRows)
+
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:   "Internal Server Error",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserPushNotificationsParams{
+					ID:                       user.ID,
+					EnabledPushNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), arg).
+					Times(1).Return(true, sql.ErrConnDone)
+
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:   "Invalid ID",
+			userId: util.RandomString(10),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserPushNotificationsParams{
+					ID:                       user.ID,
+					EnabledPushNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserPushNotifications(gomock.Any(), arg).
+					Times(0).Return(true, sql.ErrConnDone)
+
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		testCase := testCases[i]
+
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			testCase.buildStubs(store)
+
+			server := newTestServer(t, store, nil, nil)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(testCase.body)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/users/%s/push-notifications", testCase.userId)
+			request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			testCase.checkResponse(recorder)
+		})
+	}
+}
+
+func TestUpdateUserEmailNotificationsApi(t *testing.T) {
+	user := randomUser(t)
+	testCases := []struct {
+		name          string
+		userId        string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserEmailNotificationsParams{
+					ID:                        user.ID,
+					EnabledEmailNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserEmailNotifications(gomock.Any(), arg).
+					Times(1).
+					Return(true, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name:   "Unauthorized",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserEmailNotificationsParams{
+					ID:                        user.ID,
+					EnabledEmailNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserEmailNotifications(gomock.Any(), arg).
+					Times(0).
+					Return(true, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:   "Bad Request",
+			userId: user.ID.String(),
+			body:   gin.H{},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserEmailNotificationsParams{
+					ID:                        user.ID,
+					EnabledEmailNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserEmailNotifications(gomock.Any(), arg).
+					Times(0).
+					Return(true, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:   "Not Found",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserEmailNotificationsParams{
+					ID:                        user.ID,
+					EnabledEmailNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserEmailNotifications(gomock.Any(), arg).
+					Times(1).
+					Return(true, sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:   "Internal Server Error",
+			userId: user.ID.String(),
+			body: gin.H{
+				"enabled": true,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserEmailNotificationsParams{
+					ID:                        user.ID,
+					EnabledEmailNotifications: true,
+				}
+				store.EXPECT().
+					UpdateUserEmailNotifications(gomock.Any(), arg).
+					Times(1).
+					Return(true, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		testCase := testCases[i]
+
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			storage := mockstorage.NewMockFileService(ctrl)
+			testCase.buildStubs(store)
+
+			server := newTestServer(t, store, nil, storage)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(testCase.body)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/users/%s/email-notifications", testCase.userId)
+			request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			testCase.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			testCase.checkResponse(recorder)
+		})
+	}
+}
 
 func randomUser(t *testing.T) db.User {
 	var date pgtype.Date
