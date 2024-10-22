@@ -1,7 +1,9 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -50,7 +52,7 @@ type logoutRequest struct {
 func (server *Server) registerUser(ctx *gin.Context) {
 	var requestData registerUserRequest
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.ShouldBind(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
@@ -144,13 +146,17 @@ func (server *Server) registerUser(ctx *gin.Context) {
 func (server *Server) loginUser(ctx *gin.Context) {
 	var requestData loginUserRequest
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.ShouldBindJSON(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
 
 	user, err := server.store.GetUserByEmail(ctx, requestData.Email)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -181,6 +187,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		UserAgent:    ctx.Request.UserAgent(),
 		ExpiresAt:    time.Now().Add(server.config.RefreshTokenDuration),
 	})
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

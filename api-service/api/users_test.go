@@ -25,7 +25,8 @@ import (
 )
 
 func TestGetUserDetailsApi(t *testing.T) {
-	user := randomUser(t)
+	password := util.RandomString(25)
+	user := randomUser(t, password)
 
 	testCases := []struct {
 		name          string
@@ -153,7 +154,8 @@ func TestGetUserDetailsApi(t *testing.T) {
 }
 
 func TestDeleteUserApi(t *testing.T) {
-	user := randomUser(t)
+	password := util.RandomString(25)
+	user := randomUser(t, password)
 
 	testCases := []struct {
 		name          string
@@ -255,7 +257,8 @@ func TestDeleteUserApi(t *testing.T) {
 }
 
 func TestUpdateUserDetailsApi(t *testing.T) {
-	user := randomUser(t)
+	password := util.RandomString(25)
+	user := randomUser(t, password)
 
 	var newDate pgtype.Date
 	newDateString := util.RandomDate()
@@ -376,7 +379,8 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 }
 
 func TestUpdateUserPasswordApi(t *testing.T) {
-	user := randomUser(t)
+	password := util.RandomString(25)
+	user := randomUser(t, password)
 
 	newPassword := util.RandomString(10)
 
@@ -501,7 +505,8 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 }
 
 func TestUpdateUserPushNotificationsApi(t *testing.T) {
-	user := randomUser(t)
+	password := util.RandomString(25)
+	user := randomUser(t, password)
 
 	testCases := []struct {
 		name          string
@@ -691,7 +696,8 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 }
 
 func TestUpdateUserEmailNotificationsApi(t *testing.T) {
-	user := randomUser(t)
+	password := util.RandomString(25)
+	user := randomUser(t, password)
 	testCases := []struct {
 		name          string
 		userId        string
@@ -842,10 +848,12 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 	}
 }
 
-func randomUser(t *testing.T) db.User {
+func randomUser(t *testing.T, password string) db.User {
 	var date pgtype.Date
 
 	err := date.Scan(util.RandomDate())
+	require.NoError(t, err)
+	hashedPassword, err := util.HashPassowrd(password)
 	require.NoError(t, err)
 
 	id := uuid.New()
@@ -853,7 +861,7 @@ func randomUser(t *testing.T) db.User {
 		ID:                        id,
 		Name:                      util.RandomString(10),
 		Email:                     util.RandomEmail(),
-		Password:                  util.RandomString(10),
+		Password:                  hashedPassword,
 		AvatarUrl:                 util.RandomString(10),
 		EnabledEmailNotifications: util.RandomBool(),
 		EnabledPushNotifications:  util.RandomBool(),
