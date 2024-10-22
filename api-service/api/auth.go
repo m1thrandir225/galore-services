@@ -228,6 +228,10 @@ func (server *Server) logout(ctx *gin.Context) {
 
 	session, err := server.store.GetSession(ctx, requestData.SessionID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
