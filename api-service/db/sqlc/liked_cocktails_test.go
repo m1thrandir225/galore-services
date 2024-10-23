@@ -9,21 +9,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomLikedCocktail(user_id, cocktail_id uuid.UUID, t *testing.T) LikedCocktail {
+func createRandomLikedCocktail(userId, cocktailId uuid.UUID, t *testing.T) LikedCocktail {
 	arg := LikeCocktailParams{
-		UserID:     user_id,
-		CocktailID: cocktail_id,
+		UserID:     userId,
+		CocktailID: cocktailId,
 	}
 
-	liked_cocktail, err := testStore.LikeCocktail(context.Background(), arg)
+	likedCocktail, err := testStore.LikeCocktail(context.Background(), arg)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, liked_cocktail)
+	require.NotEmpty(t, likedCocktail)
 
-	require.Equal(t, arg.CocktailID, liked_cocktail.CocktailID)
-	require.Equal(t, arg.UserID, liked_cocktail.UserID)
+	require.Equal(t, arg.CocktailID, likedCocktail.CocktailID)
+	require.Equal(t, arg.UserID, likedCocktail.UserID)
 
-	return liked_cocktail
+	return likedCocktail
 }
 
 func TestLikeCocktail(t *testing.T) {
