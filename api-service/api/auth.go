@@ -221,30 +221,18 @@ func (server *Server) logout(ctx *gin.Context) {
 
 	var requestData logoutRequest
 
-	if err := ctx.Bind(&requestData); err != nil {
+	if err := ctx.ShouldBindJSON(&requestData); err != nil {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
 
-	session, err := server.store.GetSession(ctx, requestData.SessionID)
+	_, err := server.store.InvalidateSession(ctx, requestData.SessionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
 		}
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
 
-	_, err = server.tokenMaker.VerifyToken(session.RefreshToken)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	err = server.store.DeleteSession(ctx, requestData.SessionID)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 	// No need to return anything

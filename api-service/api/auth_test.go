@@ -10,12 +10,15 @@ import (
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
+	"github.com/m1thrandir225/galore-services/token"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestRegisterUserApi(t *testing.T) {
@@ -144,23 +147,87 @@ func TestLoginUserApi(t *testing.T) {
 }
 
 func TestLogoutApi(t *testing.T) {
+	userId := uuid.New()
 	sessionId := uuid.New()
 
 	testCases := []struct {
 		name          string
-		sessionId     string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name:      "OK",
-			sessionId: sessionId.String(),
+			name: "OK",
+			body: gin.H{
+				"session_id": sessionId,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().GetSession(gomock.Any(), sessionId).Times(1).Return(db.Session{}, nil)
-				store.EXPECT().DeleteSession(gomock.Any(), sessionId).Times(1).Return(nil)
+				store.EXPECT().InvalidateSession(gomock.Any(), sessionId).Times(1).Return(db.Session{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNoContent, recorder.Code)
+			},
+		},
+		{
+			name: "Bad Request",
+			body: gin.H{},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().InvalidateSession(gomock.Any(), sessionId).Times(0).Return(db.Session{}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Not Found",
+			body: gin.H{
+				"session_id": sessionId,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().InvalidateSession(gomock.Any(), sessionId).Times(1).Return(db.Session{}, sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name: "Unauthorized",
+			body: gin.H{
+				"session_id": sessionId,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().InvalidateSession(gomock.Any(), sessionId).Times(0).Return(db.Session{}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name: "Internal Server Error - Invalidating Session",
+			body: gin.H{
+				"session_id": sessionId,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().InvalidateSession(gomock.Any(), sessionId).Times(1).Return(db.Session{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				log.Print(recorder.Body.String())
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 	}
@@ -169,6 +236,24 @@ func TestLogoutApi(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store, nil, nil)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/logout")
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
 		})
 	}
 }

@@ -2,11 +2,10 @@ package db
 
 import (
 	"context"
-	"testing"
-
 	"github.com/google/uuid"
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func createRandomSession(userEmail string, t *testing.T) Session {
@@ -56,7 +55,47 @@ func TestGetSession(t *testing.T) {
 }
 
 func TestGetAllUserSessions(t *testing.T) {
+	user := createRandomUser(t)
 
+	var sessions []Session
+	for i := 0; i < 10; i++ {
+		session := createRandomSession(user.Email, t)
+		sessions = append(sessions, session)
+	}
+
+	userSessions, err := testStore.GetAllUserSessions(context.Background(), user.Email)
+	require.NoError(t, err)
+
+	require.Equal(t, len(sessions), len(userSessions))
+	require.NotEmpty(t, userSessions)
 }
 
-func TestDeleteSession(t *testing.T) {}
+func TestInvalidateSession(t *testing.T) {
+	user := createRandomUser(t)
+	session := createRandomSession(user.Email, t)
+
+	invalidSession, err := testStore.InvalidateSession(context.Background(), session.ID)
+	require.NoError(t, err)
+
+	require.NotEmpty(t, invalidSession)
+
+	require.Equal(t, session.ID, invalidSession.ID)
+	require.Equal(t, session.RefreshToken, invalidSession.RefreshToken)
+	require.Equal(t, session.UserAgent, invalidSession.UserAgent)
+	require.NotEqual(t, session.IsBlocked, invalidSession.IsBlocked)
+	require.Equal(t, session.CreatedAt, invalidSession.CreatedAt)
+	require.Equal(t, session.ExpiresAt, invalidSession.ExpiresAt)
+}
+
+func TestDeleteSession(t *testing.T) {
+	user := createRandomUser(t)
+	session := createRandomSession(user.Email, t)
+
+	err := testStore.DeleteSession(context.Background(), session.ID)
+	require.NoError(t, err)
+
+	stillExists, err := testStore.GetSession(context.Background(), session.ID)
+	require.Error(t, err)
+	require.Empty(t, stillExists)
+	require.EqualError(t, err, ErrRecordNotFound.Error())
+}

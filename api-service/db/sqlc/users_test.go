@@ -63,6 +63,20 @@ func TestGetUser(t *testing.T) {
 
 }
 
+func TestGetUserByEmail(t *testing.T) {
+	user := createRandomUser(t)
+
+	selectedUser, err := testStore.GetUserByEmail(context.Background(), user.Email)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, selectedUser)
+	require.Equal(t, user.ID, selectedUser.ID)
+	require.Equal(t, user.Name, selectedUser.Name)
+	require.Equal(t, user.Email, selectedUser.Email)
+	require.Equal(t, user.AvatarUrl, selectedUser.AvatarUrl)
+	require.Equal(t, user.Birthday, selectedUser.Birthday)
+}
+
 func TestDeleteUser(t *testing.T) {
 	user := createRandomUser(t)
 

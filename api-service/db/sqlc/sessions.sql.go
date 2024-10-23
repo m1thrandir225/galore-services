@@ -130,3 +130,26 @@ func (q *Queries) GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	)
 	return i, err
 }
+
+const invalidateSession = `-- name: InvalidateSession :one
+UPDATE sessions
+SET is_blocked = TRUE
+WHERE id = $1
+RETURNING id, email, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+`
+
+func (q *Queries) InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error) {
+	row := q.db.QueryRow(ctx, invalidateSession, id)
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.RefreshToken,
+		&i.UserAgent,
+		&i.ClientIp,
+		&i.IsBlocked,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}

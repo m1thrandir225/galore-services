@@ -54,6 +54,7 @@ type Querier interface {
 	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
 	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error)
 	LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error)
 	LikeFlavour(ctx context.Context, arg LikeFlavourParams) (LikedFlavour, error)
 	UnlikeCocktail(ctx context.Context, arg UnlikeCocktailParams) error

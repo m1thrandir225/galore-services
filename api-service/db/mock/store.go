@@ -677,6 +677,21 @@ func (mr *MockStoreMockRecorder) GetUserNotifications(arg0, arg1 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserNotifications", reflect.TypeOf((*MockStore)(nil).GetUserNotifications), arg0, arg1)
 }
 
+// InvalidateSession mocks base method.
+func (m *MockStore) InvalidateSession(arg0 context.Context, arg1 uuid.UUID) (db.Session, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InvalidateSession", arg0, arg1)
+	ret0, _ := ret[0].(db.Session)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InvalidateSession indicates an expected call of InvalidateSession.
+func (mr *MockStoreMockRecorder) InvalidateSession(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSession", reflect.TypeOf((*MockStore)(nil).InvalidateSession), arg0, arg1)
+}
+
 // LikeCocktail mocks base method.
 func (m *MockStore) LikeCocktail(arg0 context.Context, arg1 db.LikeCocktailParams) (db.LikedCocktail, error) {
 	m.ctrl.T.Helper()
