@@ -11,13 +11,13 @@ INSERT INTO liked_cocktails (
 SELECt * from cocktails c
 JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
-GROUP BY lc.user_id;
+GROUP BY lc.user_id, c.id, lc.id;
 
 -- name: GetLikedCocktail :one
 SELECT * from cocktails c
 JOIN liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1 and lc.cocktail_id = $2
-GROUP BY lc.user_id, lc.cocktail_id, c.id;
+GROUP BY lc.user_id, lc.cocktail_id, c.id, lc.id;
 
 -- name: UnlikeCocktail :exec
 DELETE FROM liked_cocktails 

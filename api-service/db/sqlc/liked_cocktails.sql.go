@@ -19,7 +19,7 @@ const getLikedCocktail = `-- name: GetLikedCocktail :one
 SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at, lc.id, cocktail_id, user_id from cocktails c
 JOIN liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1 and lc.cocktail_id = $2
-GROUP BY lc.user_id, lc.cocktail_id, c.id
+GROUP BY lc.user_id, lc.cocktail_id, c.id, lc.id
 `
 
 type GetLikedCocktailParams struct {
@@ -66,7 +66,7 @@ const getLikedCocktails = `-- name: GetLikedCocktails :many
 SELECt c.id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at, lc.id, cocktail_id, user_id from cocktails c
 JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
-GROUP BY lc.user_id
+GROUP BY lc.user_id, c.id, lc.id
 `
 
 type GetLikedCocktailsRow struct {
