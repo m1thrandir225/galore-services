@@ -45,7 +45,6 @@ func (server *Server) updateFlavour(ctx *gin.Context) {
 	}
 
 	flavourId, err := uuid.Parse(uriData.ID)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
