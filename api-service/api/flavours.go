@@ -125,6 +125,10 @@ func (server *Server) getAllFlavours(ctx *gin.Context) {
 	flavours, err := server.store.GetAllFlavours(ctx)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
