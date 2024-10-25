@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -84,6 +86,11 @@ func (server *Server) updateNotificationStatus(ctx *gin.Context) {
 	updated, err := server.store.UpdateUserNotification(ctx, arg)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -109,6 +116,11 @@ func (server *Server) getUserNotifications(ctx *gin.Context) {
 	notifications, err := server.store.GetUserNotifications(ctx, userId)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
