@@ -1,7 +1,9 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -231,19 +233,27 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 	cocktail, err := server.store.GetCocktail(ctx, cocktailId)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	// Cache Missed we save the cocktail to the cache
 	if cacheErr != nil {
-		cocktailJson, err := json.Marshal(cocktail)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		cocktailJson, jsonMarshalError := json.Marshal(cocktail)
+		if jsonMarshalError != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(jsonMarshalError))
 			return
 		}
 
-		server.cache.SaveItem(ctx, cocktail.ID.String(), string(cocktailJson))
+		saveCacheError := server.cache.SaveItem(ctx, cocktail.ID.String(), string(cocktailJson))
+		if saveCacheError != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(saveCacheError))
+			return
+		}
 	}
 
 	cocktail.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, cocktail.Image)
