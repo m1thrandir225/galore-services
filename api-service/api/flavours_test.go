@@ -5,6 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"
@@ -13,11 +19,6 @@ import (
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 )
 
 func TestCreateFlavourApi(t *testing.T) {
@@ -115,6 +116,7 @@ func TestCreateFlavourApi(t *testing.T) {
 		})
 	}
 }
+
 func TestGetFlavourApi(t *testing.T) {
 	flavour := randomFlavour(t)
 	userId := uuid.New()
@@ -203,8 +205,287 @@ func TestGetFlavourApi(t *testing.T) {
 		})
 	}
 }
-func TestDeleteFlavourApi(t *testing.T) {}
-func TestUpdateFlavourApi(t *testing.T) {}
+
+func TestDeleteFlavourApi(t *testing.T) {
+	flavour := randomFlavour(t)
+	userId := uuid.New()
+
+	testCases := []struct {
+		name          string
+		flavourId     string
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:      "OK",
+			flavourId: flavour.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteFlavour(gomock.Any(), flavour.ID).Times(1).Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name:      "Bad Request",
+			flavourId: util.RandomString(10),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteFlavour(gomock.Any(), flavour.ID).Times(0).Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:      "Internal Server Error",
+			flavourId: flavour.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteFlavour(gomock.Any(), flavour.ID).Times(1).Return(sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:      "Not Found",
+			flavourId: flavour.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteFlavour(gomock.Any(), flavour.ID).Times(1).Return(sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:      "Unauthorized",
+			flavourId: flavour.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().DeleteFlavour(gomock.Any(), flavour.ID).Times(0).Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store, nil, nil)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/api/v1/flavours/%s", tc.flavourId)
+			request, err := http.NewRequest(http.MethodDelete, url, nil)
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
+}
+
+func TestUpdateFlavourApi(t *testing.T) {
+	flavour := randomFlavour(t)
+	flavourWithNewName := randomFlavour(t)
+	userId := uuid.New()
+
+	testCases := []struct {
+		name          string
+		flavourId     string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:      "OK",
+			flavourId: flavour.ID.String(),
+			body: gin.H{
+				"name": flavourWithNewName.Name,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateFlavourParams{
+					ID:   flavour.ID,
+					Name: flavourWithNewName.Name,
+				}
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db.Flavour{
+					Name:      flavourWithNewName.Name,
+					ID:        flavour.ID,
+					CreatedAt: flavour.CreatedAt,
+				}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name:      "Bad Request",
+			flavourId: flavour.ID.String(),
+			body:      gin.H{},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateFlavourParams{
+					ID:   flavour.ID,
+					Name: flavourWithNewName.Name,
+				}
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db.Flavour{
+					Name:      flavourWithNewName.Name,
+					ID:        flavour.ID,
+					CreatedAt: flavour.CreatedAt,
+				}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:      "Bad Request",
+			flavourId: util.RandomString(10),
+			body:      gin.H{},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateFlavourParams{
+					ID:   flavour.ID,
+					Name: flavourWithNewName.Name,
+				}
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db.Flavour{
+					Name:      flavourWithNewName.Name,
+					ID:        flavour.ID,
+					CreatedAt: flavour.CreatedAt,
+				}, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:      "Not Found",
+			flavourId: flavour.ID.String(),
+			body: gin.H{
+				"name": flavourWithNewName.Name,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateFlavourParams{
+					ID:   flavour.ID,
+					Name: flavourWithNewName.Name,
+				}
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db.Flavour{
+					Name:      flavourWithNewName.Name,
+					ID:        flavour.ID,
+					CreatedAt: flavour.CreatedAt,
+				}, sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:      "Internal Server Error",
+			flavourId: flavour.ID.String(),
+			body: gin.H{
+				"name": flavourWithNewName.Name,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateFlavourParams{
+					ID:   flavour.ID,
+					Name: flavourWithNewName.Name,
+				}
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db.Flavour{
+					Name:      flavourWithNewName.Name,
+					ID:        flavour.ID,
+					CreatedAt: flavour.CreatedAt,
+				}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:      "Unauthorized",
+			flavourId: flavour.ID.String(),
+			body: gin.H{
+				"name": flavourWithNewName.Name,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateFlavourParams{
+					ID:   flavour.ID,
+					Name: flavourWithNewName.Name,
+				}
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db.Flavour{
+					Name:      flavourWithNewName.Name,
+					ID:        flavour.ID,
+					CreatedAt: flavour.CreatedAt,
+				}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		store := mockdb.NewMockStore(ctrl)
+		tc.buildStubs(store)
+
+		server := newTestServer(t, store, nil, nil)
+		recorder := httptest.NewRecorder()
+
+		data, err := json.Marshal(tc.body)
+		require.NoError(t, err)
+
+		url := fmt.Sprintf("/api/v1/flavours/%s", tc.flavourId)
+		request, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(data))
+		require.NoError(t, err)
+
+		tc.setupAuth(t, request, server.tokenMaker)
+		server.router.ServeHTTP(recorder, request)
+		tc.checkResponse(recorder)
+	}
+}
+
 func TestGetAllFlavoursApi(t *testing.T) {
 	user := uuid.New()
 	var flavours []db.Flavour
@@ -255,6 +536,17 @@ func TestGetAllFlavoursApi(t *testing.T) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
+		{
+			name: "Unauthorized",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().GetAllFlavours(gomock.Any()).Times(0).Return(flavours, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
 	}
 
 	for i := range testCases {
@@ -292,7 +584,6 @@ func requireBodyMatchFlavour(t *testing.T, body *bytes.Buffer, flavour db.Flavou
 	require.Equal(t, flavour.ID, reqFlavour.ID)
 	require.Equal(t, flavour.Name, reqFlavour.Name)
 	require.WithinDuration(t, flavour.CreatedAt, reqFlavour.CreatedAt, time.Millisecond)
-
 }
 
 func randomFlavour(t *testing.T) db.Flavour {

@@ -59,7 +59,11 @@ func (server *Server) updateFlavour(ctx *gin.Context) {
 	updated, err := server.store.UpdateFlavour(ctx, arg)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
@@ -114,6 +118,10 @@ func (server *Server) deleteFlavour(ctx *gin.Context) {
 	err = server.store.DeleteFlavour(ctx, flavourId)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
