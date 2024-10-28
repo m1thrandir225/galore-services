@@ -3,6 +3,13 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/jackc/pgx/v5/pgtype"
 	mockcache "github.com/m1thrandir225/galore-services/cache/mock"
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"
@@ -10,12 +17,6 @@ import (
 	"github.com/m1thrandir225/galore-services/token"
 	"github.com/pgvector/pgvector-go"
 	"github.com/stretchr/testify/require"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
@@ -32,7 +33,7 @@ func TestGetCocktailApi(t *testing.T) {
 		name          string
 		cocktailId    string
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
-		buildStubs    func(store *mockdb.MockStore)
+		buildStubs    func(store *mockdb.MockStore, cache *mockcache.MockKeyValueStore)
 		checkResponse func(recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -41,8 +42,9 @@ func TestGetCocktailApi(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
-			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockKeyValueStore, ) {
-			}
+			buildStubs: func(store *mockdb.MockStore, cache *mockcache.MockKeyValueStore) {
+				//
+			},
 		},
 	}
 
@@ -50,7 +52,6 @@ func TestGetCocktailApi(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-
 		})
 	}
 }
