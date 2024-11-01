@@ -36,6 +36,15 @@ type loginUserRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type refreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+	SessionID    string `json:"session_id" binding:"required, uuid"`
+}
+
+type refreshTokenResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
 type loginUserResponse struct {
 	User                  db.CreateUserRow `json:"user"`
 	RefreshToken          string           `json:"refresh_token"`
@@ -237,6 +246,36 @@ func (server *Server) logout(ctx *gin.Context) {
 	}
 	// No need to return anything
 	ctx.Status(http.StatusNoContent)
+}
+
+func (server *Server) refreshToken(ctx *gin.Context) {
+	var requestData refreshTokenRequest
+
+	if err := ctx.ShouldBindJSON(&requestData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	sessionId, err := uuid.Parse(requestData.SessionID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	payload, err := server.tokenMaker.VerifyToken(requestData.RefreshToken)
+	if err != nil {
+		_, _ = server.store.InvalidateSession(ctx, sessionId)
+		//No need to handle the error as if there is an error it is still unauthorized.
+
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	newToken, _, err := server.tokenMaker.CreateToken(payload.UserId, server.config.AccessTokenDuration)
+
+	ctx.JSON(http.StatusOK, refreshTokenResponse{
+		AccessToken: newToken,
+	})
+
 }
 
 func (server *Server) verifyAuthCookie(cookie string) bool {
