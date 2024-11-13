@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -38,7 +39,7 @@ type loginUserRequest struct {
 
 type refreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
-	SessionID    string `json:"session_id" binding:"required, uuid"`
+	SessionID    string `json:"session_id" binding:"required,uuid"`
 }
 
 type refreshTokenResponse struct {
@@ -58,6 +59,10 @@ type logoutRequest struct {
 	SessionID uuid.UUID `json:"session_id" binding:"required"`
 }
 
+type logoutResponse struct {
+	Message string `json:"message"`
+}
+
 func (server *Server) registerUser(ctx *gin.Context) {
 	var requestData registerUserRequest
 
@@ -67,17 +72,21 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	}
 	dbDate, err := util.TimeToDbDate(requestData.Birthday)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	hashedPassword, err := util.HashPassowrd(requestData.Password)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	imageData, err := util.BytesFromFile(requestData.AvatarUrl)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -86,6 +95,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 
 	avatarUrl, err := server.storage.UploadFile(imageData, userId.String(), requestData.AvatarUrl.Filename)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 	args := db.CreateUserParams{
@@ -99,18 +109,21 @@ func (server *Server) registerUser(ctx *gin.Context) {
 
 	newEntry, err := server.store.CreateUser(ctx, args)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.AccessTokenDuration)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.RefreshTokenDuration)
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -136,6 +149,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	server.cache.SaveItem(ctx, args.Email, string(b))
 
 	if err != nil {
+		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -245,7 +259,9 @@ func (server *Server) logout(ctx *gin.Context) {
 		return
 	}
 	// No need to return anything
-	ctx.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusOK, logoutResponse{
+		Message: "You have been logged out",
+	})
 }
 
 func (server *Server) refreshToken(ctx *gin.Context) {
