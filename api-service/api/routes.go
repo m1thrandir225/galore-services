@@ -7,6 +7,8 @@ import (
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
+	router.Static("/public", "./public")
+
 	v1 := router.Group("/api/v1")
 
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))

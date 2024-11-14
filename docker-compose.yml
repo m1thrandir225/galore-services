@@ -10,6 +10,8 @@ services:
       - embedding-service
     networks:
       - app-network
+    volumes:
+      - ./api-service/public:/app/public
   embedding-service:
     build:
       context: embedding-service
