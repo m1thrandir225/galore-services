@@ -79,7 +79,7 @@ class Parser:
                     continue  # Skip to the next drink on failure
 
             cocktails.append(detailed_cocktail)
-            time.sleep(0.5)  # Respect API rate limits
+            time.sleep(1.5)  # Respect API rate limits
 
         logging.info(f"Fetched details for {len(cocktails)} cocktails.")
         return cocktails

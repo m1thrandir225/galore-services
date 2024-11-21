@@ -8,13 +8,18 @@ from config import Settings
 from functools import lru_cache
 from fastapi_utilities import repeat_at
 
+
 @lru_cache
 def get_settings():
     return Settings()
+
+
 app = FastAPI()
 
 
 origins = [get_settings().api_url]
+
+
 #
 # app.add_middleware(
 #     CORSMiddleware,
@@ -26,6 +31,7 @@ origins = [get_settings().api_url]
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
 
 @app.get("/update-cocktails")
 def update_cocktails(settings: Annotated[Settings, Depends(get_settings)]):
