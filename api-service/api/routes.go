@@ -84,6 +84,7 @@ func (server *Server) setupRouter() {
 	authRoutes.POST("/cocktails", server.createCocktail)
 	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
 	authRoutes.GET("/cocktails/:id", server.getCocktail)
+	authRoutes.GET("/cocktails", server.getCocktails)
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)
 
 	/*

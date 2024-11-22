@@ -43,3 +43,22 @@ RETURNING *;
 -- name: DeleteCocktail :exec 
 DELETE FROM cocktails 
 WHERE id = $1;
+
+-- name: SearchCocktails :many
+SELECT
+    id,
+    name,
+    is_alcoholic,
+    glass,
+    image,
+    instructions,
+    ingredients,
+    embedding,
+    created_at
+FROM cocktails
+WHERE
+    $1::TEXT IS NULL
+   OR
+    (name ILIKE '%' || $1::TEXT || '%')
+   OR
+    (ingredients::TEXT ILIKE '%' || $1::TEXT || '%');

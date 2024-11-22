@@ -135,7 +135,6 @@ func (server *Server) createCocktailMigrate(ctx *gin.Context) {
 	}
 
 	nameEmbedding, err := server.embedding.GenerateEmbedding(requestData.Name)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -201,6 +200,24 @@ func (server *Server) deleteCocktail(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+func (server *Server) getCocktails(ctx *gin.Context) {
+	searchQuery := ctx.DefaultQuery("search", "")
+	log.Println(searchQuery)
+
+	cocktails, err := server.store.SearchCocktails(ctx, searchQuery)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, cocktails)
+}
+
 func (server *Server) getCocktail(ctx *gin.Context) {
 	var uriData UriId
 
@@ -217,10 +234,9 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 
 	cachedCocktailJson, cacheErr := server.cache.GetItem(ctx, cocktailId.String())
 	if cacheErr == nil {
-		//Cache Hit, this was recently accessed
+		// Cache Hit, this was recently accessed
 		var cachedCocktailData db.Cocktail
 		err = json.Unmarshal([]byte(cachedCocktailJson), &cachedCocktailData)
-
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -231,7 +247,6 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 	}
 
 	cocktail, err := server.store.GetCocktail(ctx, cocktailId)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
