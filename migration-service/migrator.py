@@ -9,7 +9,6 @@ import uuid
 import utils
 from models.detailed_cocktail import DetailedCocktail
 
-
 class Migrator:
     def __init__(self, url: str, api_key: str):
         self.url = url

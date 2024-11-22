@@ -134,3 +134,7 @@ func TestUpdateCocktail(t *testing.T) {
 	require.NotEqual(t, cocktail.IsAlcoholic, updated.IsAlcoholic)
 	require.NotEqual(t, cocktail.Image, updated.Image)
 }
+
+func TestGetAllCocktails(t *testing.T) {
+	//TODO
+}

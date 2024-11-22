@@ -159,6 +159,56 @@ func (q *Queries) GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]Ge
 	return items, nil
 }
 
+const searchCocktails = `-- name: SearchCocktails :many
+SELECT
+    id,
+    name,
+    is_alcoholic,
+    glass,
+    image,
+    instructions,
+    ingredients,
+    embedding,
+    created_at
+FROM cocktails
+WHERE
+    $1::TEXT IS NULL
+   OR
+    (name ILIKE '%' || $1::TEXT || '%')
+   OR
+    (ingredients::TEXT ILIKE '%' || $1::TEXT || '%')
+`
+
+func (q *Queries) SearchCocktails(ctx context.Context, dollar_1 string) ([]Cocktail, error) {
+	rows, err := q.db.Query(ctx, searchCocktails, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Cocktail{}
+	for rows.Next() {
+		var i Cocktail
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.IsAlcoholic,
+			&i.Glass,
+			&i.Image,
+			&i.Instructions,
+			&i.Ingredients,
+			&i.Embedding,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateCocktail = `-- name: UpdateCocktail :one
 UPDATE cocktails
 SET name=$2, is_alcoholic=$3, glass=$4, image=$5, instructions=$6, ingredients=$7

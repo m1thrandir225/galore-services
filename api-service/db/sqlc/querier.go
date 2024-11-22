@@ -57,6 +57,7 @@ type Querier interface {
 	InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error)
 	LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error)
 	LikeFlavour(ctx context.Context, arg LikeFlavourParams) (LikedFlavour, error)
+	SearchCocktails(ctx context.Context, dollar_1 string) ([]Cocktail, error)
 	UnlikeCocktail(ctx context.Context, arg UnlikeCocktailParams) error
 	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
