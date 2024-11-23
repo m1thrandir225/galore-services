@@ -1,5 +1,7 @@
 services:
   api-service:
+    platform: linux/amd64
+    image: m1thrandir/galore:api-service
     build:
       context: api-service
     ports:
@@ -13,6 +15,8 @@ services:
     volumes:
       - ./api-service/public:/app/public
   embedding-service:
+    platform: linux/amd64
+    image: m1thrandir/galore:embedding-service
     build:
       context: embedding-service
     ports:
@@ -20,6 +24,8 @@ services:
     networks:
       - app-network
   migration-service:
+    platform: linux/amd64
+    image: m1thrandir/galore:migration-service
     build:
       context: migration-service
     ports:
