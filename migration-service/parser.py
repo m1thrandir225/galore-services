@@ -64,7 +64,9 @@ class Parser:
                         name=single_cocktail_data["strDrink"],
                         ingredients=utils.format_ingredients(single_cocktail_data),
                         instructions=single_cocktail_data["strInstructions"],
-                        image=utils.download_image(single_cocktail_data["strDrinkThumb"]),
+                        image=utils.download_image(
+                            single_cocktail_data["strDrinkThumb"]
+                        ),
                         glass=single_cocktail_data["strGlass"],
                         isAlcoholic=utils.has_alc(single_cocktail_data["strAlcoholic"]),
                     )

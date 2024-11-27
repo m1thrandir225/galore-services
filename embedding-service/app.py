@@ -38,8 +38,6 @@ async def generate_embedding(
     api_key: str = Depends(check_api_key),
     settings: Settings = Depends(get_settings),
 ):
-    print(settings.environment)
-
     if api_key != settings.api_key:
         if api_key != "testing" and settings.environment != "development":
             raise HTTPException(status_code=403, detail="Incorrect api_key")

@@ -7,7 +7,6 @@ from typing import List
 class IngredientData:
     name: str
     amount: str
-
 @dataclass
 class IngredientDto:
     ingredients: List[IngredientData]
