@@ -14,7 +14,7 @@ type CreateCategoryRequest struct {
 	Tag  string `json:"tag" binding:"required"`
 }
 type GetCategoryByTagRequest struct {
-	Name string `uri:"name" binding:"required"`
+	Tag string `uri:"tag" binding:"required"`
 }
 
 type UpdateCategoryRequest struct {
@@ -35,6 +35,32 @@ func (server *Server) getAllCategories(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, categories)
+}
+
+func (server *Server) getCocktailsByCategory(ctx *gin.Context) {
+	var requestData UriId
+
+	if err := ctx.ShouldBindUri(&requestData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	categoryId, err := uuid.Parse(requestData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cocktails, err := server.store.GetCocktailsForCategory(ctx, categoryId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	ctx.JSON(http.StatusOK, cocktails)
 }
 
 func (server *Server) createCategory(ctx *gin.Context) {
@@ -75,6 +101,26 @@ func (server *Server) getCategoryById(ctx *gin.Context) {
 	}
 
 	category, err := server.store.GetCategoryById(ctx, categoryId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, category)
+}
+
+func (server *Server) getCategoryByTag(ctx *gin.Context) {
+	var requestData GetCategoryByTagRequest
+
+	if err := ctx.ShouldBindUri(&requestData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	category, err := server.store.GetCategoryByTag(ctx, requestData.Tag)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

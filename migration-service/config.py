@@ -8,4 +8,3 @@ class Settings(BaseSettings):
     parser_url: str
     parser_single_url: str
     model_config = SettingsConfigDict(env_file=".env")
-

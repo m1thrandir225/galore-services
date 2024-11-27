@@ -13,6 +13,7 @@ func (server *Server) setupRouter() {
 
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
 	migrationServerRoutes := v1.Group("/migration").Use(microserviceAccessMiddleware(server.config.MigrationServiceKey))
+	categorizerServerRoutes := v1.Group("/categorizer").Use(microserviceAccessMiddleware(server.config.CategorizerServiceKey))
 
 	// embeddingServerRoutes := v1.Group("/embedding").Use(microserviceAccessMiddleware(server.config.EmbeddingServiceKey))
 	/*
@@ -70,6 +71,10 @@ func (server *Server) setupRouter() {
 	/*
 	* Categories routes (Private)
 	 */
+	categorizerServerRoutes.GET("/category/:tag", server.getCategoryByTag)           //Check if category exists
+	categorizerServerRoutes.POST("/category", server.createCategory)                 //Create a category
+	categorizerServerRoutes.POST("/category_cocktail", server.addCocktailToCategory) //Add a cocktail to a given category
+
 	authRoutes.GET("/categories", server.getAllCategories)
 	authRoutes.GET("/categories/:id", server.getCategoryById)
 	authRoutes.POST("/categories", server.createCategory)

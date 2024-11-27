@@ -95,6 +95,13 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		return
 	}
 
+	//Categorize the current cocktail
+	err = server.categorizer.CategorizeCocktail(cocktail)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, cocktail)
 }
 
@@ -151,6 +158,13 @@ func (server *Server) createCocktailMigrate(ctx *gin.Context) {
 	}
 
 	cocktail, err := server.store.CreateCocktail(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	//Categorize the current cocktail
+	err = server.categorizer.CategorizeCocktail(cocktail)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

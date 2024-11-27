@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/m1thrandir225/galore-services/cache"
+	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	embedding "github.com/m1thrandir225/galore-services/embedding_service"
 	"github.com/m1thrandir225/galore-services/storage"
 
@@ -20,11 +21,12 @@ import (
 )
 
 type ginServerConfig struct {
-	Config     util.Config
-	Store      db.Store
-	Storage    storage.FileService
-	CacheStore cache.KeyValueStore
-	Embedding  embedding.EmbeddingService
+	Config      util.Config
+	Store       db.Store
+	Storage     storage.FileService
+	CacheStore  cache.KeyValueStore
+	Embedding   embedding.EmbeddingService
+	Categorizer categorizer.CategorizerService
 }
 
 func main() {
@@ -57,20 +59,29 @@ func main() {
 
 	store := db.NewStore(connPool)
 	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
+	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
 	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
 
 	serverConfig := ginServerConfig{
-		Config:     config,
-		Store:      store,
-		CacheStore: cacheStore,
-		Storage:    localStorage,
-		Embedding:  embeddingService,
+		Config:      config,
+		Store:       store,
+		CacheStore:  cacheStore,
+		Storage:     localStorage,
+		Embedding:   embeddingService,
+		Categorizer: categorizer,
 	}
 	runGinServer(serverConfig)
 }
 
 func runGinServer(serverConfig ginServerConfig) {
-	server, err := api.NewServer(serverConfig.Config, serverConfig.Store, serverConfig.Storage, serverConfig.CacheStore, serverConfig.Embedding)
+	server, err := api.NewServer(
+		serverConfig.Config,
+		serverConfig.Store,
+		serverConfig.Storage,
+		serverConfig.CacheStore,
+		serverConfig.Embedding,
+		serverConfig.Categorizer,
+	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")
 	}

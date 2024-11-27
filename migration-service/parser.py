@@ -35,6 +35,7 @@ class Parser:
             logging.error(f"Failed to fetch cocktail list: {e}")
             return None
 
+
     def parse_cocktails(self) -> List["DetailedCocktail"]:
         """Fetch detailed data for each cocktail, using caching."""
         cocktails: List[DetailedCocktail] = []
@@ -81,7 +82,7 @@ class Parser:
                     continue  # Skip to the next drink on failure
 
             cocktails.append(detailed_cocktail)
-            time.sleep(1.5)  # Respect API rate limits
+            time.sleep(0.5)  # Respect API rate limits
 
         logging.info(f"Fetched details for {len(cocktails)} cocktails.")
         return cocktails

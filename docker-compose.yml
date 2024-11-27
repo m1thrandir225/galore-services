@@ -10,10 +10,20 @@ services:
       - db
       - cache
       - embedding-service
+      - categorize-service
     networks:
       - app-network
     volumes:
       - ./api-service/public:/app/public
+  categorize-service:
+    platform: linux/amd64
+    image: m1thrandir/galore:categorize-service
+    build:
+      context: categorize-service
+    ports:
+      - "8003:8003"
+    networks:
+      - app-network
   embedding-service:
     platform: linux/amd64
     image: m1thrandir/galore:embedding-service

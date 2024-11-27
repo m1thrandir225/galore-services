@@ -1,11 +1,17 @@
+import json
+import logging
+import uuid
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import FastAPI, Depends, Request, HTTPException
+from fastapi import FastAPI, Depends, Request, HTTPException, Body, status
 
 from categorizer import Categorizer
 from config import Settings
 from models.detailed_cocktail import DetailedCocktail
+from models.ingredient import Ingredient
+from models.ingredient_dto import IngredientDTO
+from models.instructions_dto import InstructionsDTO
 
 
 @lru_cache
@@ -17,24 +23,59 @@ app = FastAPI()
 def health_check():
     return {"status": "ok"}
 
+async def validate_api_key(request: Request, settings: Settings = Depends(get_settings)):
+    x_api_key = request.headers.get("x-api-key")
+    if not x_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing x-api-key in headers"
+        )
+    if x_api_key != settings.api_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid API key"
+        )
+    return x_api_key
+
 @app.post("/categorize")
-def categorize_cocktail(
+async def categorize_cocktail(
         request: Request,
-        cocktail: DetailedCocktail,
-        settings: Annotated[Settings, Depends(get_settings)]
+        api_key: str = Depends(validate_api_key),
+        settings: Settings = Depends(get_settings)
 ):
-    request_api = request.headers.get("x-api-key")
+    r_json = await request.json()
+    print(settings.api_service_url)
+    ingredients_json = (r_json["ingredients"]["ingredients"])
+    print(ingredients_json)
+    ingredients = []
+    for ingredient in ingredients_json:
+        ingredients.append(Ingredient(
+            name=ingredient["name"],
+            amount=ingredient["amount"],
+        ))
+    ingredient_dto = IngredientDTO(
+        ingredients=ingredients,
+    )
+    instructions_dto = InstructionsDTO(
+        instructions= json.loads(r_json["instructions"])["instructions"]
+    )
 
-    if request_api is None:
-        raise HTTPException(status_code=404, detail="API key not found.")
-    elif request_api != settings.api_key:
-        raise HTTPException(status_code=404, detail="API key not found.")
-
+    cocktail = DetailedCocktail(
+        name=r_json["name"],
+        ingredients=ingredient_dto,
+        instructions=instructions_dto,
+        embedding=r_json["embedding"],
+        is_alcoholic=r_json["is_alcoholic"],
+        image=r_json["image"],
+        created_at=r_json["created_at"],
+        glass=r_json["glass"],
+        id=r_json["id"],
+    )
     categorizer = Categorizer(
         cocktail=cocktail,
         api_service_url=settings.api_service_url,
         api_key=settings.api_key,
     )
-    categorizer.categorize_cocktail()
+    await categorizer.categorize_cocktail()
 
 

@@ -9,6 +9,7 @@ import uuid
 import utils
 from models.detailed_cocktail import DetailedCocktail
 
+
 class Migrator:
     def __init__(self, url: str, api_key: str):
         self.url = url
@@ -36,7 +37,7 @@ class Migrator:
                     "ingredients": json.dumps(asdict(cocktail.ingredients)),
                     "instructions": cocktail.instructions,
                     "glass": cocktail.glass,
-                    "isAlcoholic": cocktail.isAlcoholic
+                    "isAlcoholic": cocktail.isAlcoholic,
                 }
 
                 response = requests.post(
@@ -46,15 +47,11 @@ class Migrator:
                     headers={"x-api-key": self.api_key},
                 )
                 files["file"][1].close()
-                print(response.json())
+                response.raise_for_status()
 
-                if response.ok:
-                    logging.info(f"Successfully updated {cocktail.name}.")
-                    # Add cocktail name to cache after a successful update
-                    self.updated_cocktails_cache.add(cocktail.name)
-                else:
-                    logging.error(
-                        f"Failed to update {cocktail.name}: {response.status_code}"
-                    )
+                logging.info(f"Successfully updated {cocktail.name}.")
+
+                # Add cocktail name to cache after a successful update
+                self.updated_cocktails_cache.add(cocktail.name)
             except Exception as e:
                 logging.error(f"Error updating {cocktail.name}: {e}")

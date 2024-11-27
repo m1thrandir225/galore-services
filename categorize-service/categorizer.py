@@ -41,10 +41,8 @@ class Categorizer:
         """
 
         try:
-            req_object = {"tag": category_tag}
-            response = requests.post(
-                self.api_service_url,
-                json=req_object,
+            response = requests.get(
+                self.api_service_url + "/category/" + category_tag,
                 headers={"x-api-key":self.api_key},
             )
             response.raise_for_status()
@@ -62,8 +60,8 @@ class Categorizer:
         """Creates a new category"""
         try:
             response = requests.post(
-                self.api_service_url,
-                data={
+                self.api_service_url + "/category",
+                json={
                     "name": category.name,
                     "tag": category.tag,
                 },
@@ -83,10 +81,10 @@ class Categorizer:
         try:
             data = {
                 "category_id": category_id,
-                "cocktail_id": self.cocktail.id
+                "cocktail_id": str(self.cocktail.id)
             }
             response = requests.post(
-                self.api_service_url,
+                self.api_service_url + "/category_cocktail",
                 json=data,
                 headers={"x-api-key":self.api_key},
             )
@@ -107,7 +105,7 @@ class Categorizer:
             Category exists
             1. Create category_cocktail object
             """
-            self.__create_category_cocktail(category_id=category.category_id)
+            self.__create_category_cocktail(category_id=str(category.id))
         elif category is False:
             """ 
             Category does not exist
@@ -119,7 +117,7 @@ class Categorizer:
                 tag=tag_glass_type,
             )
             new_category = self.__create_category(category=category_dto)
-            self.__create_category_cocktail(category_id=new_category.category_id)
+            self.__create_category_cocktail(category_id=str(new_category.id))
 
     def __get_flavours_for_cocktail(self) -> Set[str]:
         flavours = set()
@@ -141,14 +139,14 @@ class Categorizer:
 
             category = self.__category_exists(category_tag=tag)
             if isinstance(category, Category):
-                self.__create_category_cocktail(category_id=category.category_id)
+                self.__create_category_cocktail(category_id=str(category.id))
             elif category is False:
                 category_dto = CategoryDTO(
                     name=name,
                     tag=tag,
                 )
                 new_category = self.__create_category(category=category_dto)
-                self.__create_category_cocktail(category_id=new_category.category_id)
+                self.__create_category_cocktail(category_id=str(new_category.id))
 
     def __categorize_by_alcohol(self):
         """Categorizes the cocktail by alcohol"""
@@ -160,23 +158,23 @@ class Categorizer:
         if is_alcoholic:
             category = self.__category_exists(category_tag=alcoholic_name)
             if isinstance(category, Category):
-                self.__create_category_cocktail(category_id=category.category_id)
+                self.__create_category_cocktail(category_id=str(category.id))
             elif category is False:
                 category_dto = CategoryDTO(
                     name=alcoholic_name,
                     tag=alcoholic_tag,
                 )
                 new_category = self.__create_category(category=category_dto)
-                self.__create_category_cocktail(category_id=new_category.category_id)
+                self.__create_category_cocktail(category_id=str(new_category.id))
         else:
             category = self.__category_exists(category_tag=not_alcoholic_name)
             if isinstance(category, Category):
-                self.__create_category_cocktail(category_id=category.category_id)
+                self.__create_category_cocktail(category_id=str(category.id))
             elif category is False:
                 category_dto = CategoryDTO(
                     name=not_alcoholic_name,
                     tag=not_alcoholic_tag,
                 )
                 new_category = self.__create_category(category=category_dto)
-                self.__create_category_cocktail(category_id=new_category.category_id)
+                self.__create_category_cocktail(category_id=str(new_category.id))
 
