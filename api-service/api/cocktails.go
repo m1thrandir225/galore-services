@@ -39,6 +39,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 
 	err := isAlcoholic.Scan(requestData.IsAlcoholic)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -52,6 +53,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	// Unload the bytes from the uploaded file
 	fileData, err := util.BytesFromFile(requestData.Image)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -68,6 +70,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	// Upload the file to the public/user_id/file
 	fileName, err := server.storage.UploadFile(fileData, payload.ID.String(), requestData.Image.Filename)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -91,6 +94,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 
 	cocktail, err := server.store.CreateCocktail(ctx, arg)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -98,6 +102,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 	//Categorize the current cocktail
 	err = server.categorizer.CategorizeCocktail(cocktail)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -216,7 +221,6 @@ func (server *Server) deleteCocktail(ctx *gin.Context) {
 
 func (server *Server) getCocktails(ctx *gin.Context) {
 	searchQuery := ctx.DefaultQuery("search", "")
-	log.Println(searchQuery)
 
 	cocktails, err := server.store.SearchCocktails(ctx, searchQuery)
 

@@ -15,6 +15,16 @@ services:
       - app-network
     volumes:
       - ./api-service/public:/app/public
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://api-service:8080/api/v1/health || exit 1",
+        ]
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
   categorize-service:
     platform: linux/amd64
     image: m1thrandir/galore:categorize-service
@@ -24,6 +34,12 @@ services:
       - "8003:8003"
     networks:
       - app-network
+    healthcheck:
+      test: curl --fail http://categorize-service:8003/health || exit 1
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
   embedding-service:
     platform: linux/amd64
     image: m1thrandir/galore:embedding-service
@@ -33,6 +49,14 @@ services:
       - "8000:8000"
     networks:
       - app-network
+    volumes:
+      - huggingface-cache:/app/.cache/huggingface
+    healthcheck:
+      test: curl --fail http://embedding-service:8000/health || exit 1
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
   migration-service:
     platform: linux/amd64
     image: m1thrandir/galore:migration-service
@@ -44,6 +68,13 @@ services:
       - app-network
     depends_on:
       - api-service
+      - embedding-service
+    healthcheck:
+      test: curl --fail http://migration-service:8001/health || exit 1
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
   db:
     image: pgvector/pgvector:pg15
     environment:
@@ -66,9 +97,16 @@ services:
       - cache-data:/data
     networks:
       - app-network
+  dozzle:
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8010:8080"
 networks:
   app-network:
     driver: bridge
 volumes:
   postgres-data:
   cache-data:
+  huggingface-cache:

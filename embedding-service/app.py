@@ -16,7 +16,6 @@ def get_settings():
 app = FastAPI()
 model = TextEmbeddingModel()
 
-
 class TextData(BaseModel):
     text: str
 
@@ -30,7 +29,6 @@ def check_api_key(x_api_key: str = Header(...)):
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
 
 @app.post("/generate-embedding")
 async def generate_embedding(

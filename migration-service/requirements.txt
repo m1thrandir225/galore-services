@@ -1,7 +1,5 @@
-fastapi==0.109.1
-uvicorn==0.15.0
-pydantic==2.9.2
-pydantic-settings
+fastapi[standard]>=0.113.0,<0.114.0
+pydantic>=2.7.0,<3.0.
+pydantic-settings~=2.6.1
 fastapi-utilities==0.2.0
-
 requests~=2.32.3

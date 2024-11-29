@@ -27,10 +27,6 @@ class Categorizer:
         category_cocktail object with the current cocktail. If it does not then it should create the category
         and them create the category_cocktail object.
     """
-    async def categorize_cocktail(self):
-        self.__categorize_by_glass()
-        self.__categorize_by_flavour()
-        self.__categorize_by_flavour()
 
     def __category_exists(self, category_tag: str) -> Category or False or None:
         """
@@ -94,10 +90,10 @@ class Categorizer:
         except HTTPError as e:
             logging.info(f"Failed to create ne cocktail_category object with category_id:{category_id}, error: {e.response.text}")
 
-    def __categorize_by_glass(self):
+    def categorize_by_glass(self):
         """Categorizes the cocktail by glass"""
         glass_type =  self.cocktail.glass
-        tag_glass_type = to_snake_case(glass_type)
+        tag_glass_type = to_snake_case(glass_type.lower())
 
         category = self.__category_exists(category_tag=tag_glass_type)
         if isinstance(category, Category):
@@ -129,12 +125,12 @@ class Categorizer:
 
         return flavours
 
-    def __categorize_by_flavour(self):
+    def categorize_by_flavour(self):
         """Categorizes the cocktail by flavour"""
         cocktail_flavours = self.__get_flavours_for_cocktail()
 
         for flavour in cocktail_flavours:
-            tag = to_snake_case(flavour)
+            tag = to_snake_case(flavour.lower())
             name = flavour.capitalize()
 
             category = self.__category_exists(category_tag=tag)
@@ -148,15 +144,15 @@ class Categorizer:
                 new_category = self.__create_category(category=category_dto)
                 self.__create_category_cocktail(category_id=str(new_category.id))
 
-    def __categorize_by_alcohol(self):
+    def categorize_by_alcohol(self):
         """Categorizes the cocktail by alcohol"""
-        is_alcoholic = self.cocktail.isAlcoholic
+        is_alcoholic = self.cocktail.is_alcoholic
         alcoholic_name = "Alcoholic"
         alcoholic_tag = "is_alcoholic"
         not_alcoholic_name = "Not Alcoholic"
         not_alcoholic_tag = "is_not_alcoholic"
         if is_alcoholic:
-            category = self.__category_exists(category_tag=alcoholic_name)
+            category = self.__category_exists(category_tag=alcoholic_tag)
             if isinstance(category, Category):
                 self.__create_category_cocktail(category_id=str(category.id))
             elif category is False:
@@ -167,7 +163,8 @@ class Categorizer:
                 new_category = self.__create_category(category=category_dto)
                 self.__create_category_cocktail(category_id=str(new_category.id))
         else:
-            category = self.__category_exists(category_tag=not_alcoholic_name)
+            category = self.__category_exists(category_tag=not_alcoholic_tag)
+
             if isinstance(category, Category):
                 self.__create_category_cocktail(category_id=str(category.id))
             elif category is False:

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
@@ -25,6 +26,10 @@ type Server struct {
 	categorizer categorizer.CategorizerService
 }
 
+type HealthResponse struct {
+	Status string `json:"status"`
+}
+
 func NewServer(
 	config util.Config,
 	store db.Store,
@@ -33,7 +38,6 @@ func NewServer(
 	embedding embedding.EmbeddingService,
 	categorizer categorizer.CategorizerService,
 ) (*Server, error) {
-
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -56,6 +60,13 @@ func NewServer(
 
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
+}
+
+func (server *Server) checkService(ctx *gin.Context) {
+	message := HealthResponse{
+		Status: "health",
+	}
+	ctx.JSON(http.StatusOK, message)
 }
 
 func errorResponse(err error) gin.H {

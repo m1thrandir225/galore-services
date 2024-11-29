@@ -15,13 +15,15 @@ func (server *Server) setupRouter() {
 	migrationServerRoutes := v1.Group("/migration").Use(microserviceAccessMiddleware(server.config.MigrationServiceKey))
 	categorizerServerRoutes := v1.Group("/categorizer").Use(microserviceAccessMiddleware(server.config.CategorizerServiceKey))
 
-	// embeddingServerRoutes := v1.Group("/embedding").Use(microserviceAccessMiddleware(server.config.EmbeddingServiceKey))
+	// embeddingServerRoutes := v1.Group("/embedding").Use(microserviceAccessMiddleware(server.config.EmbeddingServiceKey)) TODO: add this
+
 	/*
 	 * Public routes
 	 */
 	v1.POST("/register", server.registerUser)
 	v1.POST("/login", server.loginUser)
 	v1.POST("/refresh", server.refreshToken)
+	v1.GET("/health", server.checkService)
 
 	/*
 	 * Private routes (user routes)
@@ -71,9 +73,9 @@ func (server *Server) setupRouter() {
 	/*
 	* Categories routes (Private)
 	 */
-	categorizerServerRoutes.GET("/category/:tag", server.getCategoryByTag)           //Check if category exists
-	categorizerServerRoutes.POST("/category", server.createCategory)                 //Create a category
-	categorizerServerRoutes.POST("/category_cocktail", server.addCocktailToCategory) //Add a cocktail to a given category
+	categorizerServerRoutes.GET("/category/:tag", server.getCategoryByTag)           // Check if category exists
+	categorizerServerRoutes.POST("/category", server.createCategory)                 // Create a category
+	categorizerServerRoutes.POST("/category_cocktail", server.addCocktailToCategory) // Add a cocktail to a given category
 
 	authRoutes.GET("/categories", server.getAllCategories)
 	authRoutes.GET("/categories/:id", server.getCategoryById)

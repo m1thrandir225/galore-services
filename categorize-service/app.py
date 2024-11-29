@@ -39,43 +39,47 @@ async def validate_api_key(request: Request, settings: Settings = Depends(get_se
 
 @app.post("/categorize")
 async def categorize_cocktail(
-        request: Request,
+        cocktail: DetailedCocktail,
         api_key: str = Depends(validate_api_key),
         settings: Settings = Depends(get_settings)
 ):
-    r_json = await request.json()
-    print(settings.api_service_url)
-    ingredients_json = (r_json["ingredients"]["ingredients"])
-    print(ingredients_json)
-    ingredients = []
-    for ingredient in ingredients_json:
-        ingredients.append(Ingredient(
-            name=ingredient["name"],
-            amount=ingredient["amount"],
-        ))
-    ingredient_dto = IngredientDTO(
-        ingredients=ingredients,
-    )
-    instructions_dto = InstructionsDTO(
-        instructions= json.loads(r_json["instructions"])["instructions"]
-    )
-
-    cocktail = DetailedCocktail(
-        name=r_json["name"],
-        ingredients=ingredient_dto,
-        instructions=instructions_dto,
-        embedding=r_json["embedding"],
-        is_alcoholic=r_json["is_alcoholic"],
-        image=r_json["image"],
-        created_at=r_json["created_at"],
-        glass=r_json["glass"],
-        id=r_json["id"],
-    )
+    # r_json = await request.json()
+    # print(settings.api_service_url)
+    # ingredients_json = (r_json["ingredients"]["ingredients"])
+    # print(ingredients_json)
+    # ingredients = []
+    # for ingredient in ingredients_json:
+    #     ingredients.append(Ingredient(
+    #         name=ingredient["name"],
+    #         amount=ingredient["amount"],
+    #     ))
+    # ingredient_dto = IngredientDTO(
+    #     ingredients=ingredients,
+    # )
+    # instructions_dto = InstructionsDTO(
+    #     instructions= json.loads(r_json["instructions"])["instructions"]
+    # )
+    #
+    # cocktail = DetailedCocktail(
+    #     name=r_json["name"],
+    #     ingredients=ingredient_dto,
+    #     instructions=instructions_dto,
+    #     embedding=r_json["embedding"],
+    #     is_alcoholic=r_json["is_alcoholic"],
+    #     image=r_json["image"],
+    #     created_at=r_json["created_at"],
+    #     glass=r_json["glass"],
+    #     id=r_json["id"],
+    # )
     categorizer = Categorizer(
         cocktail=cocktail,
         api_service_url=settings.api_service_url,
         api_key=settings.api_key,
     )
-    await categorizer.categorize_cocktail()
+    categorizer.categorize_by_alcohol()
+    categorizer.categorize_by_flavour()
+    categorizer.categorize_by_glass()
+
+
 
 

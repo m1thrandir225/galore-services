@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
@@ -30,9 +29,7 @@ func NewGaloreCategorizer(url, apiKey string) *GaloreCategorizer {
 * Calls the categorizer to categorize the current cocktail
  */
 func (categorizer *GaloreCategorizer) CategorizeCocktail(cocktail db.Cocktail) error {
-	log.Println(categorizer.Url, categorizer.ApiKey)
 	requestJson, err := json.Marshal(cocktail)
-	log.Println(bytes.NewBuffer(requestJson))
 	if err != nil {
 		return err
 	}
