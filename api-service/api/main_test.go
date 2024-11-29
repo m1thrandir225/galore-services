@@ -1,6 +1,7 @@
 package api
 
 import (
+	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	"os"
 	"testing"
 	"time"
@@ -14,16 +15,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newTestServer(t *testing.T, store db.Store, cacheStore cache.KeyValueStore, fileStorage storage.FileService) *Server {
+func newTestServer(
+	t *testing.T,
+	store db.Store,
+	cacheStore cache.KeyValueStore,
+	fileStorage storage.FileService,
+	categorizer categorizer.CategorizerService,
+	embeddingService embedding.EmbeddingService,
+) *Server {
 	config := util.Config{
 		TokenSymmetricKey:       util.RandomString(33),
 		AccessTokenDuration:     time.Minute,
 		EmbeddingServiceAddress: "http://localhost:8000",
 		EmbeddingServiceKey:     "testing",
 	}
-	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
-
-	server, err := NewServer(config, store, fileStorage, cacheStore, embeddingService)
+	server, err := NewServer(
+		config,
+		store,
+		fileStorage,
+		cacheStore,
+		embeddingService,
+		categorizer,
+	)
 	require.NoError(t, err)
 	return server
 }

@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
+	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -98,9 +100,11 @@ func TestCreateFlavourApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -190,9 +194,11 @@ func TestGetFlavourApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/flavours/%s", tc.flavourId)
@@ -291,9 +297,11 @@ func TestDeleteFlavourApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/flavours/%s", tc.flavourId)
@@ -468,9 +476,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 		defer ctrl.Finish()
 
 		store := mockdb.NewMockStore(ctrl)
+		categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+		embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 		tc.buildStubs(store)
 
-		server := newTestServer(t, store, nil, nil)
+		server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 		recorder := httptest.NewRecorder()
 
 		data, err := json.Marshal(tc.body)
@@ -557,9 +567,12 @@ func TestGetAllFlavoursApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
+
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/flavours")

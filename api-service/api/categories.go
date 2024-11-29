@@ -203,3 +203,30 @@ func (server *Server) deleteCategory(ctx *gin.Context) {
 
 	ctx.Status(http.StatusOK)
 }
+
+func (server *Server) getCocktailsForCategory(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	categoryId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	cocktails, err := server.store.GetCocktailsForCategory(ctx, categoryId)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, cocktails)
+}

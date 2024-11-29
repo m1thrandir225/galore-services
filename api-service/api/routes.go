@@ -14,9 +14,6 @@ func (server *Server) setupRouter() {
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
 	migrationServerRoutes := v1.Group("/migration").Use(microserviceAccessMiddleware(server.config.MigrationServiceKey))
 	categorizerServerRoutes := v1.Group("/categorizer").Use(microserviceAccessMiddleware(server.config.CategorizerServiceKey))
-
-	// embeddingServerRoutes := v1.Group("/embedding").Use(microserviceAccessMiddleware(server.config.EmbeddingServiceKey)) TODO: add this
-
 	/*
 	 * Public routes
 	 */

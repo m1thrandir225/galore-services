@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"github.com/m1thrandir225/galore-services/token"
 	"github.com/m1thrandir225/galore-services/util"
@@ -122,10 +124,12 @@ func TestCreateCategoryApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -223,10 +227,12 @@ func TestGetCategoriesApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/categories")
@@ -319,10 +325,12 @@ func TestGetCategoryByIdApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/categories/%s", testCase.categoryId)
@@ -427,10 +435,12 @@ func TestDeleteCategoryApi(t *testing.T) {
 
 				store := mockdb.NewMockStore(ctrl)
 				storage := mockstorage.NewMockFileService(ctrl)
+				categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+				embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 				testCase.buildStubs(store)
 
-				server := newTestServer(t, store, nil, storage)
+				server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 				recorder := httptest.NewRecorder()
 
 				url := fmt.Sprintf("/api/v1/categories/%s", testCase.categoryId)
@@ -561,10 +571,12 @@ func TestUpdateCategoryApi(t *testing.T) {
 
 		store := mockdb.NewMockStore(ctrl)
 		storage := mockstorage.NewMockFileService(ctrl)
+		categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+		embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 		testCase.buildStubs(store)
 
-		server := newTestServer(t, store, nil, storage)
+		server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 		recorder := httptest.NewRecorder()
 
 		data, err := json.Marshal(testCase.body)

@@ -363,3 +363,30 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, updated)
 }
+
+func (server *Server) getCategoriesForCocktail(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cocktailId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	categories, err := server.store.GetCategoriesForCocktail(ctx, cocktailId)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, categories)
+}

@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
+	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"io"
 	"net/http"
@@ -137,9 +139,12 @@ func TestGetUserDetailsApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
@@ -240,9 +245,12 @@ func TestDeleteUserApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
@@ -485,9 +493,11 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -676,9 +686,12 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -829,9 +842,12 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
+
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)

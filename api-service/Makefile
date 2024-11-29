@@ -35,6 +35,7 @@ mock:
 	mockgen -package mockembedding -destination embedding_service/mock/embedding.go github.com/m1thrandir225/galore-services/embedding_service EmbeddingService
 	mockgen -package mockcocktailgen -destination cocktail_gen/mock/cocktail_gen.go github.com/m1thrandir225/galore-services/cocktail_gen CocktailGenerator
 	mockgen -package mockimagegen -destination image_gen/mock/image_gen.go github.com/m1thrandir225/galore-services/image_gen ImageGenerator
+	mockgen -package mockcategorize -destination categorizer_service/mock/categorizer.go github.com/m1thrandir225/galore-services/categorizer_service CategorizerService
 #proto:
 #	rm -f pb/*.go
 #	rm -f doc/swagger/*.swagger.json

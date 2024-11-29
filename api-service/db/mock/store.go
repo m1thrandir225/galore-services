@@ -722,6 +722,21 @@ func (mr *MockStoreMockRecorder) LikeFlavour(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeFlavour", reflect.TypeOf((*MockStore)(nil).LikeFlavour), arg0, arg1)
 }
 
+// SearchCocktails mocks base method.
+func (m *MockStore) SearchCocktails(arg0 context.Context, arg1 string) ([]db.Cocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchCocktails", arg0, arg1)
+	ret0, _ := ret[0].([]db.Cocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchCocktails indicates an expected call of SearchCocktails.
+func (mr *MockStoreMockRecorder) SearchCocktails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchCocktails", reflect.TypeOf((*MockStore)(nil).SearchCocktails), arg0, arg1)
+}
+
 // UnlikeCocktail mocks base method.
 func (m *MockStore) UnlikeCocktail(arg0 context.Context, arg1 db.UnlikeCocktailParams) error {
 	m.ctrl.T.Helper()

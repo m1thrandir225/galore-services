@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
+	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -118,9 +120,11 @@ func TestCreateNotification(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -282,9 +286,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -396,9 +402,12 @@ func TestGetUserNotifications(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
+
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil)
+			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s/notifications", tc.userId)

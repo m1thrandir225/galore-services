@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
+	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"io"
 	"net/http"
@@ -116,10 +118,12 @@ func TestCreateNotificationTypeApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -222,9 +226,11 @@ func TestGetNotificationTypeApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types/%s", testCase.notificationTypeId)
@@ -309,10 +315,12 @@ func TestGetNotificationTypesApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types")
@@ -413,10 +421,12 @@ func TestDeleteNotificationTypeApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types/%s", testCase.notificationTypeId)
@@ -562,10 +572,12 @@ func TestUpdateNotificationTypeApi(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			storage := mockstorage.NewMockFileService(ctrl)
+			categorizer := mockcategorize.NewMockCategorizerService(ctrl)
+			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage)
+			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
