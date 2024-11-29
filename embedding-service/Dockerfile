@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.9
 
 WORKDIR /app
 
@@ -20,4 +20,4 @@ COPY .prod.env ./.env
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["fastapi", "run", "app.py", "--proxy-headers","--port", "8000"]
