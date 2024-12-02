@@ -17,7 +17,7 @@ import (
 const createCocktailCategory = `-- name: CreateCocktailCategory :one
 INSERT INTO cocktail_categories (
   cocktail_id,
-  category_id 
+  category_id
 ) VALUES (
   $1,
   $2
@@ -48,7 +48,7 @@ func (q *Queries) DeleteCocktailCategory(ctx context.Context, id uuid.UUID) erro
 
 const getCategoriesForCocktail = `-- name: GetCategoriesForCocktail :many
 SELECT c.id, name, tag, created_at from categories c
-JOIN cocktail_categories cc ON cc.category_id = c.id 
+JOIN cocktail_categories cc ON cc.category_id = c.id
 WHERE cc.cocktail_id = $1
 GROUP BY cc.cocktail_id, cc.category_id, c.id
 `
@@ -91,10 +91,21 @@ func (q *Queries) GetCocktailCategory(ctx context.Context, id uuid.UUID) (Cockta
 }
 
 const getCocktailsForCategory = `-- name: GetCocktailsForCategory :many
-SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, created_at FROM cocktails c 
+SELECT c.id,
+        c.name,
+        is_alcoholic,
+        glass,
+        image,
+        instructions,
+        ingredients,
+        c.created_at,
+        cg.name as category_name,
+        cg.tag as category_tag
+FROM cocktails c
 JOIN cocktail_categories cc on cc.cocktail_id = c.id
+JOIN categories cg ON cg.id = cc.category_id
 WHERE cc.category_id = $1
-GROUP BY cc.category_id, cc.cocktail_id, c.id
+GROUP BY cc.category_id, cc.cocktail_id, c.id, cg.id
 `
 
 type GetCocktailsForCategoryRow struct {
@@ -106,6 +117,8 @@ type GetCocktailsForCategoryRow struct {
 	Instructions string            `json:"instructions"`
 	Ingredients  dto.IngredientDto `json:"ingredients"`
 	CreatedAt    time.Time         `json:"created_at"`
+	CategoryName string            `json:"category_name"`
+	CategoryTag  string            `json:"category_tag"`
 }
 
 func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error) {
@@ -126,6 +139,8 @@ func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.U
 			&i.Instructions,
 			&i.Ingredients,
 			&i.CreatedAt,
+			&i.CategoryName,
+			&i.CategoryTag,
 		); err != nil {
 			return nil, err
 		}

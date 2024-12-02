@@ -44,4 +44,3 @@ mock:
 #	--grpc-gateway_out=pb --gr
 
 .PHONY: network postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 new_migration db_docs db_schema sqlc test server mock proto evans redisURL)" -verbose down 1
-
