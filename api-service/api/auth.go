@@ -279,7 +279,7 @@ func (server *Server) refreshToken(ctx *gin.Context) {
 	}
 
 	payload, err := server.tokenMaker.VerifyToken(requestData.RefreshToken)
-	
+
 	if err != nil {
 		_, _ = server.store.InvalidateSession(ctx, sessionId)
 		//No need to handle the error as if there is an error it is still unauthorized.
@@ -293,14 +293,4 @@ func (server *Server) refreshToken(ctx *gin.Context) {
 		AccessToken: newToken,
 	})
 
-}
-
-func (server *Server) verifyAuthCookie(cookie string) bool {
-	payload, err := server.tokenMaker.VerifyToken(cookie)
-	if err != nil {
-		return false
-	}
-	err = payload.Valid()
-
-	return err == nil
 }

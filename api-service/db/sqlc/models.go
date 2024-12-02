@@ -20,6 +20,12 @@ type Category struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type CategoryFlavour struct {
+	ID         uuid.UUID `json:"id"`
+	CategoryID uuid.UUID `json:"category_id"`
+	FlavourID  uuid.UUID `json:"flavour_id"`
+}
+
 type Cocktail struct {
 	ID           uuid.UUID         `json:"id"`
 	Name         string            `json:"name"`

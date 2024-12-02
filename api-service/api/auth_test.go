@@ -356,3 +356,52 @@ func TestRefreshTokenApi(t *testing.T) {
 		})
 	}
 }
+
+//func TestRegisterApi(t *testing.T) {
+//	name := util.RandomString(10)
+//	email := util.RandomEmail()
+//	avatarName := util.RandomString(10)
+//	password := util.RandomString(10)
+//	birthday := util.RandomDate()
+//
+//	testCases := []struct {
+//		name          string
+//		body          gin.H
+//		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+//		buildStubs    func(store *mockdb.MockStore)
+//		checkResponse func(recorder *httptest.ResponseRecorder)
+//	}{
+//		{
+//			name: "OK",
+//			body: gin.H{
+//				"name":        name,
+//				"email":       email,
+//				"avatar_name": avatarName,
+//				"birthday":    birthday,
+//				"password":    password,
+//			},
+//		},
+//	}
+//
+//	for i := range testCases {
+//		tc := testCases[i]
+//
+//		t.Run(tc.name, func(t *testing.T) {
+//			ctrl := gomock.NewController(t)
+//			defer ctrl.Finish()
+//
+//			store := mockdb.NewMockStore(ctrl)
+//			storage := mockstorage.NewMockFileService(ctrl)
+//
+//			tc.buildStubs(store)
+//
+//			server := newTestServer(t, store, nil, nil, nil, nil)
+//
+//			recorder := httptest.NewRecorder()
+//
+//			url := fmt.Sprintf("/api/v1/register")
+//
+//			request, err := http.NewRequest(http.MethodPost, url, nil)
+//		})
+//	}
+//}

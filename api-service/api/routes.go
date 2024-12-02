@@ -39,6 +39,7 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
 	authRoutes.GET("/users/:id/flavours", server.GetUserLikedFlavours)
 	authRoutes.GET("/users/:id/cocktails", server.getUserLikedCocktails)
+	authRoutes.GET("/users/:id/categories", server.GetCategoriesBasedOnLikedFlavours)
 
 	/*
 	 * Notification Type routes (Private)
@@ -107,6 +108,12 @@ func (server *Server) setupRouter() {
 	authRoutes.POST("/flavours/:id/like", server.LikeFlavour)
 	authRoutes.POST("/flavours/:id/unlike", server.UnlikeFlavour)
 	authRoutes.GET("/flavours/:id/like", server.GetLikedFlavour)
+
+	/**
+	* Category Flavours (Private)
+	 */
+	authRoutes.POST("/category-flavour", server.CreateCategoryFlavour)
+	authRoutes.DELETE("/category-flavour/:id", server.DeleteCategoryFlavour)
 
 	server.router = router
 }

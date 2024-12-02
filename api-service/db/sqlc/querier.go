@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
+	CreateCategoryFlavour(ctx context.Context, arg CreateCategoryFlavourParams) (CategoryFlavour, error)
 	CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error)
 	CreateCocktailCategory(ctx context.Context, arg CreateCocktailCategoryParams) (CocktailCategory, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
@@ -22,6 +23,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
+	DeleteCategoryFlavour(ctx context.Context, id uuid.UUID) error
 	DeleteCocktail(ctx context.Context, id uuid.UUID) error
 	DeleteCocktailCategory(ctx context.Context, id uuid.UUID) error
 	DeleteFCMToken(ctx context.Context, id uuid.UUID) error
@@ -35,8 +37,10 @@ type Querier interface {
 	GetAllTypes(ctx context.Context) ([]NotificationType, error)
 	GetAllUserSessions(ctx context.Context, email string) ([]Session, error)
 	GetCategoriesForCocktail(ctx context.Context, cocktailID uuid.UUID) ([]Category, error)
+	GetCategoriesFromLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Category, error)
 	GetCategoryById(ctx context.Context, id uuid.UUID) (Category, error)
 	GetCategoryByTag(ctx context.Context, tag string) (Category, error)
+	GetCategoryFlavour(ctx context.Context, id uuid.UUID) (CategoryFlavour, error)
 	GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, error)
 	GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]GetCocktailAndSimilarRow, error)
 	GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error)
