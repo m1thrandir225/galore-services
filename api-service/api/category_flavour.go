@@ -15,7 +15,7 @@ type createCategoryFlavourRequest struct {
 }
 
 // create-category-flavour mapping
-func (server *Server) CreateCategoryFlavour(ctx *gin.Context) {
+func (server *Server) createCategoryFlavour(ctx *gin.Context) {
 	var requestData createCategoryFlavourRequest
 
 	if err := ctx.ShouldBindJSON(&requestData); err != nil {
@@ -50,7 +50,7 @@ func (server *Server) CreateCategoryFlavour(ctx *gin.Context) {
 }
 
 // get categories for user based on liked flavours
-func (server *Server) GetCategoriesBasedOnLikedFlavours(ctx *gin.Context) {
+func (server *Server) getCategoriesBasedOnLikedFlavours(ctx *gin.Context) {
 	var uriId UriId
 	if err := ctx.ShouldBindUri(&uriId); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -76,9 +76,35 @@ func (server *Server) GetCategoriesBasedOnLikedFlavours(ctx *gin.Context) {
 }
 
 // get a single category-flavour mapping (useless)
+func (server *Server) getCategoryFlavour(ctx *gin.Context) {
+	var uriId UriId
+
+	if err := ctx.ShouldBindUri(&uriId); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	id, err := uuid.Parse(uriId.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	categoryFlavour, err := server.store.GetCategoryFlavour(ctx, id)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, categoryFlavour)
+}
 
 // delete category-flavour mapping
-func (server *Server) DeleteCategoryFlavour(ctx *gin.Context) {
+func (server *Server) deleteCategoryFlavour(ctx *gin.Context) {
 	var uriId UriId
 
 	if err := ctx.ShouldBindUri(&uriId); err != nil {

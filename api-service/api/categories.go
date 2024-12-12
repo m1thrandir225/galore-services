@@ -24,6 +24,11 @@ type UpdateCategoryRequest struct {
 	Tag  string `json:"tag" binding:"required"`
 }
 
+type GetCocktailsByCategoryResponse struct {
+	Category  db.Category                     `json:"category"`
+	Cocktails []db.GetCocktailsForCategoryRow `json:"cocktails"`
+}
+
 func (server *Server) getAllCategories(ctx *gin.Context) {
 	categories, err := server.store.GetAllCategories(ctx)
 	if err != nil {
@@ -39,16 +44,26 @@ func (server *Server) getAllCategories(ctx *gin.Context) {
 }
 
 func (server *Server) getCocktailsByCategory(ctx *gin.Context) {
-	var requestData UriId
+	var uriId UriId
 
-	if err := ctx.ShouldBindUri(&requestData); err != nil {
+	if err := ctx.ShouldBindUri(&uriId); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	categoryId, err := uuid.Parse(requestData.ID)
+	categoryId, err := uuid.Parse(uriId.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	category, err := server.store.GetCategoryById(ctx, categoryId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
@@ -61,7 +76,12 @@ func (server *Server) getCocktailsByCategory(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 
-	ctx.JSON(http.StatusOK, cocktails)
+	response := GetCocktailsByCategoryResponse{
+		Category:  category,
+		Cocktails: cocktails,
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (server *Server) createCategory(ctx *gin.Context) {

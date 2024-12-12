@@ -1,13 +1,14 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"net/http"
 )
 
-func (server *Server) LikeFlavour(ctx *gin.Context) {
+func (server *Server) likeFlavour(ctx *gin.Context) {
 	var uriData UriId
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
@@ -43,7 +44,7 @@ func (server *Server) LikeFlavour(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, likedFlavour)
 }
 
-func (server *Server) GetLikedFlavour(ctx *gin.Context) {
+func (server *Server) getLikedFlavour(ctx *gin.Context) {
 	var uriData UriId
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
@@ -79,7 +80,7 @@ func (server *Server) GetLikedFlavour(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, flavour)
 }
 
-func (server *Server) GetUserLikedFlavours(ctx *gin.Context) {
+func (server *Server) getUserLikedFlavours(ctx *gin.Context) {
 	var uriData UriId
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
@@ -103,7 +104,7 @@ func (server *Server) GetUserLikedFlavours(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, flavours)
 }
 
-func (server *Server) UnlikeFlavour(ctx *gin.Context) {
+func (server *Server) unlikeFlavour(ctx *gin.Context) {
 	var uriData UriId
 
 	if err := ctx.ShouldBindUri(&uriData); err != nil {

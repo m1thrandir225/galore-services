@@ -10,7 +10,6 @@ func (server *Server) setupRouter() {
 	router.Static("/public", "./public")
 
 	v1 := router.Group("/api/v1")
-
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
 	migrationServerRoutes := v1.Group("/migration").Use(microserviceAccessMiddleware(server.config.MigrationServiceKey))
 	categorizerServerRoutes := v1.Group("/categorizer").Use(microserviceAccessMiddleware(server.config.CategorizerServiceKey))
@@ -37,9 +36,9 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/users/:id/password", server.updateUserPassword)
 	authRoutes.PUT("/users/:id/push-notifications", server.updateUserPushNotifications)
 	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
-	authRoutes.GET("/users/:id/flavours", server.GetUserLikedFlavours)
+	authRoutes.GET("/users/:id/flavours", server.getUserLikedFlavours)
 	authRoutes.GET("/users/:id/cocktails", server.getUserLikedCocktails)
-	authRoutes.GET("/users/:id/categories", server.GetCategoriesBasedOnLikedFlavours)
+	authRoutes.GET("/users/:id/categories", server.getCategoriesBasedOnLikedFlavours)
 
 	/*
 	 * Notification Type routes (Private)
@@ -80,17 +79,19 @@ func (server *Server) setupRouter() {
 	authRoutes.POST("/categories", server.createCategory)
 	authRoutes.DELETE("/categories/:id", server.deleteCategory)
 	authRoutes.PATCH("/categories/:id", server.updateCategory)
+	authRoutes.PUT("/categories/:id/cocktails", server.getCocktailsByCategory)
 
 	/*
 	 * Cocktail routes (Private)
 	 */
 	migrationServerRoutes.POST("/cocktails", server.createCocktailMigrate)
 
-	authRoutes.POST("/cocktails", server.createCocktail)
-	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
-	authRoutes.GET("/cocktails/:id", server.getCocktail)
 	authRoutes.GET("/cocktails", server.getCocktails)
+	authRoutes.POST("/cocktails", server.createCocktail)
+	authRoutes.GET("/cocktails/:id", server.getCocktail)
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)
+	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
+	authRoutes.GET("/cocktails/:id/was_featured", server.checkWasCocktailFeatured)
 
 	/*
 	* Liked Cocktail Routes (Private)
@@ -105,15 +106,22 @@ func (server *Server) setupRouter() {
 	/*
 	* Liked Flavours (Private)
 	 */
-	authRoutes.POST("/flavours/:id/like", server.LikeFlavour)
-	authRoutes.POST("/flavours/:id/unlike", server.UnlikeFlavour)
-	authRoutes.GET("/flavours/:id/like", server.GetLikedFlavour)
+	authRoutes.POST("/flavours/:id/like", server.likeFlavour)
+	authRoutes.POST("/flavours/:id/unlike", server.unlikeFlavour)
+	authRoutes.GET("/flavours/:id/like", server.getLikedFlavour)
 
 	/**
 	* Category Flavours (Private)
 	 */
-	authRoutes.POST("/category-flavour", server.CreateCategoryFlavour)
-	authRoutes.DELETE("/category-flavour/:id", server.DeleteCategoryFlavour)
+	authRoutes.POST("/category-flavour", server.createCategoryFlavour)
+	authRoutes.DELETE("/category-flavour/:id", server.deleteCategoryFlavour)
+
+	/*
+	* Daily Featured Cocktails
+	 */
+	authRoutes.GET("/cocktails/featured", server.getDailyFeatured)
+	authRoutes.POST("/cocktails/featured", server.createDailyFeatured)
+	authRoutes.DELETE("/cocktails/featured", server.deleteOlderFeatured)
 
 	server.router = router
 }

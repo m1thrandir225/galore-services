@@ -56,6 +56,12 @@ type CreatedCocktail struct {
 	CreatedAt    time.Time            `json:"created_at"`
 }
 
+type DailyFeaturedCocktail struct {
+	ID         uuid.UUID `json:"id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 type FcmToken struct {
 	ID        uuid.UUID `json:"id"`
 	Token     string    `json:"token"`

@@ -1,10 +1,11 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"net/http"
 )
 
 func (server *Server) likeCocktail(ctx *gin.Context) {

@@ -20,19 +20,17 @@ GROUP BY cc.cocktail_id, cc.category_id, c.id;
 -- name: GetCocktailsForCategory :many
 SELECT c.id,
         c.name,
-        is_alcoholic,
-        glass,
-        image,
-        instructions,
-        ingredients,
-        c.created_at,
-        cg.name as category_name,
-        cg.tag as category_tag
+        c.is_alcoholic,
+        c.glass,
+        c.image,
+        c.embedding,
+        c.instructions,
+        c.ingredients,
+        c.created_at
 FROM cocktails c
 JOIN cocktail_categories cc on cc.cocktail_id = c.id
-JOIN categories cg ON cg.id = cc.category_id
 WHERE cc.category_id = $1
-GROUP BY cc.category_id, cc.cocktail_id, c.id, cg.id;
+GROUP BY cc.category_id, cc.cocktail_id, c.id;
 
 -- name: DeleteCocktailCategory :exec
 DELETE FROM cocktail_categories

@@ -11,10 +11,12 @@ import (
 )
 
 type Querier interface {
+	CheckWasCocktailFeatured(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCategoryFlavour(ctx context.Context, arg CreateCategoryFlavourParams) (CategoryFlavour, error)
 	CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error)
 	CreateCocktailCategory(ctx context.Context, arg CreateCocktailCategoryParams) (CocktailCategory, error)
+	CreateDailyFeatured(ctx context.Context, cocktailID uuid.UUID) (DailyFeaturedCocktail, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
@@ -29,6 +31,7 @@ type Querier interface {
 	DeleteFCMToken(ctx context.Context, id uuid.UUID) error
 	DeleteFlavour(ctx context.Context, id uuid.UUID) error
 	DeleteNotificationType(ctx context.Context, id uuid.UUID) error
+	DeleteOlderFeatured(ctx context.Context) error
 	DeleteSession(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserCocktail(ctx context.Context, id uuid.UUID) error
@@ -45,6 +48,7 @@ type Querier interface {
 	GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]GetCocktailAndSimilarRow, error)
 	GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error)
 	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error)
+	GetDailyFeatured(ctx context.Context, timezone string) ([]GetDailyFeaturedRow, error)
 	GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, error)
 	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)

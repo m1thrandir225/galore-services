@@ -1,5 +1,5 @@
 DB_URL=pgx://root:secret@localhost:5432/galore_db?sslmode=disable
-
+TEST_DB_URL=pgx://root:secret@localhost:5432/galore_db_test?sslmode=disable
 network:
 	docker network create galore-network
 postgres:
@@ -10,8 +10,12 @@ dropdb:
 	docker exec -it galore-postgres dropdb galore_db
 migrateup:
 	migrate -path db/migrations -database "$(DB_URL)" -verbose up
+migrateup-test:
+	migrate -path db/migrations -database "$(TEST_DB_URL)" -verbose up
 migratedown:
 	migrate -path db/migrations -database "$(DB_URL)" -verbose down
+migratedown-test:
+	migrate -path db/migrations -database "$(TEST_DB_URL)" -verbose down
 #evans:
 #	evans --host localhost --port 9090 -r repl
 #redis:
@@ -22,6 +26,8 @@ new_migration:
 #	dbdocs build doc/db.dbml
 #db_schema:
 #	dbml2sql --postgres -o doc/schema.sql doc/db.dbml
+swagger:
+	swag init
 sqlc:
 	sqlc generate
 test:

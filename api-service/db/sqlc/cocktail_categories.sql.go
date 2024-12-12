@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	dto "github.com/m1thrandir225/galore-services/dto"
+	"github.com/pgvector/pgvector-go"
 )
 
 const createCocktailCategory = `-- name: CreateCocktailCategory :one
@@ -93,19 +94,17 @@ func (q *Queries) GetCocktailCategory(ctx context.Context, id uuid.UUID) (Cockta
 const getCocktailsForCategory = `-- name: GetCocktailsForCategory :many
 SELECT c.id,
         c.name,
-        is_alcoholic,
-        glass,
-        image,
-        instructions,
-        ingredients,
-        c.created_at,
-        cg.name as category_name,
-        cg.tag as category_tag
+        c.is_alcoholic,
+        c.glass,
+        c.image,
+        c.embedding,
+        c.instructions,
+        c.ingredients,
+        c.created_at
 FROM cocktails c
 JOIN cocktail_categories cc on cc.cocktail_id = c.id
-JOIN categories cg ON cg.id = cc.category_id
 WHERE cc.category_id = $1
-GROUP BY cc.category_id, cc.cocktail_id, c.id, cg.id
+GROUP BY cc.category_id, cc.cocktail_id, c.id
 `
 
 type GetCocktailsForCategoryRow struct {
@@ -114,11 +113,10 @@ type GetCocktailsForCategoryRow struct {
 	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
 	Glass        string            `json:"glass"`
 	Image        string            `json:"image"`
+	Embedding    pgvector.Vector   `json:"embedding"`
 	Instructions string            `json:"instructions"`
 	Ingredients  dto.IngredientDto `json:"ingredients"`
 	CreatedAt    time.Time         `json:"created_at"`
-	CategoryName string            `json:"category_name"`
-	CategoryTag  string            `json:"category_tag"`
 }
 
 func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error) {
@@ -136,11 +134,10 @@ func (q *Queries) GetCocktailsForCategory(ctx context.Context, categoryID uuid.U
 			&i.IsAlcoholic,
 			&i.Glass,
 			&i.Image,
+			&i.Embedding,
 			&i.Instructions,
 			&i.Ingredients,
 			&i.CreatedAt,
-			&i.CategoryName,
-			&i.CategoryTag,
 		); err != nil {
 			return nil, err
 		}
