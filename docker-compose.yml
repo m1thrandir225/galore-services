@@ -114,6 +114,26 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+  worker_pool:
+    image: "docker.dragonflydb.io/dragonflydb/dragonfly"
+    ulimits:
+      memlock: -1
+    ports:
+      - "6380:6379"
+    volumes:
+      - worker-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli -h localhost -p 6379 PING | grep PONG || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
   dozzle:
     image: amir20/dozzle:latest
     volumes:
@@ -126,4 +146,5 @@ networks:
 volumes:
   postgres-data:
   cache-data:
+  worker-data:
   huggingface-cache:

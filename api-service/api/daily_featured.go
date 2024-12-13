@@ -55,7 +55,7 @@ func (server *Server) getDailyFeatured(ctx *gin.Context) {
 		return
 	}
 
-	featuredItems, err := server.store.GetDailyFeatured(ctx, requestData.Timezone)
+	featuredItems, err := server.store.GetDailyFeatured(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

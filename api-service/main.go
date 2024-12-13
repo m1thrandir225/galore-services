@@ -8,6 +8,7 @@ import (
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	embedding "github.com/m1thrandir225/galore-services/embedding_service"
+	"github.com/m1thrandir225/galore-services/mail"
 	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/jackc/pgx/v5"
@@ -29,6 +30,7 @@ type ginServerConfig struct {
 	Embedding   embedding.EmbeddingService
 	Categorizer categorizer.CategorizerService
 	Scheduler   background_jobs.SchedulerService
+	MailService mail.MailService
 }
 
 func main() {
@@ -63,6 +65,12 @@ func main() {
 	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
 	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
 	scheduler := background_jobs.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
+	mailService := mail.NewResendMail(
+		config.SMTPHost,
+		config.SMTPPort,
+		config.SMTPUser,
+		config.SMTPPass,
+	)
 
 	serverConfig := ginServerConfig{
 		Config:      config,
@@ -72,6 +80,7 @@ func main() {
 		Embedding:   embeddingService,
 		Categorizer: categorizer,
 		Scheduler:   scheduler,
+		MailService: mailService,
 	}
 	runGinServer(serverConfig)
 }
@@ -85,6 +94,7 @@ func runGinServer(serverConfig ginServerConfig) {
 		serverConfig.Embedding,
 		serverConfig.Categorizer,
 		serverConfig.Scheduler,
+		serverConfig.MailService,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")

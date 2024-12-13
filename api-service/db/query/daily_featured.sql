@@ -14,18 +14,18 @@ WHERE dfc.created_at >= CURRENT_DATE - INTERVAL '7 days' AND c.id = $1;
 
 -- name: GetDailyFeatured :many
 SELECT c.id,
-        c.name,
-        c.is_alcoholic,
-        c.glass,
-        c.image,
-        c.embedding,
-        c.instructions,
-        c.ingredients,
-        c.created_at
+       c.name,
+       c.is_alcoholic,
+       c.glass,
+       c.image,
+       c.embedding,
+       c.instructions,
+       c.ingredients,
+       c.created_at
 FROM cocktails c
 JOIN daily_featured_cocktails dfc ON dfc.cocktail_id = c.id
-WHERE dfc.created_at >= timezone (sqlc.arg(timezone)::text, CURRENT_DATE)
-    AND dfc.created_at < timezone(sqlc.arg(timezone)::text, CURRENT_DATE + INTERVAL '1 day');
+WHERE dfc.created_at >= CURRENT_DATE
+  AND dfc.created_at < CURRENT_DATE + INTERVAL '1 day';
 
 -- name: DeleteOlderFeatured :exec
 DELETE FROM daily_featured_cocktails

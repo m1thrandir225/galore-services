@@ -154,6 +154,16 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
+	sendMailArgs := map[string]interface{}{
+		"email": newEntry.Email,
+	}
+
+	server.scheduler.EnqueueJob("send_mail", sendMailArgs)
+
+	if err != nil {
+		log.Print(errorResponse(err))
+	}
+
 	response := registerUserResponse{
 		User:                  newEntry,
 		AccessToken:           accessToken,

@@ -55,18 +55,18 @@ func (q *Queries) DeleteOlderFeatured(ctx context.Context) error {
 
 const getDailyFeatured = `-- name: GetDailyFeatured :many
 SELECT c.id,
-        c.name,
-        c.is_alcoholic,
-        c.glass,
-        c.image,
-        c.embedding,
-        c.instructions,
-        c.ingredients,
-        c.created_at
+       c.name,
+       c.is_alcoholic,
+       c.glass,
+       c.image,
+       c.embedding,
+       c.instructions,
+       c.ingredients,
+       c.created_at
 FROM cocktails c
 JOIN daily_featured_cocktails dfc ON dfc.cocktail_id = c.id
-WHERE dfc.created_at >= timezone ($1::text, CURRENT_DATE)
-    AND dfc.created_at < timezone($1::text, CURRENT_DATE + INTERVAL '1 day')
+WHERE dfc.created_at >= CURRENT_DATE
+  AND dfc.created_at < CURRENT_DATE + INTERVAL '1 day'
 `
 
 type GetDailyFeaturedRow struct {
@@ -81,8 +81,8 @@ type GetDailyFeaturedRow struct {
 	CreatedAt    time.Time         `json:"created_at"`
 }
 
-func (q *Queries) GetDailyFeatured(ctx context.Context, timezone string) ([]GetDailyFeaturedRow, error) {
-	rows, err := q.db.Query(ctx, getDailyFeatured, timezone)
+func (q *Queries) GetDailyFeatured(ctx context.Context) ([]GetDailyFeaturedRow, error) {
+	rows, err := q.db.Query(ctx, getDailyFeatured)
 	if err != nil {
 		return nil, err
 	}
