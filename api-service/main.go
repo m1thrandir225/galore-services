@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/m1thrandir225/galore-services/background_jobs"
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	embedding "github.com/m1thrandir225/galore-services/embedding_service"
@@ -27,6 +28,7 @@ type ginServerConfig struct {
 	CacheStore  cache.KeyValueStore
 	Embedding   embedding.EmbeddingService
 	Categorizer categorizer.CategorizerService
+	Scheduler   background_jobs.SchedulerService
 }
 
 func main() {
@@ -56,11 +58,11 @@ func main() {
 	}
 
 	localStorage := storage.NewLocalStorage("./public")
-
 	store := db.NewStore(connPool)
 	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
 	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
 	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
+	scheduler := background_jobs.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
 
 	serverConfig := ginServerConfig{
 		Config:      config,
@@ -69,6 +71,7 @@ func main() {
 		Storage:     localStorage,
 		Embedding:   embeddingService,
 		Categorizer: categorizer,
+		Scheduler:   scheduler,
 	}
 	runGinServer(serverConfig)
 }
@@ -81,6 +84,7 @@ func runGinServer(serverConfig ginServerConfig) {
 		serverConfig.CacheStore,
 		serverConfig.Embedding,
 		serverConfig.Categorizer,
+		serverConfig.Scheduler,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")

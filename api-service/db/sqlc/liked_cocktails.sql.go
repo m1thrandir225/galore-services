@@ -16,7 +16,16 @@ import (
 )
 
 const getLikedCocktail = `-- name: GetLikedCocktail :one
-SELECT c.id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at, lc.id, cocktail_id, user_id from cocktails c
+SELECT c.id,
+        c.name,
+        c.is_alcoholic,
+        c.glass,
+        c.image,
+        c.embedding,
+        c.instructions,
+        c.ingredients,
+        c.created_at
+from cocktails c
 JOIN liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1 and lc.cocktail_id = $2
 GROUP BY lc.user_id, lc.cocktail_id, c.id, lc.id
@@ -33,13 +42,10 @@ type GetLikedCocktailRow struct {
 	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
 	Glass        string            `json:"glass"`
 	Image        string            `json:"image"`
+	Embedding    pgvector.Vector   `json:"embedding"`
 	Instructions string            `json:"instructions"`
 	Ingredients  dto.IngredientDto `json:"ingredients"`
-	Embedding    pgvector.Vector   `json:"embedding"`
 	CreatedAt    time.Time         `json:"created_at"`
-	ID_2         uuid.UUID         `json:"id_2"`
-	CocktailID   uuid.UUID         `json:"cocktail_id"`
-	UserID       uuid.UUID         `json:"user_id"`
 }
 
 func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error) {
@@ -51,19 +57,25 @@ func (q *Queries) GetLikedCocktail(ctx context.Context, arg GetLikedCocktailPara
 		&i.IsAlcoholic,
 		&i.Glass,
 		&i.Image,
+		&i.Embedding,
 		&i.Instructions,
 		&i.Ingredients,
-		&i.Embedding,
 		&i.CreatedAt,
-		&i.ID_2,
-		&i.CocktailID,
-		&i.UserID,
 	)
 	return i, err
 }
 
 const getLikedCocktails = `-- name: GetLikedCocktails :many
-SELECt c.id, name, is_alcoholic, glass, image, instructions, ingredients, embedding, created_at, lc.id, cocktail_id, user_id from cocktails c
+SELECT c.id,
+        c.name,
+        c.is_alcoholic,
+        c.glass,
+        c.image,
+        c.embedding,
+        c.instructions,
+        c.ingredients,
+        c.created_at
+from cocktails c
 JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
 GROUP BY lc.user_id, c.id, lc.id
@@ -75,13 +87,10 @@ type GetLikedCocktailsRow struct {
 	IsAlcoholic  pgtype.Bool       `json:"is_alcoholic"`
 	Glass        string            `json:"glass"`
 	Image        string            `json:"image"`
+	Embedding    pgvector.Vector   `json:"embedding"`
 	Instructions string            `json:"instructions"`
 	Ingredients  dto.IngredientDto `json:"ingredients"`
-	Embedding    pgvector.Vector   `json:"embedding"`
 	CreatedAt    time.Time         `json:"created_at"`
-	ID_2         uuid.UUID         `json:"id_2"`
-	CocktailID   uuid.UUID         `json:"cocktail_id"`
-	UserID       uuid.UUID         `json:"user_id"`
 }
 
 func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error) {
@@ -99,13 +108,10 @@ func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]Ge
 			&i.IsAlcoholic,
 			&i.Glass,
 			&i.Image,
+			&i.Embedding,
 			&i.Instructions,
 			&i.Ingredients,
-			&i.Embedding,
 			&i.CreatedAt,
-			&i.ID_2,
-			&i.CocktailID,
-			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -140,7 +146,7 @@ func (q *Queries) LikeCocktail(ctx context.Context, arg LikeCocktailParams) (Lik
 }
 
 const unlikeCocktail = `-- name: UnlikeCocktail :exec
-DELETE FROM liked_cocktails 
+DELETE FROM liked_cocktails
 WHERE cocktail_id = $1 AND user_id = $2
 `
 

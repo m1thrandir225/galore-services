@@ -11,6 +11,7 @@ type Config struct {
 	DBSource                  string        `mapstructure:"DB_SOURCE"`
 	CacheSource               string        `mapstructure:"CACHE_SOURCE"`
 	CachePassword             string        `mapstructure:"CACHE_PASSWORD"`
+	WorkerSource              string        `mapstructure:"WORKER_SOURCE"`
 	TestingDBSource           string        `mapstructure:"TESTING_DB_SOURCE"`
 	HTTPServerAddress         string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	EmbeddingServiceAddress   string        `mapstructure:"EMBEDDING_SERVER_ADDRESS"`

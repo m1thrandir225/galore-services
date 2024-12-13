@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/m1thrandir225/galore-services/background_jobs"
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	embedding "github.com/m1thrandir225/galore-services/embedding_service"
@@ -24,6 +25,7 @@ type Server struct {
 	cache       cache.KeyValueStore
 	embedding   embedding.EmbeddingService
 	categorizer categorizer.CategorizerService
+	scheduler   background_jobs.SchedulerService
 }
 
 type HealthResponse struct {
@@ -37,6 +39,7 @@ func NewServer(
 	cacheStore cache.KeyValueStore,
 	embedding embedding.EmbeddingService,
 	categorizer categorizer.CategorizerService,
+	scheduler background_jobs.SchedulerService,
 ) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
@@ -51,6 +54,7 @@ func NewServer(
 		cache:       cacheStore,
 		embedding:   embedding,
 		categorizer: categorizer,
+		scheduler:   scheduler,
 	}
 
 	server.setupRouter()
@@ -59,6 +63,9 @@ func NewServer(
 }
 
 func (server *Server) Start(address string) error {
+	go server.scheduler.Start()
+	defer server.scheduler.Stop()
+
 	return server.router.Run(address)
 }
 

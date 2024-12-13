@@ -92,6 +92,7 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)
 	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
 	authRoutes.GET("/cocktails/:id/was_featured", server.checkWasCocktailFeatured)
+	authRoutes.GET("/cocktails/:id/categories", server.getCategoriesForCocktail)
 
 	/*
 	* Liked Cocktail Routes (Private)

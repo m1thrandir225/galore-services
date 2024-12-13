@@ -33,14 +33,14 @@ func (server *Server) likeCocktail(ctx *gin.Context) {
 		UserID:     payload.UserId,
 	}
 
-	likedCocktail, err := server.store.LikeCocktail(ctx, arg)
+	_, err = server.store.LikeCocktail(ctx, arg)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, likedCocktail)
+	ctx.Status(http.StatusOK)
 }
 
 func (server *Server) unlikeCocktail(ctx *gin.Context) {

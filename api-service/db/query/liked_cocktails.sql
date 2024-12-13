@@ -1,4 +1,4 @@
--- name: LikeCocktail :one 
+-- name: LikeCocktail :one
 INSERT INTO liked_cocktails (
   cocktail_id,
   user_id
@@ -8,17 +8,35 @@ INSERT INTO liked_cocktails (
 ) RETURNING *;
 
 -- name: GetLikedCocktails :many
-SELECt * from cocktails c
+SELECT c.id,
+        c.name,
+        c.is_alcoholic,
+        c.glass,
+        c.image,
+        c.embedding,
+        c.instructions,
+        c.ingredients,
+        c.created_at
+from cocktails c
 JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
 GROUP BY lc.user_id, c.id, lc.id;
 
 -- name: GetLikedCocktail :one
-SELECT * from cocktails c
+SELECT c.id,
+        c.name,
+        c.is_alcoholic,
+        c.glass,
+        c.image,
+        c.embedding,
+        c.instructions,
+        c.ingredients,
+        c.created_at
+from cocktails c
 JOIN liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1 and lc.cocktail_id = $2
 GROUP BY lc.user_id, lc.cocktail_id, c.id, lc.id;
 
 -- name: UnlikeCocktail :exec
-DELETE FROM liked_cocktails 
+DELETE FROM liked_cocktails
 WHERE cocktail_id = $1 AND user_id = $2;
