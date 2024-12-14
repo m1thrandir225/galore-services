@@ -8,11 +8,11 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/m1thrandir225/galore-services/background_jobs"
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	embedding "github.com/m1thrandir225/galore-services/embedding_service"
 	"github.com/m1thrandir225/galore-services/mail"
+	"github.com/m1thrandir225/galore-services/scheduler"
 	"github.com/m1thrandir225/galore-services/storage"
 	"golang.org/x/exp/rand"
 
@@ -31,7 +31,7 @@ type Server struct {
 	cache       cache.KeyValueStore
 	embedding   embedding.EmbeddingService
 	categorizer categorizer.CategorizerService
-	scheduler   background_jobs.SchedulerService
+	scheduler   scheduler.SchedulerService
 	mailService mail.MailService
 }
 
@@ -46,7 +46,7 @@ func NewServer(
 	cacheStore cache.KeyValueStore,
 	embedding embedding.EmbeddingService,
 	categorizer categorizer.CategorizerService,
-	scheduler background_jobs.SchedulerService,
+	scheduler scheduler.SchedulerService,
 	mailService mail.MailService,
 ) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)

@@ -4,11 +4,11 @@ import (
 	"context"
 	"os"
 
-	"github.com/m1thrandir225/galore-services/background_jobs"
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
 	embedding "github.com/m1thrandir225/galore-services/embedding_service"
 	"github.com/m1thrandir225/galore-services/mail"
+	"github.com/m1thrandir225/galore-services/scheduler"
 	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/jackc/pgx/v5"
@@ -29,7 +29,7 @@ type ginServerConfig struct {
 	CacheStore  cache.KeyValueStore
 	Embedding   embedding.EmbeddingService
 	Categorizer categorizer.CategorizerService
-	Scheduler   background_jobs.SchedulerService
+	Scheduler   scheduler.SchedulerService
 	MailService mail.MailService
 }
 
@@ -64,7 +64,7 @@ func main() {
 	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
 	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
 	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
-	scheduler := background_jobs.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
+	scheduler := scheduler.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
 	mailService := mail.NewResendMail(
 		config.SMTPHost,
 		config.SMTPPort,

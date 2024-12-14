@@ -1,4 +1,4 @@
-package background_jobs
+package scheduler
 
 type SchedulerService interface {
 	EnqueueJob(jobName string, jobArguments map[string]interface{}) error
