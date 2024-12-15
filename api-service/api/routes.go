@@ -19,7 +19,7 @@ func (server *Server) setupRouter() {
 	v1.POST("/register", server.registerUser)
 	v1.POST("/login", server.loginUser)
 	v1.POST("/refresh", server.refreshToken)
-	v1.GET("/health", server.checkService)
+	v1.GET("/health", server.checkServiceHealth)
 
 	/*
 	 * Private routes (user routes)
