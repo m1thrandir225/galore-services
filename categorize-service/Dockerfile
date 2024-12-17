@@ -8,8 +8,6 @@ RUN pip install --upgrade setuptools[core]
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY . .
-COPY .prod.env ./.env
-
 EXPOSE 8003
 
 CMD ["fastapi", "run", "app.py", "--proxy-headers","--port", "8003"]

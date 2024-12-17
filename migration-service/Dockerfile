@@ -8,7 +8,7 @@ RUN pip install --upgrade setuptools[core]
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY . .
-COPY .prod.env ./.env
+
 
 EXPOSE 8001
 

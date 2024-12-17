@@ -10,6 +10,7 @@ from functools import lru_cache
 
 @lru_cache
 def get_settings():
+    settings = Settings()
     return Settings()
 
 
@@ -29,8 +30,6 @@ def health_check():
 
 @app.get("/update-cocktails")
 async def update_cocktails(settings: Annotated[Settings, Depends(get_settings)]):
-    print(settings.api_key, settings.api_url)
-
     parser = Parser(settings.parser_url, settings.parser_single_url)
     migrator = Migrator(url=settings.api_url, api_key=settings.api_key)
     try:

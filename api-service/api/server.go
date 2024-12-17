@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/m1thrandir225/galore-services/cache"
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
@@ -39,6 +40,7 @@ func NewServer(
 	scheduler scheduler.SchedulerService,
 	mailService mail.MailService,
 ) (*Server, error) {
+	log.Println(config)
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -55,7 +57,9 @@ func NewServer(
 		scheduler:   scheduler,
 		mailService: mailService,
 	}
-
+	if server.config.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	server.setupRouter()
 	server.registerBackgroundHandlers()
 

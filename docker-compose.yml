@@ -4,6 +4,7 @@ services:
     image: m1thrandir/galore:api-service
     build:
       context: api-service
+    env_file: "api-service.env"
     ports:
       - "8080:8080"
     depends_on:
@@ -25,12 +26,15 @@ services:
   categorize-service:
     platform: linux/amd64
     image: m1thrandir/galore:categorize-service
+    env_file:
+      - "categorize-service.env"
     build:
       context: categorize-service
     ports:
       - "8003:8003"
     networks:
       - app-network
+
     healthcheck:
       test: curl --fail http://categorize-service:8003/health || exit 1
       interval: 40s
@@ -40,6 +44,8 @@ services:
   embedding-service:
     platform: linux/amd64
     image: m1thrandir/galore:embedding-service
+    env_file:
+      - "embedding-service.env"
     build:
       context: embedding-service
     ports:
@@ -57,6 +63,8 @@ services:
   migration-service:
     platform: linux/amd64
     image: m1thrandir/galore:migration-service
+    env_file:
+      - "migration-service.env"
     build:
       context: migration-service
     ports:
@@ -74,10 +82,8 @@ services:
       start_period: 60s
   db:
     image: pgvector/pgvector:pg15
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - "db-service.env"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
@@ -119,11 +125,12 @@ services:
     ulimits:
       memlock: -1
     ports:
-      - "6380:6379"
+      - "6380:6380"
     volumes:
       - worker-data:/data
     networks:
       - app-network
+    command: ["--port", "6380"]
     healthcheck:
       test:
         [

@@ -15,8 +15,6 @@ RUN python -c "from transformers import BertTokenizer, BertModel; \
     BertModel.from_pretrained('bert-base-uncased')"
 
 COPY . .
-COPY .prod.env ./.env
-
 
 EXPOSE 8000
 

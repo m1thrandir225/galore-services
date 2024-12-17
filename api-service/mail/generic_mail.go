@@ -2,20 +2,20 @@ package mail
 
 import gomail "gopkg.in/mail.v2"
 
-type ResendMail struct {
+type GenericMail struct {
 	SMTPHost string
 	SMTPPort int
 	SMTPUser string
 	SMTPPass string
 }
 
-func NewResendMail(
+func NewGenericMail(
 	host string,
 	port int,
 	user string,
 	pass string,
-) *ResendMail {
-	return &ResendMail{
+) *GenericMail {
+	return &GenericMail{
 		SMTPHost: host,
 		SMTPPort: port,
 		SMTPUser: user,
@@ -23,7 +23,7 @@ func NewResendMail(
 	}
 }
 
-func (mail *ResendMail) SendMail(from, to, subject, content string) error {
+func (mail *GenericMail) SendMail(from, to, subject, content string) error {
 	message := gomail.NewMessage()
 
 	message.SetHeader("From", from)

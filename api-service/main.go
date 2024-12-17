@@ -65,7 +65,7 @@ func main() {
 	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
 	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
 	scheduler := scheduler.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
-	mailService := mail.NewResendMail(
+	mailService := mail.NewGenericMail(
 		config.SMTPHost,
 		config.SMTPPort,
 		config.SMTPUser,

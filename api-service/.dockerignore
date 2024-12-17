@@ -1,0 +1,32 @@
+##
+## Specific to .dockerignore
+##
+.git/
+Dockerfile
+contrib/
+.idea/
+.vscode/
+.env
+.env.example
+
+##
+## Common with .gitignore
+##
+
+# Temporary files
+*~
+*#
+.#*
+
+
+# Binaries for programs and plugins
+dist/
+gin-bin
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test

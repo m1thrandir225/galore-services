@@ -26,9 +26,6 @@ WORKDIR /app
 # Copy the built binary from the builder stage
 COPY --from=builder /app/main .
 
-# Copy the env file
-COPY app.prod.env ./app.env
-
 # Expose the port Gin will run on
 EXPOSE 8080
 

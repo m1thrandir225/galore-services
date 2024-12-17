@@ -1,6 +1,9 @@
 package util
 
 import (
+	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -32,17 +35,46 @@ func LoadConfig(path string) (config Config, err error) {
 	/*
 	 * Load Viper config
 	 */
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_")) // Allow underscores in env variables
+	viper.AutomaticEnv()                                   // Load environment variables
 
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
+	env := viper.GetString("ENVIRONMENT")
+	if env == "" || env == "development" {
+		viper.AddConfigPath(path) // Path to look for the file
+		viper.SetConfigFile(".env")
+		if err = viper.ReadInConfig(); err != nil {
+			fmt.Println("No .env file found, relying on environment variables")
+		} else {
+			fmt.Println("Loaded .env file for local development")
+		}
 	}
+	// Bind environment variables to struct
+	viper.BindEnv("POSTGRES_USER")
+	viper.BindEnv("POSTGRES_PASSWORD")
+	viper.BindEnv("POSTGRES_DB")
+	viper.BindEnv("ENVIRONMENT")
+	viper.BindEnv("DB_SOURCE")
+	viper.BindEnv("CACHE_SOURCE")
+	viper.BindEnv("CACHE_PASSWORD")
+	viper.BindEnv("WORKER_SOURCE")
+	viper.BindEnv("TESTING_DB_SOURCE")
+	viper.BindEnv("HTTP_SERVER_ADDRESS")
+	viper.BindEnv("EMBEDDING_SERVER_ADDRESS")
+	viper.BindEnv("EMBEDDING_ACCESS_KEY")
+	viper.BindEnv("MIGRATION_ACCESS_KEY")
+	viper.BindEnv("CATEGORIZER_SERVER_ADDRESS")
+	viper.BindEnv("CATEGORIZER_ACCESS_KEY")
+	viper.BindEnv("TOKEN_SYMMETRIC_KEY")
+	viper.BindEnv("ACCESS_TOKEN_DURATION")
+	viper.BindEnv("REFRESH_TOKEN_DURATION")
+	viper.BindEnv("SMTP_HOST")
+	viper.BindEnv("SMTP_PORT")
+	viper.BindEnv("SMTP_USER")
+	viper.BindEnv("SMTP_PASS")
 
 	err = viper.Unmarshal(&config)
-
+	if err != nil {
+		log.Fatal("Failed to load config:", err)
+	}
 	return
 }
