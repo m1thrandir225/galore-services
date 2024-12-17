@@ -7,10 +7,6 @@ Should be multiple services:
 - Backend (main) all of the main apis
 - Image Generation: service for generating images
 - Embedding Generation: service for generating embeddings
-- Auth:?? currently implemented inside of the backend service might be
-  outsourced
-- Cache: ?? currenlty implemented inside of the backend service might be
-  outsourced
-- Cocktail Generation: service for generating a cocktail based on a prompt
+- Categorizer: service for categorizing cocktails based on cocktail properties
 
-(This is a rewrite, initially it was written in typescript)
+\*The project is a rewrite, initially it was written using Supabase & Typescript.
