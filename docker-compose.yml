@@ -14,6 +14,7 @@ services:
       - categorize-service
     networks:
       - app-network
+
     volumes:
       - ./api-service/public:/app/public
     healthcheck:
@@ -82,20 +83,17 @@ services:
       start_period: 60s
   db:
     image: pgvector/pgvector:pg15
-    env_file:
-      - "db-service.env"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./db-healthcheck.sh:/usr/local/bin/healthcheck.sh
     ports:
       - "5432:5432"
     networks:
       - app-network
+    env_file:
+      - db-service.env
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h localhost || exit 1",
-        ]
+      test: ["CMD", "bash", "/usr/local/bin/healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -135,7 +133,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "redis-cli -h localhost -p 6379 PING | grep PONG || exit 1",
+          "redis-cli -h localhost -p 6380 PING | grep PONG || exit 1",
         ]
       interval: 10s
       timeout: 5s
