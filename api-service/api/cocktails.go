@@ -27,6 +27,21 @@ type CreateOrUpdateCocktailRequest struct {
 	IsAlcoholic  bool                  `form:"isAlcoholic" binding:"required"`
 }
 
+func (server *Server) setupCocktailRoutes(authRoutes *gin.RouterGroup) {
+	cocktailRoutes := authRoutes.Group("/cocktails")
+
+	cocktailRoutes.GET("/", server.getCocktails)
+	cocktailRoutes.POST("/", server.createCocktail)
+	cocktailRoutes.GET("/:id", server.getCocktail)
+	cocktailRoutes.PUT("/:id", server.updateCocktail)
+	cocktailRoutes.DELETE("/:id", server.deleteCocktail)
+	cocktailRoutes.GET("/:id/was_featured", server.checkWasCocktailFeatured)
+	cocktailRoutes.GET("/:id/categories", server.getCategoriesForCocktail)
+
+	server.setupLikedCocktailRoutes(cocktailRoutes)
+	server.setupDailyFeaturedRoutes(cocktailRoutes)
+}
+
 func (server *Server) createCocktail(ctx *gin.Context) {
 	var requestData CreateOrUpdateCocktailRequest
 	var isAlcoholic pgtype.Bool

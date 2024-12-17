@@ -21,6 +21,12 @@ type GetDailyFeatured struct {
 	Timezone string `form:"timezone" binding:"required"`
 }
 
+func (server *Server) setupDailyFeaturedRoutes(cocktailRoutes *gin.RouterGroup) {
+	cocktailRoutes.GET("/featured", server.getDailyFeatured)
+	cocktailRoutes.POST("/featured", server.createDailyFeatured)
+	cocktailRoutes.DELETE("/featured", server.deleteOlderFeatured)
+}
+
 func (server *Server) createDailyFeatured(ctx *gin.Context) {
 	var requestData CreateDailyFeaturedItemRequest
 

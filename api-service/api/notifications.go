@@ -19,6 +19,13 @@ type UpdateNotificationStatusRequest struct {
 	Opened *bool `json:"opened" binding:"required"`
 }
 
+func (server *Server) setupNotificationRoutes(authRoutes *gin.RouterGroup) {
+	notificationRoutes := authRoutes.Group("/notifications")
+
+	notificationRoutes.POST("/", server.createNotification)
+	notificationRoutes.PATCH("/:id", server.updateNotificationStatus)
+}
+
 func (server *Server) createNotification(ctx *gin.Context) {
 	var requestData CreateNotificationRequest
 

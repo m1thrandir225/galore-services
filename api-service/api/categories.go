@@ -29,6 +29,17 @@ type GetCocktailsByCategoryResponse struct {
 	Cocktails []db.GetCocktailsForCategoryRow `json:"cocktails"`
 }
 
+func (server *Server) setupCategoryRoutes(authRoutes *gin.RouterGroup) {
+	categoryRoutes := authRoutes.Group("/categories")
+
+	categoryRoutes.GET("/", server.getAllCategories)
+	categoryRoutes.GET("/:id", server.getCategoryById)
+	categoryRoutes.POST("/", server.createCategory)
+	categoryRoutes.DELETE("/:id", server.deleteCategory)
+	categoryRoutes.PATCH("/:id", server.updateCategory)
+	categoryRoutes.GET("/:id/cocktails", server.getCocktailsByCategory)
+}
+
 func (server *Server) getAllCategories(ctx *gin.Context) {
 	categories, err := server.store.GetAllCategories(ctx)
 	if err != nil {

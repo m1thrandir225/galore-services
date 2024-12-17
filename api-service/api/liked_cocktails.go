@@ -8,6 +8,11 @@ import (
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 )
 
+func (server *Server) setupLikedCocktailRoutes(cocktailRoutes *gin.RouterGroup) {
+	cocktailRoutes.POST("/:id/like", server.likeCocktail)
+	cocktailRoutes.POST("/:id/unlike", server.unlikeCocktail)
+}
+
 func (server *Server) likeCocktail(ctx *gin.Context) {
 	var uriData UriId
 

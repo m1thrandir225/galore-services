@@ -5,14 +5,15 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
-	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
+	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
 
 	"github.com/gin-gonic/gin"
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"

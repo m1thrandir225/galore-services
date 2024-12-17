@@ -8,6 +8,12 @@ import (
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 )
 
+func (server *Server) setupLikedFlavourRoutes(authRoutes *gin.RouterGroup) {
+	authRoutes.GET("/:id/like", server.getLikedFlavour)
+	authRoutes.POST("/:id/like", server.likeFlavour)
+	authRoutes.POST("/:id/unlike", server.unlikeFlavour)
+}
+
 func (server *Server) likeFlavour(ctx *gin.Context) {
 	var uriData UriId
 

@@ -14,6 +14,13 @@ type createCategoryFlavourRequest struct {
 	FlavourID  string `json:"flavour_id" binding:"required,uuid"`
 }
 
+func (server *Server) setupCategoryFlavourRoutes(authRoutes *gin.RouterGroup) {
+	categoryFlavourRoutes := authRoutes.Group("/category_flavour")
+
+	categoryFlavourRoutes.POST("/", server.createCategoryFlavour)
+	categoryFlavourRoutes.DELETE("/:id", server.deleteCategoryFlavour)
+}
+
 // create-category-flavour mapping
 func (server *Server) createCategoryFlavour(ctx *gin.Context) {
 	var requestData createCategoryFlavourRequest

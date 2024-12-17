@@ -47,7 +47,7 @@ const getCategoriesFromLikedFlavours = `-- name: GetCategoriesFromLikedFlavours 
 SELECT DISTINCT c.id, c.name, c.tag, c.created_at
 FROM liked_flavours lf
 JOIN category_flavour cf ON lf.flavour_id = cf.flavour_id
-JOIN categories c ON cf.category_id =- c.id
+JOIN categories c ON cf.category_id = c.id
 WHERE lf.user_id = $1
 `
 

@@ -26,6 +26,16 @@ type CreateNotificationTypeRequest struct {
 	Tag     string `json:"tag" binding:"required"`
 }
 
+func (server *Server) setupNotificationTypesRoutes(authRoutes *gin.RouterGroup) {
+	notificationTypes := authRoutes.Group("/notification_types")
+
+	notificationTypes.GET("/", server.getNotificationTypes)
+	notificationTypes.DELETE("/:id", server.deleteNotificationType)
+	notificationTypes.PUT("/:id", server.updateNotificationType)
+	notificationTypes.GET("/:id", server.getNotificationType)
+	notificationTypes.POST("/", server.createNotificationType)
+}
+
 func (server *Server) createNotificationType(ctx *gin.Context) {
 	var requestData CreateNotificationTypeRequest
 
