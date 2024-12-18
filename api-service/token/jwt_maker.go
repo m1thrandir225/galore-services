@@ -1,12 +1,11 @@
 package token
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -25,46 +24,32 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey}, nil
 }
 
-func (maker *JWTMaker) CreateToken(userId uuid.UUID, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(userId, duration)
+func (maker *JWTMaker) CreateToken(userId uuid.UUID, duration time.Duration) (string, interface{}, error) {
+	payload, err := NewJWTClaims(userId, duration)
 	if err != nil {
 		return "", payload, err
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-
 	token, err := jwtToken.SignedString([]byte(maker.secretKey))
 
 	return token, payload, err
 }
 
-func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
-	keyFunc := func(token *jwt.Token) (interface{}, error) {
-		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+func (maker *JWTMaker) VerifyToken(token string) (interface{}, error) {
+	claims := &JWTClaims{}
 
-		if !ok {
-			return nil, ErrInvalidToken
-		}
-
+	parsedToken, err := jwt.ParseWithClaims(token, claims, func(jwtToken *jwt.Token) (interface{}, error) {
 		return []byte(maker.secretKey), nil
-	}
+	})
 
-	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
-		verr, ok := err.(*jwt.ValidationError)
+		return nil, err
+	}
 
-		if ok && errors.Is(verr.Inner, ErrExpiredToken) {
-			return nil, ErrExpiredToken
-		}
-
+	if !parsedToken.Valid {
 		return nil, ErrInvalidToken
 	}
 
-	payload, ok := jwtToken.Claims.(*Payload)
-
-	if !ok {
-		return nil, ErrInvalidToken
-	}
-
-	return payload, nil
+	return claims, nil
 }
