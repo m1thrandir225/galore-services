@@ -8,6 +8,7 @@ contrib/
 .vscode/
 .env
 .env.example
+.gitignore
 
 ##
 ## Common with .gitignore
