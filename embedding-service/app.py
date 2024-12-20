@@ -2,6 +2,8 @@ import os
 from functools import lru_cache
 from fastapi import FastAPI, HTTPException, Depends, Header
 from pydantic import BaseModel
+from starlette import status
+from starlette.requests import Request
 from transformers import AutoModel
 
 from config import Settings
@@ -20,11 +22,19 @@ class TextData(BaseModel):
     text: str
 
 
-def check_api_key(x_api_key: str = Header(...)):
+async def validate_api_key(request: Request, settings: Settings = Depends(get_settings)):
+    x_api_key = request.headers.get("x-api-key")
     if not x_api_key:
-        raise HTTPException(status_code=400, detail="X-Api-Key header missing")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing x-api-key in headers"
+        )
+    if x_api_key != settings.api_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid API key"
+        )
     return x_api_key
-
 
 @app.get("/health")
 def health_check():
@@ -33,13 +43,9 @@ def health_check():
 @app.post("/generate-embedding")
 async def generate_embedding(
     data: TextData,
-    api_key: str = Depends(check_api_key),
-    settings: Settings = Depends(get_settings),
+    api_key: str = Depends(validate_api_key),
+    settings: Settings = Depends(get_settings)
 ):
-    if api_key != settings.api_key:
-        if api_key != "testing" and settings.environment != "development":
-            raise HTTPException(status_code=403, detail="Incorrect api_key")
-
     try:
         embedding = model.get_embeddings(data.text)
         return {"embedding": embedding.tolist()}

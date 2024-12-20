@@ -20,6 +20,7 @@ type Config struct {
 	EmbeddingServiceAddress   string        `mapstructure:"EMBEDDING_SERVER_ADDRESS"`
 	EmbeddingServiceKey       string        `mapstructure:"EMBEDDING_ACCESS_KEY"`
 	CategorizerServiceAddress string        `mapstructure:"CATEGORIZER_SERVER_ADDRESS"`
+	MigrationServiceAddress   string        `mapstructure:"MIGRATION_SERVICE_ADDRESS"`
 	MigrationServiceKey       string        `mapstructure:"MIGRATION_ACCESS_KEY"`
 	CategorizerServiceKey     string        `mapstructure:"CATEGORIZER_ACCESS_KEY"`
 	TokenSymmetricKey         string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`

@@ -76,9 +76,3 @@ func (server *Server) Start(address string) error {
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }
-
-func (server *Server) registerBackgroundHandlers() {
-	server.scheduler.RegisterJob("send_mail", server.sendMailJob)
-	server.scheduler.RegisterCronJob("generate_daily_featured", "0 * * * * *")
-	server.scheduler.RegisterJob("generate_daily_featured", server.generateDailyFeatured)
-}
