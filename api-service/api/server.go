@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/m1thrandir225/galore-services/notifications"
 	"log"
 
 	"github.com/m1thrandir225/galore-services/cache"
@@ -18,16 +19,17 @@ import (
 )
 
 type Server struct {
-	config      util.Config
-	store       db.Store
-	router      *gin.Engine
-	tokenMaker  token.Maker
-	storage     storage.FileService
-	cache       cache.KeyValueStore
-	embedding   embedding.EmbeddingService
-	categorizer categorizer.CategorizerService
-	scheduler   scheduler.SchedulerService
-	mailService mail.MailService
+	config              util.Config
+	store               db.Store
+	router              *gin.Engine
+	tokenMaker          token.Maker
+	storage             storage.FileService
+	cache               cache.KeyValueStore
+	embedding           embedding.EmbeddingService
+	categorizer         categorizer.CategorizerService
+	scheduler           scheduler.SchedulerService
+	mailService         mail.MailService
+	notificationService notifications.NotificationService
 }
 
 func NewServer(
@@ -39,6 +41,7 @@ func NewServer(
 	categorizer categorizer.CategorizerService,
 	scheduler scheduler.SchedulerService,
 	mailService mail.MailService,
+	notificationService notifications.NotificationService,
 ) (*Server, error) {
 	log.Println(config)
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
@@ -47,15 +50,16 @@ func NewServer(
 	}
 
 	server := &Server{
-		config:      config,
-		store:       store,
-		tokenMaker:  tokenMaker,
-		storage:     storageService,
-		cache:       cacheStore,
-		embedding:   embedding,
-		categorizer: categorizer,
-		scheduler:   scheduler,
-		mailService: mailService,
+		config:              config,
+		store:               store,
+		tokenMaker:          tokenMaker,
+		storage:             storageService,
+		cache:               cacheStore,
+		embedding:           embedding,
+		categorizer:         categorizer,
+		scheduler:           scheduler,
+		mailService:         mailService,
+		notificationService: notificationService,
 	}
 	if server.config.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)

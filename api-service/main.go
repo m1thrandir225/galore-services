@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/m1thrandir225/galore-services/notifications"
 	"os"
 
 	"github.com/m1thrandir225/galore-services/cache"
@@ -23,14 +24,15 @@ import (
 )
 
 type ginServerConfig struct {
-	Config      util.Config
-	Store       db.Store
-	Storage     storage.FileService
-	CacheStore  cache.KeyValueStore
-	Embedding   embedding.EmbeddingService
-	Categorizer categorizer.CategorizerService
-	Scheduler   scheduler.SchedulerService
-	MailService mail.MailService
+	Config              util.Config
+	Store               db.Store
+	Storage             storage.FileService
+	CacheStore          cache.KeyValueStore
+	Embedding           embedding.EmbeddingService
+	Categorizer         categorizer.CategorizerService
+	Scheduler           scheduler.SchedulerService
+	MailService         mail.MailService
+	NotificationService notifications.NotificationService
 }
 
 func main() {
@@ -72,15 +74,21 @@ func main() {
 		config.SMTPPass,
 	)
 
+	fcmNotifications, err := notifications.NewFirebaseNotifications(config.FirebaseServiceKey)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Cannot initialize firebase notifications.")
+	}
+
 	serverConfig := ginServerConfig{
-		Config:      config,
-		Store:       store,
-		CacheStore:  cacheStore,
-		Storage:     localStorage,
-		Embedding:   embeddingService,
-		Categorizer: categorizer,
-		Scheduler:   scheduler,
-		MailService: mailService,
+		Config:              config,
+		Store:               store,
+		CacheStore:          cacheStore,
+		Storage:             localStorage,
+		Embedding:           embeddingService,
+		Categorizer:         categorizer,
+		Scheduler:           scheduler,
+		MailService:         mailService,
+		NotificationService: fcmNotifications,
 	}
 	runGinServer(serverConfig)
 }
@@ -95,6 +103,7 @@ func runGinServer(serverConfig ginServerConfig) {
 		serverConfig.Categorizer,
 		serverConfig.Scheduler,
 		serverConfig.MailService,
+		serverConfig.NotificationService,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")

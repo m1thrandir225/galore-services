@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 
@@ -24,7 +25,7 @@ func (server *Server) registerBackgroundHandlers() {
 	/**
 	Cocktail Migration Cron
 	*/
-	server.scheduler.RegisterCronJob("migrate_cocktails", "0 0 * * 0")
+	server.scheduler.RegisterCronJob("migrate_cocktails", "0 0 1 * *")
 	server.scheduler.RegisterJob("migrate_cocktails", server.migrateCocktails)
 
 	/**
@@ -112,7 +113,7 @@ func (server *Server) generateDailyFeatured(args map[string]interface{}) error {
 	}
 
 	for _, cocktail := range featuredCocktails {
-		_, err := server.store.CreateDailyFeatured(context.Background(), cocktail.ID)
+		_, err = server.store.CreateDailyFeatured(context.Background(), cocktail.ID)
 		if err != nil {
 			return fmt.Errorf("failed to mark cocktail %s as featured: %v", cocktail.ID, err)
 		}
@@ -146,6 +147,34 @@ func (server *Server) migrateCocktails(args map[string]interface{}) error {
 	}
 
 	defer response.Body.Close()
+
+	return nil
+}
+
+func (server *Server) sendNotification(args map[string]interface{}) error {
+	notificationType, ok := args["notification_type"].(db.NotificationType)
+	if !ok {
+		return fmt.Errorf("missing required arguments: notification_type")
+	}
+	userId, ok := args["user_id"].(uuid.UUID)
+	if !ok {
+		return fmt.Errorf("missing required arguments: user_id")
+	}
+
+	//Get the users FCM tokens
+	fcmTokens, err := server.store.GetUserFCMTokens(context.Background(), userId)
+	if err != nil {
+		return err
+	}
+	var tokens []string
+	for _, item := range fcmTokens {
+		tokens = append(tokens, item.Token)
+	}
+
+	err = server.notificationService.SendNotification(notificationType.Title, notificationType.Content, tokens)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

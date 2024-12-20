@@ -60,6 +60,7 @@ type Querier interface {
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
+	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
 	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error)

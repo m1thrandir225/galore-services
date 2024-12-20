@@ -30,6 +30,7 @@ type Config struct {
 	SMTPPort                  int           `mapstructure:"SMTP_PORT"`
 	SMTPUser                  string        `mapstructure:"SMTP_USER"`
 	SMTPPass                  string        `mapstructure:"SMTP_PASS"`
+	FirebaseServiceKey        string        `mapstructure:"FIREBASE_SERVICE_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -72,6 +73,7 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("SMTP_PORT")
 	viper.BindEnv("SMTP_USER")
 	viper.BindEnv("SMTP_PASS")
+	viper.BindEnv("FIREBASE_SERVICE_KEY")
 
 	err = viper.Unmarshal(&config)
 	if err != nil {

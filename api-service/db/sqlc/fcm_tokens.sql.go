@@ -69,3 +69,34 @@ func (q *Queries) GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, 
 	)
 	return i, err
 }
+
+const getUserFCMTokens = `-- name: GetUserFCMTokens :many
+SELECT id, token, device_id, user_id, created_at FROM fcm_tokens
+WHERE user_id = $1
+`
+
+func (q *Queries) GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error) {
+	rows, err := q.db.Query(ctx, getUserFCMTokens, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FcmToken{}
+	for rows.Next() {
+		var i FcmToken
+		if err := rows.Scan(
+			&i.ID,
+			&i.Token,
+			&i.DeviceID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -14,6 +14,10 @@ INSERT INTO fcm_tokens (
 SELECT * FROM fcm_tokens
 WHERE id = $1 LIMIT 1;
 
+-- name: GetUserFCMTokens :many
+SELECT * FROM fcm_tokens
+WHERE user_id = $1;
+
 -- name: DeleteFCMToken :exec
 DELETE FROM fcm_tokens
 WHERE id = $1;
