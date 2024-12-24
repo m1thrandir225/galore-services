@@ -1,4 +1,4 @@
-DB_URL=pgx://root:secret@localhost:5432/galore_db?sslmode=disable
+DB_URL=pgx5://root:secret@localhost:5432/galore_db?sslmode=disable
 TEST_DB_URL=pgx://root:secret@localhost:5432/galore_db_test?sslmode=disable
 network:
 	docker network create galore-network

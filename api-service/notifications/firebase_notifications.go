@@ -6,7 +6,6 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
 	"google.golang.org/api/option"
-	"log"
 )
 
 type FirebaseNotifications struct {
@@ -36,8 +35,6 @@ func NewFirebaseNotifications(encodedSecretKey string) (*FirebaseNotifications, 
 	}
 
 	fcmClient, err := app.Messaging(context.Background())
-
-	log.Println(app)
 
 	if err != nil {
 		return nil, err

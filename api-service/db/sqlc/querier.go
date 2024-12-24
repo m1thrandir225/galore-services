@@ -45,7 +45,7 @@ type Querier interface {
 	GetCategoryByTag(ctx context.Context, tag string) (Category, error)
 	GetCategoryFlavour(ctx context.Context, id uuid.UUID) (CategoryFlavour, error)
 	GetCocktail(ctx context.Context, id uuid.UUID) (Cocktail, error)
-	GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]GetCocktailAndSimilarRow, error)
+	GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]Cocktail, error)
 	GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error)
 	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error)
 	GetDailyFeatured(ctx context.Context) ([]GetDailyFeaturedRow, error)

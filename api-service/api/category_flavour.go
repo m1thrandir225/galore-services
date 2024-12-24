@@ -15,10 +15,7 @@ type createCategoryFlavourRequest struct {
 }
 
 func (server *Server) setupCategoryFlavourRoutes(authRoutes *gin.RouterGroup) {
-	categoryFlavourRoutes := authRoutes.Group("/category_flavour")
 
-	categoryFlavourRoutes.POST("/", server.createCategoryFlavour)
-	categoryFlavourRoutes.DELETE("/:id", server.deleteCategoryFlavour)
 }
 
 // create-category-flavour mapping

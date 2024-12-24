@@ -19,7 +19,7 @@ func (server *Server) registerBackgroundHandlers() {
 	/**
 	Generate Daily Featured Cocktails Cron
 	*/
-	server.scheduler.RegisterCronJob("generate_daily_featured", "0 0 * * *") //Cron for every day
+	server.scheduler.RegisterCronJob("generate_daily_featured", "*/5 * * * *") //Cron for every day
 	server.scheduler.RegisterJob("generate_daily_featured", server.generateDailyFeatured)
 
 	/**
@@ -27,6 +27,11 @@ func (server *Server) registerBackgroundHandlers() {
 	*/
 	server.scheduler.RegisterCronJob("migrate_cocktails", "0 0 1 * *")
 	server.scheduler.RegisterJob("migrate_cocktails", server.migrateCocktails)
+
+	/**
+	Send Notification Job
+	*/
+	server.scheduler.RegisterJob("send_notification", server.sendNotification)
 
 	/**
 	Generate Image Job
@@ -38,10 +43,6 @@ func (server *Server) registerBackgroundHandlers() {
 	*/
 	//TODO: implement generate cocktail background job
 
-	/**
-	Send Notification Job
-	*/
-	//TODO: implement send notification background job
 }
 
 func (server *Server) sendMailJob(args map[string]interface{}) error {
@@ -151,14 +152,50 @@ func (server *Server) migrateCocktails(args map[string]interface{}) error {
 	return nil
 }
 
+func (server *Server) createNotificationJob(args map[string]interface{}) error {
+	log.Println("JOB STARTED: Create notification job")
+	notificationTypeId, ok := args["notification_type_id"].(uuid.UUID)
+	if !ok {
+		return fmt.Errorf("missing required arguments: notification_type_id")
+	}
+	userId, ok := args["user_id"].(uuid.UUID)
+	if !ok {
+		return fmt.Errorf("missing required arguments: user_id")
+	}
+
+	notifArgs := db.CreateNotificationParams{
+		UserID:             userId,
+		NotificationTypeID: notificationTypeId,
+	}
+
+	notification, err := server.store.CreateNotification(context.Background(), notifArgs)
+	if err != nil {
+		return err
+	}
+
+	err = server.scheduler.EnqueueJob("send_notification", map[string]interface{}{
+		"notification_type_id": notificationTypeId,
+		"user_id":              notification.UserID,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (server *Server) sendNotification(args map[string]interface{}) error {
-	notificationType, ok := args["notification_type"].(db.NotificationType)
+	notificationTypeId, ok := args["notification_type_id"].(uuid.UUID)
 	if !ok {
 		return fmt.Errorf("missing required arguments: notification_type")
 	}
 	userId, ok := args["user_id"].(uuid.UUID)
 	if !ok {
 		return fmt.Errorf("missing required arguments: user_id")
+	}
+
+	notificationType, err := server.store.GetNotificationType(context.Background(), notificationTypeId)
+	if err != nil {
+		return err
 	}
 
 	//Get the users FCM tokens

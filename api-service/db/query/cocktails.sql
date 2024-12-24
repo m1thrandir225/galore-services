@@ -28,9 +28,9 @@ WITH target_cocktail AS (
     WHERE cocktails.id = $1
     LIMIT 1
 )
-SELECT c.*, c.embedding <=> t.embedding AS similarity_score
+SELECT c.*
 FROM cocktails c, target_cocktail t
-ORDER BY similarity_score
+ORDER BY c.embedding <=> t.embedding
 LIMIT 10;
 
 

@@ -541,10 +541,10 @@ func (mr *MockStoreMockRecorder) GetCocktail(arg0, arg1 any) *gomock.Call {
 }
 
 // GetCocktailAndSimilar mocks base method.
-func (m *MockStore) GetCocktailAndSimilar(arg0 context.Context, arg1 uuid.UUID) ([]db.GetCocktailAndSimilarRow, error) {
+func (m *MockStore) GetCocktailAndSimilar(arg0 context.Context, arg1 uuid.UUID) ([]db.Cocktail, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCocktailAndSimilar", arg0, arg1)
-	ret0, _ := ret[0].([]db.GetCocktailAndSimilarRow)
+	ret0, _ := ret[0].([]db.Cocktail)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

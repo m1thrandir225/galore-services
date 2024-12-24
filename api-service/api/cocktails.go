@@ -27,21 +27,6 @@ type CreateOrUpdateCocktailRequest struct {
 	IsAlcoholic  bool                  `form:"isAlcoholic" binding:"required"`
 }
 
-func (server *Server) setupCocktailRoutes(authRoutes *gin.RouterGroup) {
-	cocktailRoutes := authRoutes.Group("/cocktails")
-
-	cocktailRoutes.GET("/", server.getCocktails)
-	cocktailRoutes.POST("/", server.createCocktail)
-	cocktailRoutes.GET("/:id", server.getCocktail)
-	cocktailRoutes.PUT("/:id", server.updateCocktail)
-	cocktailRoutes.DELETE("/:id", server.deleteCocktail)
-	cocktailRoutes.GET("/:id/was_featured", server.checkWasCocktailFeatured)
-	cocktailRoutes.GET("/:id/categories", server.getCategoriesForCocktail)
-
-	server.setupLikedCocktailRoutes(cocktailRoutes)
-	server.setupDailyFeaturedRoutes(cocktailRoutes)
-}
-
 func (server *Server) createCocktail(ctx *gin.Context) {
 	var requestData CreateOrUpdateCocktailRequest
 	var isAlcoholic pgtype.Bool
@@ -238,7 +223,6 @@ func (server *Server) getCocktails(ctx *gin.Context) {
 	searchQuery := ctx.DefaultQuery("search", "")
 
 	cocktails, err := server.store.SearchCocktails(ctx, searchQuery)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -404,4 +388,29 @@ func (server *Server) getCategoriesForCocktail(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, categories)
+}
+
+func (server *Server) getSimilarCocktails(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cocktailId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	cocktails, err := server.store.GetCocktailAndSimilar(ctx, cocktailId)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, cocktails)
 }

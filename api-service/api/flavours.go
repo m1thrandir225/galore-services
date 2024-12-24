@@ -14,18 +14,6 @@ type createOrUpdateRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func (server *Server) setupFlavourRoutes(authRoutes *gin.RouterGroup) {
-	flavourRoutes := authRoutes.Group("/flavours")
-
-	flavourRoutes.GET("/:id", server.getFlavourId)
-	flavourRoutes.POST("/", server.createFlavour)
-	flavourRoutes.DELETE("/:id", server.deleteFlavour)
-	flavourRoutes.PATCH("/:id", server.updateFlavour)
-	flavourRoutes.GET("/", server.getAllFlavours)
-
-	server.setupLikedFlavourRoutes(flavourRoutes)
-}
-
 func (server *Server) createFlavour(ctx *gin.Context) {
 	var requestData createOrUpdateRequest
 

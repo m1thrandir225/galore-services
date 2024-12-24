@@ -19,13 +19,6 @@ type UpdateNotificationStatusRequest struct {
 	Opened *bool `json:"opened" binding:"required"`
 }
 
-func (server *Server) setupNotificationRoutes(authRoutes *gin.RouterGroup) {
-	notificationRoutes := authRoutes.Group("/notifications")
-
-	notificationRoutes.POST("/", server.createNotification)
-	notificationRoutes.PATCH("/:id", server.updateNotificationStatus)
-}
-
 func (server *Server) createNotification(ctx *gin.Context) {
 	var requestData CreateNotificationRequest
 
@@ -61,6 +54,15 @@ func (server *Server) createNotification(ctx *gin.Context) {
 	}
 
 	//TODO: IMPLEMENT SENDING THE NOTIFICATION
+	err = server.scheduler.EnqueueJob("send_notification", map[string]interface{}{
+		"notification_type_id": notificationTypeId,
+		"user_id":              userId,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, notification)
 }

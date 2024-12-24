@@ -30,21 +30,6 @@ type UpdateUserPasswordRequest struct {
 	NewPassword string `json:"new_password" binding:"required"`
 }
 
-func (server *Server) setupUserRoutes(authRoutes *gin.RouterGroup) {
-	userRoutes := authRoutes.Group("/users")
-
-	userRoutes.GET("/:id", server.getUserDetails)
-	userRoutes.DELETE("/:id", server.deleteUser)
-	userRoutes.POST("/:id", server.updateUserInformation)
-	userRoutes.PUT("/:id/password", server.updateUserPassword)
-	userRoutes.PUT("/:id/push-notifications", server.updateUserPushNotifications)
-	userRoutes.PUT("/:id/email-notifications", server.updateUserEmailNotifications)
-	userRoutes.GET("/:id/flavours", server.getUserLikedFlavours)
-	userRoutes.GET("/:id/cocktails", server.getUserLikedCocktails)
-	userRoutes.GET("/:id/categories", server.getCategoriesBasedOnLikedFlavours)
-	userRoutes.GET("/:id/notifications", server.getUserNotifications)
-}
-
 func (server *Server) getUserDetails(ctx *gin.Context) {
 	var uriData UriId
 
