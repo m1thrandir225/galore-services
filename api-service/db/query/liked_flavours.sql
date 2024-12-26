@@ -7,6 +7,18 @@ INSERT INTO liked_flavours (
   $2
 ) RETURNING *;
 
+-- name: LikeFlavours :many
+INSERT INTO liked_flavours (
+    flavour_id,
+    user_id
+)
+SELECT
+    UNNEST(sqlc.arg(flavourIds)::uuid[]),
+    sqlc.arg(userId)::uuid
+RETURNING *;
+
+
+
 -- name: GetLikedFlavour :one 
 select id ,name, created_at from flavours f 
 join liked_flavours lf ON f.id = lf.flavour_id 

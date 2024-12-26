@@ -16,6 +16,9 @@ func (server *Server) setupRouter() {
 	v1.POST("/register", server.registerUser)
 	v1.POST("/login", server.loginUser)
 	v1.POST("/refresh", server.refreshToken)
+	v1.POST("/forgot-password", server.forgotPassword)
+	v1.POST("/verify-otp", server.verifyOTP)
+	v1.POST("/reset-password", server.resetPassword)
 	v1.GET("/health", server.checkServiceHealth)
 
 	/**
@@ -52,6 +55,7 @@ func (server *Server) setupRouter() {
 	/**
 	Liked Cocktail Routes
 	*/
+	authRoutes.POST("/cocktails/:id/is_liked", server.getCocktailLikedStatus)
 	authRoutes.POST("/cocktails/:id/like", server.likeCocktail)
 	authRoutes.POST("/cocktails/:id/unlike", server.unlikeCocktail)
 
@@ -84,6 +88,7 @@ func (server *Server) setupRouter() {
 	Liked Flavour Routes
 	*/
 	authRoutes.GET("/flavours/:id/like", server.getLikedFlavour)
+	authRoutes.POST("/flavours/like", server.likeFlavours)
 	authRoutes.POST("/flavours/:id/like", server.likeFlavour)
 	authRoutes.POST("/flavours/:id/unlike", server.unlikeFlavour)
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/jackc/pgx/v5/pgtype"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/util"
+	otp "github.com/pquerna/otp/totp"
 )
 
 type registerUserRequest struct {
@@ -61,6 +63,31 @@ type logoutRequest struct {
 
 type logoutResponse struct {
 	Message string `json:"message"`
+}
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
+type ForgotPasswordResponse struct {
+	OTP        string    `json:"otp"`
+	ValidUntil time.Time `json:"valid_until"`
+}
+
+type VerifyOTPRequest struct {
+	Email string `json:"email" binding:"required"`
+	OTP   string `json:"otp" binding:"required"`
+}
+
+type VerifyOTPResponse struct {
+	ResetPasswordRequest db.ResetPasswordRequest `json:"reset_password_request"`
+	Email                string                  `json:"email"`
+}
+
+type ResetPasswordRequest struct {
+	PasswordRequestId string `json:"password_request_id" binding:"required"`
+	NewPassword       string `json:"new_password" binding:"required"`
+	ConfirmPassword   string `json:"confirm_password" binding:"required"`
 }
 
 func (server *Server) registerUser(ctx *gin.Context) {
@@ -302,5 +329,136 @@ func (server *Server) refreshToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, refreshTokenResponse{
 		AccessToken: newToken,
 	})
+}
 
+func (server *Server) forgotPassword(ctx *gin.Context) {
+	var reqData ForgotPasswordRequest
+
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	_, err := server.store.GetUserByEmail(ctx, reqData.Email)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	codeValidUntil := time.Now().Add(time.Minute * 5)
+	otpCode, err := otp.GenerateCode(server.config.TOTPSecret, codeValidUntil)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ForgotPasswordResponse{
+		OTP:        otpCode,
+		ValidUntil: codeValidUntil,
+	})
+}
+
+func (server *Server) verifyOTP(ctx *gin.Context) {
+	var reqData VerifyOTPRequest
+
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserByEmail(ctx, reqData.Email)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	isValid := otp.Validate(reqData.OTP, server.config.TOTPSecret)
+	if !isValid {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	requestValidUntil := time.Now().Add(time.Minute * 5)
+
+	var pgRequestValidUntil pgtype.Timestamp
+	err = pgRequestValidUntil.Scan(requestValidUntil)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := db.CreateResetPasswordRequestParams{
+		ValidUntil: pgRequestValidUntil,
+		UserID:     user.ID,
+	}
+	passwordChangeRequest, err := server.store.CreateResetPasswordRequest(ctx, arg)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, VerifyOTPResponse{
+		Email:                user.Email,
+		ResetPasswordRequest: passwordChangeRequest,
+	})
+}
+
+func (server *Server) resetPassword(ctx *gin.Context) {
+	var reqData ResetPasswordRequest
+
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	resetPasswordRequestId, err := uuid.Parse(reqData.PasswordRequestId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	resetPasswordRequest, err := server.store.GetResetPasswordRequest(ctx, resetPasswordRequestId)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("reset password request not found")))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if resetPasswordRequest.ValidUntil.Time.After(time.Now()) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if reqData.NewPassword != reqData.ConfirmPassword {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	newPassword, err := util.HashPassowrd(reqData.NewPassword)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	arg := db.UpdateUserPasswordParams{
+		ID:       resetPasswordRequest.UserID,
+		Password: newPassword,
+	}
+	err = server.store.UpdateUserPassword(ctx, arg)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.Status(http.StatusOK)
 }

@@ -825,6 +825,21 @@ func (mr *MockStoreMockRecorder) InvalidateSession(arg0, arg1 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSession", reflect.TypeOf((*MockStore)(nil).InvalidateSession), arg0, arg1)
 }
 
+// IsCocktailLiked mocks base method.
+func (m *MockStore) IsCocktailLiked(arg0 context.Context, arg1 db.IsCocktailLikedParams) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsCocktailLiked", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsCocktailLiked indicates an expected call of IsCocktailLiked.
+func (mr *MockStoreMockRecorder) IsCocktailLiked(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCocktailLiked", reflect.TypeOf((*MockStore)(nil).IsCocktailLiked), arg0, arg1)
+}
+
 // LikeCocktail mocks base method.
 func (m *MockStore) LikeCocktail(arg0 context.Context, arg1 db.LikeCocktailParams) (db.LikedCocktail, error) {
 	m.ctrl.T.Helper()

@@ -22,6 +22,13 @@ JOIN  liked_cocktails lc ON c.id = lc.cocktail_id
 WHERE lc.user_id = $1
 GROUP BY lc.user_id, c.id, lc.id;
 
+-- name: IsCocktailLiked :one
+SELECT EXISTS (
+    SELECT 1
+    FROM liked_cocktails lc
+    WHERE lc.user_id = $1 AND lc.cocktail_id = $2
+) AS is_liked;
+
 -- name: GetLikedCocktail :one
 SELECT c.id,
         c.name,

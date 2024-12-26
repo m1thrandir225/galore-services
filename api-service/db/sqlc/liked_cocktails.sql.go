@@ -123,6 +123,26 @@ func (q *Queries) GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]Ge
 	return items, nil
 }
 
+const isCocktailLiked = `-- name: IsCocktailLiked :one
+SELECT EXISTS (
+    SELECT 1
+    FROM liked_cocktails lc
+    WHERE lc.user_id = $1 AND lc.cocktail_id = $2
+) AS is_liked
+`
+
+type IsCocktailLikedParams struct {
+	UserID     uuid.UUID `json:"user_id"`
+	CocktailID uuid.UUID `json:"cocktail_id"`
+}
+
+func (q *Queries) IsCocktailLiked(ctx context.Context, arg IsCocktailLikedParams) (bool, error) {
+	row := q.db.QueryRow(ctx, isCocktailLiked, arg.UserID, arg.CocktailID)
+	var is_liked bool
+	err := row.Scan(&is_liked)
+	return is_liked, err
+}
+
 const likeCocktail = `-- name: LikeCocktail :one
 INSERT INTO liked_cocktails (
   cocktail_id,

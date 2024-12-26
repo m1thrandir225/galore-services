@@ -103,6 +103,13 @@ type NotificationType struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type ResetPasswordRequest struct {
+	ID            uuid.UUID        `json:"id"`
+	UserID        uuid.UUID        `json:"user_id"`
+	PasswordReset bool             `json:"password_reset"`
+	ValidUntil    pgtype.Timestamp `json:"valid_until"`
+}
+
 type Session struct {
 	ID           uuid.UUID `json:"id"`
 	Email        string    `json:"email"`

@@ -79,6 +79,42 @@ func (q *Queries) LikeFlavour(ctx context.Context, arg LikeFlavourParams) (Liked
 	return i, err
 }
 
+const likeFlavours = `-- name: LikeFlavours :many
+INSERT INTO liked_flavours (
+    flavour_id,
+    user_id
+)
+SELECT
+    UNNEST($1::uuid[]),
+    $2::uuid
+RETURNING flavour_id, user_id
+`
+
+type LikeFlavoursParams struct {
+	Flavourids []uuid.UUID `json:"flavourids"`
+	Userid     uuid.UUID   `json:"userid"`
+}
+
+func (q *Queries) LikeFlavours(ctx context.Context, arg LikeFlavoursParams) ([]LikedFlavour, error) {
+	rows, err := q.db.Query(ctx, likeFlavours, arg.Flavourids, arg.Userid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LikedFlavour{}
+	for rows.Next() {
+		var i LikedFlavour
+		if err := rows.Scan(&i.FlavourID, &i.UserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const unlikeFlavour = `-- name: UnlikeFlavour :exec
 DELETE FROM liked_flavours 
 WHERE flavour_id = $1 AND user_id = $2

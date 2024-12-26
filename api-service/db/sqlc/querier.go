@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	CheckWasCocktailFeatured(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	ClearExpiredRequests(ctx context.Context) error
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCategoryFlavour(ctx context.Context, arg CreateCategoryFlavourParams) (CategoryFlavour, error)
 	CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error)
@@ -21,6 +22,7 @@ type Querier interface {
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
 	CreateNotificationType(ctx context.Context, arg CreateNotificationTypeParams) (NotificationType, error)
+	CreateResetPasswordRequest(ctx context.Context, arg CreateResetPasswordRequestParams) (ResetPasswordRequest, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
@@ -56,6 +58,7 @@ type Querier interface {
 	GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error)
 	GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (Flavour, error)
 	GetNotificationType(ctx context.Context, id uuid.UUID) (NotificationType, error)
+	GetResetPasswordRequest(ctx context.Context, id uuid.UUID) (ResetPasswordRequest, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
@@ -64,8 +67,10 @@ type Querier interface {
 	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error)
+	IsCocktailLiked(ctx context.Context, arg IsCocktailLikedParams) (bool, error)
 	LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error)
 	LikeFlavour(ctx context.Context, arg LikeFlavourParams) (LikedFlavour, error)
+	LikeFlavours(ctx context.Context, arg LikeFlavoursParams) ([]LikedFlavour, error)
 	SearchCocktails(ctx context.Context, dollar_1 string) ([]Cocktail, error)
 	UnlikeCocktail(ctx context.Context, arg UnlikeCocktailParams) error
 	UnlikeFlavour(ctx context.Context, arg UnlikeFlavourParams) error
@@ -73,6 +78,7 @@ type Querier interface {
 	UpdateCocktail(ctx context.Context, arg UpdateCocktailParams) (Cocktail, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
 	UpdateNotificationType(ctx context.Context, arg UpdateNotificationTypeParams) (NotificationType, error)
+	UpdateResetPasswordRequest(ctx context.Context, arg UpdateResetPasswordRequestParams) (ResetPasswordRequest, error)
 	UpdateUserEmailNotifications(ctx context.Context, arg UpdateUserEmailNotificationsParams) (bool, error)
 	UpdateUserInformation(ctx context.Context, arg UpdateUserInformationParams) (UpdateUserInformationRow, error)
 	UpdateUserNotification(ctx context.Context, arg UpdateUserNotificationParams) (Notification, error)

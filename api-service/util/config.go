@@ -30,6 +30,7 @@ type Config struct {
 	SMTPPort                  int           `mapstructure:"SMTP_PORT"`
 	SMTPUser                  string        `mapstructure:"SMTP_USER"`
 	SMTPPass                  string        `mapstructure:"SMTP_PASS"`
+	TOTPSecret                string        `mapstructure:"TOTP_SECRET"`
 	FirebaseServiceKey        string        `mapstructure:"FIREBASE_SERVICE_KEY"`
 }
 
