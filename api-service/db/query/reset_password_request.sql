@@ -5,7 +5,7 @@ RETURNING *;
 
 -- name: UpdateResetPasswordRequest :one
 UPDATE reset_password_request
-SET password_reset = $2
+SET password_reset = $2, valid_until = $3
 WHERE id = $1
 RETURNING *;
 

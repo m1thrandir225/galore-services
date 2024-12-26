@@ -466,5 +466,24 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	var pgTypeTimeStamp pgtype.Timestamp
+
+	err = pgTypeTimeStamp.Scan(time.Now())
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	updatePasswordRequestArg := db.UpdateResetPasswordRequestParams{
+		ID:            resetPasswordRequest.ID,
+		PasswordReset: true,
+		ValidUntil:    pgTypeTimeStamp,
+	}
+	_, err = server.store.UpdateResetPasswordRequest(ctx, updatePasswordRequestArg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.Status(http.StatusOK)
 }

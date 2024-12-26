@@ -65,18 +65,19 @@ func (q *Queries) GetResetPasswordRequest(ctx context.Context, id uuid.UUID) (Re
 
 const updateResetPasswordRequest = `-- name: UpdateResetPasswordRequest :one
 UPDATE reset_password_request
-SET password_reset = $2
+SET password_reset = $2, valid_until = $3
 WHERE id = $1
 RETURNING id, user_id, password_reset, valid_until
 `
 
 type UpdateResetPasswordRequestParams struct {
-	ID            uuid.UUID `json:"id"`
-	PasswordReset bool      `json:"password_reset"`
+	ID            uuid.UUID        `json:"id"`
+	PasswordReset bool             `json:"password_reset"`
+	ValidUntil    pgtype.Timestamp `json:"valid_until"`
 }
 
 func (q *Queries) UpdateResetPasswordRequest(ctx context.Context, arg UpdateResetPasswordRequestParams) (ResetPasswordRequest, error) {
-	row := q.db.QueryRow(ctx, updateResetPasswordRequest, arg.ID, arg.PasswordReset)
+	row := q.db.QueryRow(ctx, updateResetPasswordRequest, arg.ID, arg.PasswordReset, arg.ValidUntil)
 	var i ResetPasswordRequest
 	err := row.Scan(
 		&i.ID,
