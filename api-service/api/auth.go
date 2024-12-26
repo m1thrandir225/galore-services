@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/m1thrandir225/galore-services/mail"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -181,8 +182,10 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
+	template := mail.GenerateWelcomeMail(newEntry.Email)
 	sendMailArgs := map[string]interface{}{
-		"email": newEntry.Email,
+		"email":         newEntry.Email,
+		"mail_template": template,
 	}
 
 	server.scheduler.EnqueueJob("send_mail", sendMailArgs)
@@ -356,10 +359,13 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ForgotPasswordResponse{
-		OTP:        otpCode,
-		ValidUntil: codeValidUntil,
+	emailTemplate := mail.GeneratePasswordOTPMail(otpCode)
+	server.scheduler.EnqueueJob("send_mail", map[string]interface{}{
+		"email":         reqData.Email,
+		"mail_template": emailTemplate,
 	})
+
+	ctx.Status(http.StatusOK)
 }
 
 func (server *Server) verifyOTP(ctx *gin.Context) {

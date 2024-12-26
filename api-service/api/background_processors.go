@@ -10,7 +10,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/mail"
 	"golang.org/x/exp/rand"
 )
 
@@ -56,7 +55,10 @@ func (server *Server) sendMailJob(args map[string]interface{}) error {
 
 	fmt.Println("Started: sending mail job")
 
-	mailTemplate := mail.GenerateWelcomeMail(email)
+	mailTemplate, ok := args["mail_template"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: mail template")
+	}
 
 	err := server.mailService.SendMail(
 		"help@sebastijanzindl.me",
