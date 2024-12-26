@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/m1thrandir225/galore-services/mail"
+	"github.com/m1thrandir225/galore-services/security"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -15,7 +16,6 @@ import (
 	"github.com/google/uuid"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"github.com/m1thrandir225/galore-services/util"
-	otp "github.com/pquerna/otp/totp"
 )
 
 type registerUserRequest struct {
@@ -126,18 +126,34 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
+	otpSecret, err := security.GenerateOTPSecret()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	args := db.CreateUserParams{
-		ID:        userId,
-		Email:     requestData.Email,
-		Birthday:  dbDate,
-		Name:      requestData.Name,
-		AvatarUrl: avatarUrl,
-		Password:  hashedPassword,
+		ID:         userId,
+		Email:      requestData.Email,
+		Birthday:   dbDate,
+		Name:       requestData.Name,
+		AvatarUrl:  avatarUrl,
+		Password:   hashedPassword,
+		HotpSecret: otpSecret,
 	}
 
 	newEntry, err := server.store.CreateUser(ctx, args)
 	if err != nil {
 		log.Println(err.Error())
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = server.store.CreateHotpCounter(ctx, db.CreateHotpCounterParams{
+		UserID:  newEntry.ID,
+		Counter: 0,
+	})
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -186,6 +202,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	sendMailArgs := map[string]interface{}{
 		"email":         newEntry.Email,
 		"mail_template": template,
+		"subject":       "Welcome to Galore",
 	}
 
 	server.scheduler.EnqueueJob("send_mail", sendMailArgs)
@@ -342,7 +359,7 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	_, err := server.store.GetUserByEmail(ctx, reqData.Email)
+	user, err := server.store.GetUserByEmail(ctx, reqData.Email)
 	if err != nil {
 		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -351,9 +368,24 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	currentUserCounter, err := server.store.GetCurrentCounter(ctx, user.ID)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			err = server.store.CreateHotpCounter(ctx, db.CreateHotpCounterParams{
+				UserID:  user.ID,
+				Counter: 0,
+			})
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+			currentUserCounter = 0
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
-	codeValidUntil := time.Now().Add(time.Minute * 5)
-	otpCode, err := otp.GenerateCode(server.config.TOTPSecret, codeValidUntil)
+	otpCode, err := security.GenerateHOTP(user.HotpSecret, uint64(currentUserCounter))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -363,6 +395,7 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 	server.scheduler.EnqueueJob("send_mail", map[string]interface{}{
 		"email":         reqData.Email,
 		"mail_template": emailTemplate,
+		"subject":       "Galore - Password Reset Request",
 	})
 
 	ctx.Status(http.StatusOK)
@@ -386,23 +419,57 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 		return
 	}
 
-	isValid := otp.Validate(reqData.OTP, server.config.TOTPSecret)
-	if !isValid {
+	currentUserCounter, err := server.store.GetCurrentCounter(ctx, user.ID)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			err = server.store.CreateHotpCounter(ctx, db.CreateHotpCounterParams{
+				UserID:  user.ID,
+				Counter: 0,
+			})
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+			currentUserCounter = 0
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	var isOtpCorrect bool
+
+	for lookAhead := uint64(0); lookAhead < 5; lookAhead++ {
+		tC := uint64(currentUserCounter) + lookAhead
+		isValid, vaErr := security.ValidateHOTP(user.HotpSecret, reqData.OTP, tC)
+		if vaErr != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		if isValid {
+			_, iErr := server.store.IncreaseCounter(ctx, user.ID)
+			if iErr != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+			isOtpCorrect = true
+			break
+		}
+	}
+
+	if !isOtpCorrect {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	requestValidUntil := time.Now().Add(time.Minute * 5)
-
-	var pgRequestValidUntil pgtype.Timestamp
-	err = pgRequestValidUntil.Scan(requestValidUntil)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+	pgValidUntil := pgtype.Timestamp{
+		Time:             requestValidUntil,
+		InfinityModifier: 0,
+		Valid:            true,
 	}
 
 	arg := db.CreateResetPasswordRequestParams{
-		ValidUntil: pgRequestValidUntil,
+		ValidUntil: pgValidUntil,
 		UserID:     user.ID,
 	}
 	passwordChangeRequest, err := server.store.CreateResetPasswordRequest(ctx, arg)
@@ -425,6 +492,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
 	resetPasswordRequestId, err := uuid.Parse(reqData.PasswordRequestId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -441,7 +509,13 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	if resetPasswordRequest.ValidUntil.Time.After(time.Now()) {
+	user, err := server.store.GetUser(ctx, resetPasswordRequest.UserID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if time.Now().After(resetPasswordRequest.ValidUntil.Time) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -456,8 +530,9 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
 	arg := db.UpdateUserPasswordParams{
-		ID:       resetPasswordRequest.UserID,
+		ID:       user.ID,
 		Password: newPassword,
 	}
 	err = server.store.UpdateUserPassword(ctx, arg)
@@ -466,12 +541,11 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	var pgTypeTimeStamp pgtype.Timestamp
 
-	err = pgTypeTimeStamp.Scan(time.Now())
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+	pgTypeTimeStamp := pgtype.Timestamp{
+		Time:             time.Now(),
+		Valid:            true,
+		InfinityModifier: 0,
 	}
 
 	updatePasswordRequestArg := db.UpdateResetPasswordRequestParams{
@@ -484,6 +558,16 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	template := mail.GeneratePasswordResetSuccessfullyMail()
+
+	sendMailArgs := map[string]interface{}{
+		"email":         user.Email,
+		"mail_template": template,
+		"subject":       "Your Password Was Changed",
+	}
+
+	server.scheduler.EnqueueJob("send_mail", sendMailArgs)
 
 	ctx.Status(http.StatusOK)
 }

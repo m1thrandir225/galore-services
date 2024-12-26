@@ -20,24 +20,27 @@ INSERT INTO users (
   name,
   password,
   avatar_url,
-  birthday
+  birthday,
+  hotp_secret
 ) VALUES (
     $1,
   $2,
   $3,
   $4,
   $5,
-  $6
+  $6,
+   $7
 ) RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at
 `
 
 type CreateUserParams struct {
-	ID        uuid.UUID   `json:"id"`
-	Email     string      `json:"email"`
-	Name      string      `json:"name"`
-	Password  string      `json:"password"`
-	AvatarUrl string      `json:"avatar_url"`
-	Birthday  pgtype.Date `json:"birthday"`
+	ID         uuid.UUID   `json:"id"`
+	Email      string      `json:"email"`
+	Name       string      `json:"name"`
+	Password   string      `json:"password"`
+	AvatarUrl  string      `json:"avatar_url"`
+	Birthday   pgtype.Date `json:"birthday"`
+	HotpSecret string      `json:"hotp_secret"`
 }
 
 type CreateUserRow struct {
@@ -59,6 +62,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		arg.Password,
 		arg.AvatarUrl,
 		arg.Birthday,
+		arg.HotpSecret,
 	)
 	var i CreateUserRow
 	err := row.Scan(
@@ -86,7 +90,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
+SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
 WHERE id = $1 LIMIT 1
 `
 
@@ -99,6 +103,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Name,
 		&i.Password,
 		&i.AvatarUrl,
+		&i.HotpSecret,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
 		&i.CreatedAt,
@@ -108,7 +113,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, password, avatar_url, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
+SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
 WHERE email = $1 LIMIT 1
 `
 
@@ -121,12 +126,25 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Name,
 		&i.Password,
 		&i.AvatarUrl,
+		&i.HotpSecret,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
 		&i.CreatedAt,
 		&i.Birthday,
 	)
 	return i, err
+}
+
+const getUserHOTPSecret = `-- name: GetUserHOTPSecret :one
+SELECT hotp_secret FROM users
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserHOTPSecret(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getUserHOTPSecret, id)
+	var hotp_secret string
+	err := row.Scan(&hotp_secret)
+	return hotp_secret, err
 }
 
 const updateUserEmailNotifications = `-- name: UpdateUserEmailNotifications :one

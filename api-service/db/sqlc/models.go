@@ -76,6 +76,12 @@ type Flavour struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type HotpCounter struct {
+	UserID   uuid.UUID `json:"user_id"`
+	Counter  int32     `json:"counter"`
+	LastUsed time.Time `json:"last_used"`
+}
+
 type LikedCocktail struct {
 	ID         uuid.UUID `json:"id"`
 	CocktailID uuid.UUID `json:"cocktail_id"`
@@ -127,6 +133,7 @@ type User struct {
 	Name                      string      `json:"name"`
 	Password                  string      `json:"password"`
 	AvatarUrl                 string      `json:"avatar_url"`
+	HotpSecret                string      `json:"hotp_secret"`
 	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
 	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`
 	CreatedAt                 time.Time   `json:"created_at"`

@@ -56,6 +56,34 @@ func (mr *MockStoreMockRecorder) CheckWasCocktailFeatured(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckWasCocktailFeatured", reflect.TypeOf((*MockStore)(nil).CheckWasCocktailFeatured), arg0, arg1)
 }
 
+// CleanupExpiredCounters mocks base method.
+func (m *MockStore) CleanupExpiredCounters(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CleanupExpiredCounters", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CleanupExpiredCounters indicates an expected call of CleanupExpiredCounters.
+func (mr *MockStoreMockRecorder) CleanupExpiredCounters(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CleanupExpiredCounters", reflect.TypeOf((*MockStore)(nil).CleanupExpiredCounters), arg0)
+}
+
+// ClearExpiredRequests mocks base method.
+func (m *MockStore) ClearExpiredRequests(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearExpiredRequests", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearExpiredRequests indicates an expected call of ClearExpiredRequests.
+func (mr *MockStoreMockRecorder) ClearExpiredRequests(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearExpiredRequests", reflect.TypeOf((*MockStore)(nil).ClearExpiredRequests), arg0)
+}
+
 // CreateCategory mocks base method.
 func (m *MockStore) CreateCategory(arg0 context.Context, arg1 db.CreateCategoryParams) (db.Category, error) {
 	m.ctrl.T.Helper()
@@ -161,6 +189,20 @@ func (mr *MockStoreMockRecorder) CreateFlavour(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFlavour", reflect.TypeOf((*MockStore)(nil).CreateFlavour), arg0, arg1)
 }
 
+// CreateHotpCounter mocks base method.
+func (m *MockStore) CreateHotpCounter(arg0 context.Context, arg1 db.CreateHotpCounterParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateHotpCounter", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateHotpCounter indicates an expected call of CreateHotpCounter.
+func (mr *MockStoreMockRecorder) CreateHotpCounter(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHotpCounter", reflect.TypeOf((*MockStore)(nil).CreateHotpCounter), arg0, arg1)
+}
+
 // CreateNotification mocks base method.
 func (m *MockStore) CreateNotification(arg0 context.Context, arg1 db.CreateNotificationParams) (db.Notification, error) {
 	m.ctrl.T.Helper()
@@ -189,6 +231,21 @@ func (m *MockStore) CreateNotificationType(arg0 context.Context, arg1 db.CreateN
 func (mr *MockStoreMockRecorder) CreateNotificationType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNotificationType", reflect.TypeOf((*MockStore)(nil).CreateNotificationType), arg0, arg1)
+}
+
+// CreateResetPasswordRequest mocks base method.
+func (m *MockStore) CreateResetPasswordRequest(arg0 context.Context, arg1 db.CreateResetPasswordRequestParams) (db.ResetPasswordRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateResetPasswordRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.ResetPasswordRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateResetPasswordRequest indicates an expected call of CreateResetPasswordRequest.
+func (mr *MockStoreMockRecorder) CreateResetPasswordRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateResetPasswordRequest", reflect.TypeOf((*MockStore)(nil).CreateResetPasswordRequest), arg0, arg1)
 }
 
 // CreateSession mocks base method.
@@ -585,6 +642,21 @@ func (mr *MockStoreMockRecorder) GetCocktailsForCategory(arg0, arg1 any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCocktailsForCategory", reflect.TypeOf((*MockStore)(nil).GetCocktailsForCategory), arg0, arg1)
 }
 
+// GetCurrentCounter mocks base method.
+func (m *MockStore) GetCurrentCounter(arg0 context.Context, arg1 uuid.UUID) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrentCounter", arg0, arg1)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCurrentCounter indicates an expected call of GetCurrentCounter.
+func (mr *MockStoreMockRecorder) GetCurrentCounter(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentCounter", reflect.TypeOf((*MockStore)(nil).GetCurrentCounter), arg0, arg1)
+}
+
 // GetDailyFeatured mocks base method.
 func (m *MockStore) GetDailyFeatured(arg0 context.Context) ([]db.GetDailyFeaturedRow, error) {
 	m.ctrl.T.Helper()
@@ -705,6 +777,21 @@ func (mr *MockStoreMockRecorder) GetNotificationType(arg0, arg1 any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotificationType", reflect.TypeOf((*MockStore)(nil).GetNotificationType), arg0, arg1)
 }
 
+// GetResetPasswordRequest mocks base method.
+func (m *MockStore) GetResetPasswordRequest(arg0 context.Context, arg1 uuid.UUID) (db.ResetPasswordRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResetPasswordRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.ResetPasswordRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResetPasswordRequest indicates an expected call of GetResetPasswordRequest.
+func (mr *MockStoreMockRecorder) GetResetPasswordRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResetPasswordRequest", reflect.TypeOf((*MockStore)(nil).GetResetPasswordRequest), arg0, arg1)
+}
+
 // GetSession mocks base method.
 func (m *MockStore) GetSession(arg0 context.Context, arg1 uuid.UUID) (db.Session, error) {
 	m.ctrl.T.Helper()
@@ -780,6 +867,21 @@ func (mr *MockStoreMockRecorder) GetUserFCMTokens(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFCMTokens", reflect.TypeOf((*MockStore)(nil).GetUserFCMTokens), arg0, arg1)
 }
 
+// GetUserHOTPSecret mocks base method.
+func (m *MockStore) GetUserHOTPSecret(arg0 context.Context, arg1 uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserHOTPSecret", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserHOTPSecret indicates an expected call of GetUserHOTPSecret.
+func (mr *MockStoreMockRecorder) GetUserHOTPSecret(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserHOTPSecret", reflect.TypeOf((*MockStore)(nil).GetUserHOTPSecret), arg0, arg1)
+}
+
 // GetUserLikedFlavours mocks base method.
 func (m *MockStore) GetUserLikedFlavours(arg0 context.Context, arg1 uuid.UUID) ([]db.Flavour, error) {
 	m.ctrl.T.Helper()
@@ -808,6 +910,21 @@ func (m *MockStore) GetUserNotifications(arg0 context.Context, arg1 uuid.UUID) (
 func (mr *MockStoreMockRecorder) GetUserNotifications(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserNotifications", reflect.TypeOf((*MockStore)(nil).GetUserNotifications), arg0, arg1)
+}
+
+// IncreaseCounter mocks base method.
+func (m *MockStore) IncreaseCounter(arg0 context.Context, arg1 uuid.UUID) (db.HotpCounter, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IncreaseCounter", arg0, arg1)
+	ret0, _ := ret[0].(db.HotpCounter)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IncreaseCounter indicates an expected call of IncreaseCounter.
+func (mr *MockStoreMockRecorder) IncreaseCounter(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncreaseCounter", reflect.TypeOf((*MockStore)(nil).IncreaseCounter), arg0, arg1)
 }
 
 // InvalidateSession mocks base method.
@@ -868,6 +985,21 @@ func (m *MockStore) LikeFlavour(arg0 context.Context, arg1 db.LikeFlavourParams)
 func (mr *MockStoreMockRecorder) LikeFlavour(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeFlavour", reflect.TypeOf((*MockStore)(nil).LikeFlavour), arg0, arg1)
+}
+
+// LikeFlavours mocks base method.
+func (m *MockStore) LikeFlavours(arg0 context.Context, arg1 db.LikeFlavoursParams) ([]db.LikedFlavour, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeFlavours", arg0, arg1)
+	ret0, _ := ret[0].([]db.LikedFlavour)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LikeFlavours indicates an expected call of LikeFlavours.
+func (mr *MockStoreMockRecorder) LikeFlavours(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeFlavours", reflect.TypeOf((*MockStore)(nil).LikeFlavours), arg0, arg1)
 }
 
 // SearchCocktails mocks base method.
@@ -971,6 +1103,21 @@ func (m *MockStore) UpdateNotificationType(arg0 context.Context, arg1 db.UpdateN
 func (mr *MockStoreMockRecorder) UpdateNotificationType(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationType", reflect.TypeOf((*MockStore)(nil).UpdateNotificationType), arg0, arg1)
+}
+
+// UpdateResetPasswordRequest mocks base method.
+func (m *MockStore) UpdateResetPasswordRequest(arg0 context.Context, arg1 db.UpdateResetPasswordRequestParams) (db.ResetPasswordRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateResetPasswordRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.ResetPasswordRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateResetPasswordRequest indicates an expected call of UpdateResetPasswordRequest.
+func (mr *MockStoreMockRecorder) UpdateResetPasswordRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateResetPasswordRequest", reflect.TypeOf((*MockStore)(nil).UpdateResetPasswordRequest), arg0, arg1)
 }
 
 // UpdateUserEmailNotifications mocks base method.

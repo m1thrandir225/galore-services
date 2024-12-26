@@ -5,19 +5,25 @@ INSERT INTO users (
   name,
   password,
   avatar_url,
-  birthday
+  birthday,
+  hotp_secret
 ) VALUES (
     $1,
   $2,
   $3,
   $4,
   $5,
-  $6
+  $6,
+   $7
 ) RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at;
 
 -- name: GetUser :one 
 SELECT * FROM users 
-WHERE id = $1 LIMIT 1; 
+WHERE id = $1 LIMIT 1;
+
+-- name: GetUserHOTPSecret :one
+SELECT hotp_secret FROM users
+WHERE id = $1 LIMIT 1;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users 

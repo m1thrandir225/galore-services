@@ -6,6 +6,7 @@ CREATE TABLE users (
     name TEXT NOT NULL,
     password TEXT NOT NULL,
     avatar_url TEXT NOT NULL,
+    hotp_secret TEXT NOT NULL,
     enabled_push_notifications BOOLEAN DEFAULT FALSE NOT NULL,
     enabled_email_notifications BOOLEAN DEFAULT FALSE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now ()

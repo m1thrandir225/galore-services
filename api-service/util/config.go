@@ -74,6 +74,7 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("SMTP_PORT")
 	viper.BindEnv("SMTP_USER")
 	viper.BindEnv("SMTP_PASS")
+	viper.BindEnv("TOTP_SECRET")
 	viper.BindEnv("FIREBASE_SERVICE_KEY")
 
 	err = viper.Unmarshal(&config)

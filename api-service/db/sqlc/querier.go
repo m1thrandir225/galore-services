@@ -12,6 +12,7 @@ import (
 
 type Querier interface {
 	CheckWasCocktailFeatured(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	CleanupExpiredCounters(ctx context.Context) error
 	ClearExpiredRequests(ctx context.Context) error
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCategoryFlavour(ctx context.Context, arg CreateCategoryFlavourParams) (CategoryFlavour, error)
@@ -20,6 +21,7 @@ type Querier interface {
 	CreateDailyFeatured(ctx context.Context, cocktailID uuid.UUID) (DailyFeaturedCocktail, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
+	CreateHotpCounter(ctx context.Context, arg CreateHotpCounterParams) error
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
 	CreateNotificationType(ctx context.Context, arg CreateNotificationTypeParams) (NotificationType, error)
 	CreateResetPasswordRequest(ctx context.Context, arg CreateResetPasswordRequestParams) (ResetPasswordRequest, error)
@@ -50,6 +52,7 @@ type Querier interface {
 	GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]Cocktail, error)
 	GetCocktailCategory(ctx context.Context, id uuid.UUID) (CocktailCategory, error)
 	GetCocktailsForCategory(ctx context.Context, categoryID uuid.UUID) ([]GetCocktailsForCategoryRow, error)
+	GetCurrentCounter(ctx context.Context, userID uuid.UUID) (int32, error)
 	GetDailyFeatured(ctx context.Context) ([]GetDailyFeaturedRow, error)
 	GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, error)
 	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
@@ -64,8 +67,10 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
 	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
+	GetUserHOTPSecret(ctx context.Context, id uuid.UUID) (string, error)
 	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	IncreaseCounter(ctx context.Context, userID uuid.UUID) (HotpCounter, error)
 	InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error)
 	IsCocktailLiked(ctx context.Context, arg IsCocktailLikedParams) (bool, error)
 	LikeCocktail(ctx context.Context, arg LikeCocktailParams) (LikedCocktail, error)

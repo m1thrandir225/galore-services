@@ -60,10 +60,15 @@ func (server *Server) sendMailJob(args map[string]interface{}) error {
 		return fmt.Errorf("missing required arguments: mail template")
 	}
 
+	subject, ok := args["subject"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: subject")
+	}
+
 	err := server.mailService.SendMail(
-		"help@sebastijanzindl.me",
+		"galore@sebastijanzindl.me",
 		email,
-		"Welcome to Galore",
+		subject,
 		mailTemplate,
 	)
 	if err != nil {
