@@ -110,6 +110,7 @@ WITH target_cocktail AS (
 )
 SELECT c.id, c.name, c.is_alcoholic, c.glass, c.image, c.instructions, c.ingredients, c.embedding, c.created_at
 FROM cocktails c, target_cocktail t
+WHERE c.id != $1
 ORDER BY c.embedding <=> t.embedding
 LIMIT 10
 `
@@ -134,6 +135,62 @@ func (q *Queries) GetCocktailAndSimilar(ctx context.Context, id uuid.UUID) ([]Co
 			&i.Embedding,
 			&i.CreatedAt,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getHomescreenForUser = `-- name: GetHomescreenForUser :many
+WITH UserLikedCategories AS (
+    SELECT cf.category_id
+    FROM liked_flavours lf
+             JOIN category_flavour cf ON lf.flavour_id = cf.flavour_id
+    WHERE lf.user_id = $1
+    GROUP BY cf.category_id
+    ORDER BY RANDOM()
+    LIMIT 4
+),
+     CategoryCocktails AS (
+         SELECT cc.cocktail_id, cc.category_id
+         FROM cocktail_categories cc
+         WHERE cc.category_id IN (SELECT category_id FROM UserLikedCategories)
+     ),
+     RankedCocktails AS (
+         SELECT
+             cc.cocktail_id,
+             cc.category_id,
+             ROW_NUMBER() OVER (PARTITION BY cc.category_id ORDER BY RANDOM()) AS rank
+         FROM CategoryCocktails cc
+     )
+SELECT
+    rc.category_id,
+    array_agg(rc.cocktail_id)::uuid[] AS cocktails
+FROM RankedCocktails rc
+WHERE rc.rank <= 5
+GROUP BY rc.category_id
+HAVING COUNT(rc.cocktail_id) >= 2
+`
+
+type GetHomescreenForUserRow struct {
+	CategoryID uuid.UUID   `json:"category_id"`
+	Cocktails  []uuid.UUID `json:"cocktails"`
+}
+
+func (q *Queries) GetHomescreenForUser(ctx context.Context, userID uuid.UUID) ([]GetHomescreenForUserRow, error) {
+	rows, err := q.db.Query(ctx, getHomescreenForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetHomescreenForUserRow{}
+	for rows.Next() {
+		var i GetHomescreenForUserRow
+		if err := rows.Scan(&i.CategoryID, &i.Cocktails); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

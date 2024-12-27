@@ -414,3 +414,65 @@ func (server *Server) getSimilarCocktails(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, cocktails)
 }
+
+type Section struct {
+	Cocktails []db.Cocktail `json:"cocktails"`
+	Category  db.Category   `json:"category"`
+}
+
+func (server *Server) getHomescreenForUser(ctx *gin.Context) {
+	var uriData UriId
+
+	if err := ctx.ShouldBindUri(&uriData); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userId, err := uuid.Parse(uriData.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	data, err := server.store.GetHomescreenForUser(ctx, userId)
+	if err != nil {
+		if errors.Is(err, db.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	sections := make([]Section, 0)
+	for _, row := range data {
+		cocktailIds := row.Cocktails
+		cocktails := make([]db.Cocktail, 0)
+		for _, cocktailId := range cocktailIds {
+			cocktail, cErr := server.store.GetCocktail(ctx, cocktailId)
+			if cErr != nil {
+				if errors.Is(cErr, db.ErrRecordNotFound) {
+					continue
+				}
+				ctx.JSON(http.StatusInternalServerError, errorResponse(cErr))
+				return
+			}
+			cocktails = append(cocktails, cocktail)
+		}
+
+		category, cgErr := server.store.GetCategoryById(ctx, row.CategoryID)
+		if cgErr != nil {
+			if errors.Is(cgErr, db.ErrRecordNotFound) {
+				ctx.JSON(http.StatusNotFound, errorResponse(cgErr))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(cgErr))
+			return
+		}
+		section := Section{
+			Category:  category,
+			Cocktails: cocktails,
+		}
+		sections = append(sections, section)
+	}
+	ctx.JSON(http.StatusOK, sections)
+}

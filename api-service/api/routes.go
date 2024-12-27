@@ -39,6 +39,7 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/users/:id/flavours", server.getUserLikedFlavours)
 	authRoutes.GET("/users/:id/cocktails", server.getUserLikedCocktails)
 	authRoutes.GET("/users/:id/categories", server.getCategoriesBasedOnLikedFlavours)
+	authRoutes.GET("/users/:id/homescreen", server.getHomescreenForUser)
 	authRoutes.GET("/users/:id/notifications", server.getUserNotifications)
 	/**
 	Cocktail Routes

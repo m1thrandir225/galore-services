@@ -717,6 +717,21 @@ func (mr *MockStoreMockRecorder) GetFlavourName(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFlavourName", reflect.TypeOf((*MockStore)(nil).GetFlavourName), arg0, arg1)
 }
 
+// GetHomescreenForUser mocks base method.
+func (m *MockStore) GetHomescreenForUser(arg0 context.Context, arg1 uuid.UUID) ([]db.GetHomescreenForUserRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHomescreenForUser", arg0, arg1)
+	ret0, _ := ret[0].([]db.GetHomescreenForUserRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHomescreenForUser indicates an expected call of GetHomescreenForUser.
+func (mr *MockStoreMockRecorder) GetHomescreenForUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHomescreenForUser", reflect.TypeOf((*MockStore)(nil).GetHomescreenForUser), arg0, arg1)
+}
+
 // GetLikedCocktail mocks base method.
 func (m *MockStore) GetLikedCocktail(arg0 context.Context, arg1 db.GetLikedCocktailParams) (db.GetLikedCocktailRow, error) {
 	m.ctrl.T.Helper()
