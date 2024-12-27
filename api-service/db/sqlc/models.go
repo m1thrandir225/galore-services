@@ -110,10 +110,10 @@ type NotificationType struct {
 }
 
 type ResetPasswordRequest struct {
-	ID            uuid.UUID        `json:"id"`
-	UserID        uuid.UUID        `json:"user_id"`
-	PasswordReset bool             `json:"password_reset"`
-	ValidUntil    pgtype.Timestamp `json:"valid_until"`
+	ID            uuid.UUID          `json:"id"`
+	UserID        uuid.UUID          `json:"user_id"`
+	PasswordReset bool               `json:"password_reset"`
+	ValidUntil    pgtype.Timestamptz `json:"valid_until"`
 }
 
 type Session struct {

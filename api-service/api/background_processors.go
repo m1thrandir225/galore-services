@@ -18,7 +18,7 @@ func (server *Server) registerBackgroundHandlers() {
 	/**
 	Generate Daily Featured Cocktails Cron
 	*/
-	server.scheduler.RegisterCronJob("generate_daily_featured", "0 0 1 * *") //Cron for every day
+	server.scheduler.RegisterCronJob("generate_daily_featured", "*/30 * * * *") //Cron for every day
 	server.scheduler.RegisterJob("generate_daily_featured", server.generateDailyFeatured)
 
 	/**

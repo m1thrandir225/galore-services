@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS hotp_counter;
+DROP TABLE IF EXISTS hotp_counters;

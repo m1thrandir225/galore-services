@@ -100,21 +100,18 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	}
 	dbDate, err := util.TimeToDbDate(requestData.Birthday)
 	if err != nil {
-		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	hashedPassword, err := util.HashPassowrd(requestData.Password)
 	if err != nil {
-		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	imageData, err := util.BytesFromFile(requestData.AvatarUrl)
 	if err != nil {
-		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -123,7 +120,6 @@ func (server *Server) registerUser(ctx *gin.Context) {
 
 	avatarUrl, err := server.storage.UploadFile(imageData, userId.String(), requestData.AvatarUrl.Filename)
 	if err != nil {
-		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 	otpSecret, err := security.GenerateOTPSecret()
@@ -144,7 +140,6 @@ func (server *Server) registerUser(ctx *gin.Context) {
 
 	newEntry, err := server.store.CreateUser(ctx, args)
 	if err != nil {
-		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -167,7 +162,6 @@ func (server *Server) registerUser(ctx *gin.Context) {
 
 	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(newEntry.ID, server.config.RefreshTokenDuration)
 	if err != nil {
-		log.Println(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -464,7 +458,7 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 	}
 
 	requestValidUntil := time.Now().Add(time.Minute * 5)
-	pgValidUntil := pgtype.Timestamp{
+	pgValidUntil := pgtype.Timestamptz{
 		Time:             requestValidUntil,
 		InfinityModifier: 0,
 		Valid:            true,
@@ -478,6 +472,12 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error creating reset password request")))
+		return
+	}
+	currentTime := time.Now()
+
+	if currentTime.After(requestValidUntil.In(currentTime.Location())) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("reset password request has expired")))
 		return
 	}
 
@@ -521,7 +521,12 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error getting user")))
 		return
 	}
-	if time.Now().Before(resetPasswordRequest.ValidUntil.Time) {
+
+	currentTime := time.Now().UTC()
+
+	validUntilTime := resetPasswordRequest.ValidUntil.Time.In(currentTime.Location())
+
+	if currentTime.After(validUntilTime) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("reset password request has expired")))
 		return
 	}
@@ -548,7 +553,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	pgTypeTimeStamp := pgtype.Timestamp{
+	pgTypeTimeStamp := pgtype.Timestamptz{
 		Time:             time.Now(),
 		Valid:            true,
 		InfinityModifier: 0,

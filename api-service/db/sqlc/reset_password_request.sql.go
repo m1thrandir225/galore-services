@@ -29,8 +29,8 @@ RETURNING id, user_id, password_reset, valid_until
 `
 
 type CreateResetPasswordRequestParams struct {
-	UserID     uuid.UUID        `json:"user_id"`
-	ValidUntil pgtype.Timestamp `json:"valid_until"`
+	UserID     uuid.UUID          `json:"user_id"`
+	ValidUntil pgtype.Timestamptz `json:"valid_until"`
 }
 
 func (q *Queries) CreateResetPasswordRequest(ctx context.Context, arg CreateResetPasswordRequestParams) (ResetPasswordRequest, error) {
@@ -71,9 +71,9 @@ RETURNING id, user_id, password_reset, valid_until
 `
 
 type UpdateResetPasswordRequestParams struct {
-	ID            uuid.UUID        `json:"id"`
-	PasswordReset bool             `json:"password_reset"`
-	ValidUntil    pgtype.Timestamp `json:"valid_until"`
+	ID            uuid.UUID          `json:"id"`
+	PasswordReset bool               `json:"password_reset"`
+	ValidUntil    pgtype.Timestamptz `json:"valid_until"`
 }
 
 func (q *Queries) UpdateResetPasswordRequest(ctx context.Context, arg UpdateResetPasswordRequestParams) (ResetPasswordRequest, error) {
