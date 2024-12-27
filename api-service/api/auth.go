@@ -355,17 +355,17 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 	var reqData ForgotPasswordRequest
 
 	if err := ctx.ShouldBindJSON(&reqData); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("missing required fields")))
 		return
 	}
 
 	user, err := server.store.GetUserByEmail(ctx, reqData.Email)
 	if err != nil {
 		if errors.Is(err, db.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("user not found")))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error getting user")))
 		return
 	}
 	currentUserCounter, err := server.store.GetCurrentCounter(ctx, user.ID)
@@ -376,18 +376,18 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 				Counter: 0,
 			})
 			if err != nil {
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error creating hotp counter")))
 				return
 			}
 			currentUserCounter = 0
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error getting hotp counter")))
 		return
 	}
 
 	otpCode, err := security.GenerateHOTP(user.HotpSecret, uint64(currentUserCounter))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error while generating otp code")))
 		return
 	}
 
@@ -438,19 +438,19 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 		return
 	}
 
-	var isOtpCorrect bool = false
+	isOtpCorrect := false
 
 	for lookAhead := uint64(0); lookAhead < 5; lookAhead++ {
 		tC := uint64(currentUserCounter) + lookAhead
 		isValid, vaErr := security.ValidateHOTP(user.HotpSecret, reqData.OTP, tC)
 		if vaErr != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("otp verification failed")))
 			return
 		}
 		if isValid {
 			_, iErr := server.store.IncreaseCounter(ctx, user.ID)
 			if iErr != nil {
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("failed to increase hotp counter")))
 				return
 			}
 			isOtpCorrect = true
@@ -459,7 +459,7 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 	}
 
 	if !isOtpCorrect {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("otp verification failed")))
 		return
 	}
 
@@ -507,7 +507,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("reset password request not found")))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("getting reset password request")))
 		return
 	}
 
@@ -521,8 +521,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error getting user")))
 		return
 	}
-
-	if time.Now().After(resetPasswordRequest.ValidUntil.Time) {
+	if time.Now().Before(resetPasswordRequest.ValidUntil.Time) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("reset password request has expired")))
 		return
 	}
