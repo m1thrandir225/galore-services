@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS generate_cocktail_drafts;

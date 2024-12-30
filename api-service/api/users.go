@@ -19,11 +19,11 @@ type UpdateUserInformationRequest struct {
 	Birthday  string                `form:"birthday" json:"birthday" binding:"required"`
 }
 type UpdateUserEmailNotificationsRequest struct {
-	Enabled bool `form:"enabled" json:"enabled" binding:"required"`
+	Enabled *bool `json:"enabled" binding:"required"`
 }
 
 type UpdateUserPushNotificationsRequest struct {
-	Enabled bool `form:"enabled" json:"enabled" binding:"required"`
+	Enabled *bool `json:"enabled" binding:"required"`
 }
 
 type UpdateUserPasswordRequest struct {
@@ -90,7 +90,7 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	err = server.store.DeleteUser(ctx, userId)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -234,6 +234,7 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 func (server *Server) updateUserPushNotifications(ctx *gin.Context) {
 	var uriData UriId
 	var requestData UpdateUserPushNotificationsRequest
+
 	if err := ctx.ShouldBindUri(&uriData); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -257,7 +258,7 @@ func (server *Server) updateUserPushNotifications(ctx *gin.Context) {
 
 	arg := db.UpdateUserPushNotificationsParams{
 		ID:                       userId,
-		EnabledPushNotifications: requestData.Enabled,
+		EnabledPushNotifications: *requestData.Enabled,
 	}
 
 	updated, err := server.store.UpdateUserPushNotifications(ctx, arg)
@@ -301,7 +302,7 @@ func (server *Server) updateUserEmailNotifications(ctx *gin.Context) {
 
 	arg := db.UpdateUserEmailNotificationsParams{
 		ID:                        userId,
-		EnabledEmailNotifications: requestData.Enabled,
+		EnabledEmailNotifications: *requestData.Enabled,
 	}
 
 	updated, err := server.store.UpdateUserEmailNotifications(ctx, arg)
