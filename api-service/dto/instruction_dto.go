@@ -1,5 +1,9 @@
 package dto
 
+type PromptInstruction struct {
+	Instruction string `json:"instruction"`
+	ImagePrompt string `json:"instruction_image_prompt"`
+}
 type AiInstructionData struct {
 	Instruction      string `json:"instruction"`
 	InstructionImage string `json:"instruction_image"`

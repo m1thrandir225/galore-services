@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/m1thrandir225/galore-services/cocktail_gen"
 	"github.com/m1thrandir225/galore-services/notifications"
 	"os"
 
@@ -33,6 +34,7 @@ type ginServerConfig struct {
 	Scheduler           scheduler.SchedulerService
 	MailService         mail.MailService
 	NotificationService notifications.NotificationService
+	CocktailGenerator   cocktail_gen.CocktailGenerator
 }
 
 func main() {
@@ -67,6 +69,8 @@ func main() {
 	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
 	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
 	scheduler := scheduler.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
+	cocktailGenerator := cocktail_gen.NewOpenAIPromptGenerator(config.OpenAIApiKey, config.OpenAIAssistantID, config.OpenAIThreadURL)
+
 	mailService := mail.NewGenericMail(
 		config.SMTPHost,
 		config.SMTPPort,
@@ -89,6 +93,7 @@ func main() {
 		Scheduler:           scheduler,
 		MailService:         mailService,
 		NotificationService: fcmNotifications,
+		CocktailGenerator:   cocktailGenerator,
 	}
 	runGinServer(serverConfig)
 }
@@ -104,6 +109,7 @@ func runGinServer(serverConfig ginServerConfig) {
 		serverConfig.Scheduler,
 		serverConfig.MailService,
 		serverConfig.NotificationService,
+		serverConfig.CocktailGenerator,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")

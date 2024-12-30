@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"slices"
 	"time"
@@ -15,6 +16,14 @@ type OpenAIPromptGenerator struct {
 	ApiKey      string
 	AssistantId string
 	ThreadUrl   string
+}
+
+func NewOpenAIPromptGenerator(apiKey, assistantId, threadUrl string) *OpenAIPromptGenerator {
+	return &OpenAIPromptGenerator{
+		ApiKey:      apiKey,
+		AssistantId: assistantId,
+		ThreadUrl:   threadUrl,
+	}
 }
 
 type ThreadMessage struct {
@@ -36,42 +45,38 @@ type RunPayload struct {
 }
 
 type Run struct {
-	Id           string      `json:"id"`
-	Object       string      `json:"object"`
-	CreatedAt    int         `json:"created_at"`
-	AssistantId  string      `json:"assistant_id"`
-	ThreadId     string      `json:"thread_id"`
-	Status       string      `json:"status"`
-	StartedAt    int         `json:"started_at"`
-	ExpiresAt    interface{} `json:"expires_at"`
-	CancelledAt  interface{} `json:"cancelled_at"`
-	FailedAt     interface{} `json:"failed_at"`
-	CompletedAt  int         `json:"completed_at"`
-	LastError    interface{} `json:"last_error"`
-	Model        string      `json:"model"`
-	Instructions interface{} `json:"instructions"`
-	Tools        []struct {
+	Id                string      `json:"id"`
+	Object            string      `json:"object"`
+	CreatedAt         int         `json:"created_at"`
+	AssistantId       string      `json:"assistant_id"`
+	ThreadId          string      `json:"thread_id"`
+	Status            string      `json:"status"`
+	StartedAt         int         `json:"started_at"`
+	ExpiresAt         interface{} `json:"expires_at"`
+	CancelledAt       interface{} `json:"cancelled_at"`
+	FailedAt          interface{} `json:"failed_at"`
+	CompletedAt       int         `json:"completed_at"`
+	LastError         interface{} `json:"last_error"`
+	Model             string      `json:"model"`
+	Instructions      interface{} `json:"instructions"`
+	IncompleteDetails interface{} `json:"incomplete_details"`
+	Tools             []struct {
 		Type string `json:"type"`
 	} `json:"tools"`
 	Metadata struct {
 	} `json:"metadata"`
-	IncompleteDetails interface{} `json:"incomplete_details"`
-	Usage             struct {
-		PromptTokens     int `json:"prompt_tokens"`
-		CompletionTokens int `json:"completion_tokens"`
-		TotalTokens      int `json:"total_tokens"`
-	} `json:"usage"`
-	Temperature         float64 `json:"temperature"`
-	TopP                float64 `json:"top_p"`
-	MaxPromptTokens     int     `json:"max_prompt_tokens"`
-	MaxCompletionTokens int     `json:"max_completion_tokens"`
+	Usage               interface{} `json:"usage"`
+	Temperature         float64     `json:"temperature"`
+	TopP                float64     `json:"top_p"`
+	MaxPromptTokens     int         `json:"max_prompt_tokens"`
+	MaxCompletionTokens int         `json:"max_completion_tokens"`
 	TruncationStrategy  struct {
 		Type         string      `json:"type"`
 		LastMessages interface{} `json:"last_messages"`
 	} `json:"truncation_strategy"`
-	ResponseFormat    string `json:"response_format"`
-	ToolChoice        string `json:"tool_choice"`
-	ParallelToolCalls bool   `json:"parallel_tool_calls"`
+	ResponseFormat    interface{} `json:"response_format"`
+	ToolChoice        interface{} `json:"tool_choice"`
+	ParallelToolCalls bool        `json:"parallel_tool_calls"`
 }
 
 type Message struct {
@@ -100,7 +105,7 @@ type ListMessagesResponse struct {
 }
 
 func (generator *OpenAIPromptGenerator) createThread(httpClient http.Client) (*Thread, error) {
-	req, err := http.NewRequest("GET", generator.ThreadUrl, nil)
+	req, err := http.NewRequest("POST", generator.ThreadUrl, nil)
 	if err != nil {
 		return nil, errors.New("there was a problem creating the request: " + err.Error())
 	}
@@ -154,6 +159,7 @@ func (thread *Thread) addMessageToThread(httpClient http.Client, message, thread
 	if err != nil {
 		return errors.New("there was a problem making the request: " + err.Error())
 	}
+
 	defer messageResponse.Body.Close()
 
 	if messageResponse.StatusCode != 200 {
@@ -171,6 +177,8 @@ func (generator *OpenAIPromptGenerator) createRun(httpClient http.Client, thread
 		return nil, errors.New("there was a problem marshalling the json: " + err.Error())
 	}
 	runUrl := fmt.Sprintf("%s/%s/runs", generator.ThreadUrl, thread.Id)
+
+	log.Println(runUrl)
 
 	req, err := http.NewRequest("POST", runUrl, bytes.NewBuffer(jsonPayload))
 
@@ -208,6 +216,8 @@ func (run *Run) pollAndCheckRun(httpClient http.Client, threadUrl, apiKey string
 	viableStatuses := []string{"completed", "cancelled", "failed", "incomplete", "expired"}
 
 	for !slices.Contains(viableStatuses, run.Status) {
+		log.Println(slices.Contains(viableStatuses, run.Status))
+		log.Println(run.Status)
 		time.Sleep(5 * time.Second)
 		newRun, err := run.checkRunStatus(httpClient, threadUrl, apiKey)
 		if err != nil {
@@ -224,6 +234,7 @@ func (run *Run) pollAndCheckRun(httpClient http.Client, threadUrl, apiKey string
 
 func (run *Run) checkRunStatus(httpClient http.Client, threadUrl, apiKey string) (*Run, error) {
 	url := fmt.Sprintf("%s/%s/runs/%s", threadUrl, run.ThreadId, run.Id)
+	log.Println(url)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -238,6 +249,9 @@ func (run *Run) checkRunStatus(httpClient http.Client, threadUrl, apiKey string)
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
+
+	log.Println(response.Status)
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -245,7 +259,7 @@ func (run *Run) checkRunStatus(httpClient http.Client, threadUrl, apiKey string)
 	}
 
 	var newRun Run
-	err = json.Unmarshal(body, &response)
+	err = json.Unmarshal(body, &newRun)
 	if err != nil {
 		return nil, err
 	}
@@ -285,14 +299,14 @@ func (thread *Thread) listMessages(httpClient http.Client, threadUrl, apiKey str
 	return &messageObject, nil
 }
 
-func (messageObject *ListMessagesResponse) getFinalMessageContent() (*PromptCocktail, error) {
-	var cocktail PromptCocktail
-	err := json.Unmarshal([]byte(messageObject.Data[0].Content[0].Text.Value), &cocktail)
+func (messageObject *ListMessagesResponse) getFinalMessageContent() (*PromptRecipe, error) {
+	var recipe PromptRecipe
+	err := json.Unmarshal([]byte(messageObject.Data[0].Content[0].Text.Value), &recipe)
 	if err != nil {
 		return nil, errors.New("there was a problem parsing the json: " + err.Error())
 	}
 
-	return &cocktail, nil
+	return &recipe, nil
 }
 
 func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, referenceCocktails []string) (*PromptRecipe, error) {
@@ -311,6 +325,9 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 	}
 
 	prompt := generatePrompt(referenceFlavours, referenceCocktails)
+	log.Print(prompt)
+
+	log.Print(thread)
 
 	err = thread.addMessageToThread(*httpClient, prompt, generator.ThreadUrl, generator.ApiKey)
 	if err != nil {
@@ -319,7 +336,7 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 
 	run, err := generator.createRun(*httpClient, thread)
 	if err != nil {
-		return nil, errors.New("there was a problem creating a run")
+		return nil, err
 	}
 
 	err = run.pollAndCheckRun(*httpClient, generator.ThreadUrl, generator.ApiKey)
@@ -332,12 +349,10 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 		return nil, errors.New("there was a problem listing messages")
 	}
 
-	promptCocktail, err := messages.getFinalMessageContent()
+	promptRecipe, err := messages.getFinalMessageContent()
 	if err != nil {
 		return nil, errors.New("there was a problem getting the final message content, " + err.Error())
 	}
 
-	return &PromptRecipe{
-		Cocktail: *promptCocktail,
-	}, nil
+	return promptRecipe, nil
 }

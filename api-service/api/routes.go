@@ -113,6 +113,11 @@ func (server *Server) setupRouter() {
 	authRoutes.POST("/notifications", server.createNotification)
 	authRoutes.PATCH("/notifications/:id", server.updateNotificationStatus)
 
+	/**
+	Generate Cocktail Routes
+	*/
+	v1.POST("/generate", server.generateCocktail)
+
 	server.setupMigrationServiceRoutes(v1)
 	server.setupCategorizerServiceRoutes(v1)
 
