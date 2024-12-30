@@ -309,7 +309,7 @@ func (messageObject *ListMessagesResponse) getFinalMessageContent() (*PromptReci
 	return &recipe, nil
 }
 
-func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, referenceCocktails []string) (*PromptRecipe, error) {
+func (generator *OpenAIPromptGenerator) GenerateRecipe(prompt string) (*PromptCocktail, error) {
 	/*
 		Steps:
 		1. Create a new thread
@@ -323,11 +323,6 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 	if err != nil {
 		return nil, errors.New("there was a problem creating a thread")
 	}
-
-	prompt := generatePrompt(referenceFlavours, referenceCocktails)
-	log.Print(prompt)
-
-	log.Print(thread)
 
 	err = thread.addMessageToThread(*httpClient, prompt, generator.ThreadUrl, generator.ApiKey)
 	if err != nil {
@@ -354,5 +349,5 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(referenceFlavours, refere
 		return nil, errors.New("there was a problem getting the final message content, " + err.Error())
 	}
 
-	return promptRecipe, nil
+	return &promptRecipe.Cocktail, nil
 }

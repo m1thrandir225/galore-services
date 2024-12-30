@@ -18,8 +18,7 @@ INSERT INTO generate_cocktail_drafts(
          description,
          ingredients,
          instructions,
-         main_image_prompt,
-         steps_image_prompts
+         main_image_prompt
 )
 VALUES (
         $1,
@@ -27,20 +26,18 @@ VALUES (
         $3,
         $4,
         $5,
-        $6,
-        $7
+        $6
 )
-RETURNING id, request_id, name, description, instructions, ingredients, main_image_prompt, steps_image_prompts, created_at
+RETURNING id, request_id, name, description, instructions, ingredients, main_image_prompt, created_at
 `
 
 type CreateGenerateCocktailDraftParams struct {
-	RequestID         uuid.UUID `json:"request_id"`
-	Name              string    `json:"name"`
-	Description       string    `json:"description"`
-	Ingredients       []byte    `json:"ingredients"`
-	Instructions      []byte    `json:"instructions"`
-	MainImagePrompt   string    `json:"main_image_prompt"`
-	StepsImagePrompts []string  `json:"steps_image_prompts"`
+	RequestID       uuid.UUID `json:"request_id"`
+	Name            string    `json:"name"`
+	Description     string    `json:"description"`
+	Ingredients     []byte    `json:"ingredients"`
+	Instructions    []byte    `json:"instructions"`
+	MainImagePrompt string    `json:"main_image_prompt"`
 }
 
 func (q *Queries) CreateGenerateCocktailDraft(ctx context.Context, arg CreateGenerateCocktailDraftParams) (GenerateCocktailDraft, error) {
@@ -51,7 +48,6 @@ func (q *Queries) CreateGenerateCocktailDraft(ctx context.Context, arg CreateGen
 		arg.Ingredients,
 		arg.Instructions,
 		arg.MainImagePrompt,
-		arg.StepsImagePrompts,
 	)
 	var i GenerateCocktailDraft
 	err := row.Scan(
@@ -62,7 +58,28 @@ func (q *Queries) CreateGenerateCocktailDraft(ctx context.Context, arg CreateGen
 		&i.Instructions,
 		&i.Ingredients,
 		&i.MainImagePrompt,
-		&i.StepsImagePrompts,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getCocktailDraft = `-- name: GetCocktailDraft :one
+SELECT id, request_id, name, description, instructions, ingredients, main_image_prompt, created_at
+FROM generate_cocktail_drafts
+WHERE id = $1
+`
+
+func (q *Queries) GetCocktailDraft(ctx context.Context, id uuid.UUID) (GenerateCocktailDraft, error) {
+	row := q.db.QueryRow(ctx, getCocktailDraft, id)
+	var i GenerateCocktailDraft
+	err := row.Scan(
+		&i.ID,
+		&i.RequestID,
+		&i.Name,
+		&i.Description,
+		&i.Instructions,
+		&i.Ingredients,
+		&i.MainImagePrompt,
 		&i.CreatedAt,
 	)
 	return i, err

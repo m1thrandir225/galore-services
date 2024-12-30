@@ -1,13 +1,13 @@
 -- name: CreateGeneratedCocktail :one
 INSERT INTO generated_cocktails (
+name,
 user_id,
 request_id,
 draft_id,
 instructions,
 ingredients,
 description,
-main_image_url,
-additional_images
+main_image_url
 )
 VALUES (
         $1,

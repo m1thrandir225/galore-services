@@ -6,7 +6,6 @@ CREATE TABLE generated_cocktails (
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     main_image_url TEXT NOT NULL,
-    additional_images TEXT[],
     instructions JSONB NOT NULL,
     ingredients JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

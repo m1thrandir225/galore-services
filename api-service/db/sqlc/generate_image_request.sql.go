@@ -17,7 +17,7 @@ SELECT
     d.id as draft_id,
     d.request_id,
     COUNT(i.id) as total_images,
-    COUNT(i.status = 'completed') as completed_images,
+    COUNT(i.status = 'success') as completed_images,
     bool_and(i.error_message IS NULL) as all_successful
 FROM generate_cocktail_drafts d
 JOIN generate_image_requests i ON i.draft_id = d.id
@@ -46,50 +46,45 @@ func (q *Queries) CheckImageGenerationProgress(ctx context.Context, requestID uu
 	return i, err
 }
 
-const createImageGenerationRequests = `-- name: CreateImageGenerationRequests :many
-INSERT INTO generate_image_requests(draft_id, prompt)
-VALUES ($1, $2)
-RETURNING id, draft_id, prompt, status, image_url, error_message, created_at, updated_at
+const createImageGenerationRequest = `-- name: CreateImageGenerationRequest :one
+INSERT INTO generate_image_requests(draft_id, prompt, status, is_main)
+VALUES ($1, $2, $3, $4)
+RETURNING id, draft_id, prompt, is_main, status, image_url, error_message, created_at, updated_at
 `
 
-type CreateImageGenerationRequestsParams struct {
-	DraftID uuid.UUID `json:"draft_id"`
-	Prompt  string    `json:"prompt"`
+type CreateImageGenerationRequestParams struct {
+	DraftID uuid.UUID             `json:"draft_id"`
+	Prompt  string                `json:"prompt"`
+	Status  ImageGenerationStatus `json:"status"`
+	IsMain  bool                  `json:"is_main"`
 }
 
-func (q *Queries) CreateImageGenerationRequests(ctx context.Context, arg CreateImageGenerationRequestsParams) ([]GenerateImageRequest, error) {
-	rows, err := q.db.Query(ctx, createImageGenerationRequests, arg.DraftID, arg.Prompt)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GenerateImageRequest{}
-	for rows.Next() {
-		var i GenerateImageRequest
-		if err := rows.Scan(
-			&i.ID,
-			&i.DraftID,
-			&i.Prompt,
-			&i.Status,
-			&i.ImageUrl,
-			&i.ErrorMessage,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) CreateImageGenerationRequest(ctx context.Context, arg CreateImageGenerationRequestParams) (GenerateImageRequest, error) {
+	row := q.db.QueryRow(ctx, createImageGenerationRequest,
+		arg.DraftID,
+		arg.Prompt,
+		arg.Status,
+		arg.IsMain,
+	)
+	var i GenerateImageRequest
+	err := row.Scan(
+		&i.ID,
+		&i.DraftID,
+		&i.Prompt,
+		&i.IsMain,
+		&i.Status,
+		&i.ImageUrl,
+		&i.ErrorMessage,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getImagesForDraft = `-- name: GetImagesForDraft :many
-SELECT id, draft_id, prompt, status, image_url, error_message, created_at, updated_at
+SELECT id, draft_id, prompt, is_main, status, image_url, error_message, created_at, updated_at
 FROM generate_image_requests i
-WHERE i.draft_id = $1 AND i.status = 'completed'
+WHERE i.draft_id = $1 AND i.status = 'success'
 `
 
 func (q *Queries) GetImagesForDraft(ctx context.Context, draftID uuid.UUID) ([]GenerateImageRequest, error) {
@@ -105,6 +100,7 @@ func (q *Queries) GetImagesForDraft(ctx context.Context, draftID uuid.UUID) ([]G
 			&i.ID,
 			&i.DraftID,
 			&i.Prompt,
+			&i.IsMain,
 			&i.Status,
 			&i.ImageUrl,
 			&i.ErrorMessage,
@@ -125,16 +121,16 @@ const updateImageGenerationRequest = `-- name: UpdateImageGenerationRequest :one
 UPDATE generate_image_requests
 SET image_url = $2,
     error_message = $3,
-    status = $4::image_generation_status
+    status = $4
 WHERE id = $1
-RETURNING id, draft_id, prompt, status, image_url, error_message, created_at, updated_at
+RETURNING id, draft_id, prompt, is_main, status, image_url, error_message, created_at, updated_at
 `
 
 type UpdateImageGenerationRequestParams struct {
 	ID           uuid.UUID             `json:"id"`
 	ImageUrl     pgtype.Text           `json:"image_url"`
 	ErrorMessage pgtype.Text           `json:"error_message"`
-	Column4      ImageGenerationStatus `json:"column_4"`
+	Status       ImageGenerationStatus `json:"status"`
 }
 
 func (q *Queries) UpdateImageGenerationRequest(ctx context.Context, arg UpdateImageGenerationRequestParams) (GenerateImageRequest, error) {
@@ -142,13 +138,14 @@ func (q *Queries) UpdateImageGenerationRequest(ctx context.Context, arg UpdateIm
 		arg.ID,
 		arg.ImageUrl,
 		arg.ErrorMessage,
-		arg.Column4,
+		arg.Status,
 	)
 	var i GenerateImageRequest
 	err := row.Scan(
 		&i.ID,
 		&i.DraftID,
 		&i.Prompt,
+		&i.IsMain,
 		&i.Status,
 		&i.ImageUrl,
 		&i.ErrorMessage,

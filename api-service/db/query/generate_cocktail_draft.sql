@@ -5,8 +5,7 @@ INSERT INTO generate_cocktail_drafts(
          description,
          ingredients,
          instructions,
-         main_image_prompt,
-         steps_image_prompts
+         main_image_prompt
 )
 VALUES (
         $1,
@@ -14,7 +13,11 @@ VALUES (
         $3,
         $4,
         $5,
-        $6,
-        $7
+        $6
 )
 RETURNING *;
+
+-- name: GetCocktailDraft :one
+SELECT *
+FROM generate_cocktail_drafts
+WHERE id = $1;

@@ -1,6 +1,6 @@
--- name: CreateImageGenerationRequests :many
-INSERT INTO generate_image_requests(draft_id, prompt)
-VALUES ($1, $2)
+-- name: CreateImageGenerationRequest :one
+INSERT INTO generate_image_requests(draft_id, prompt, status, is_main)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: UpdateImageGenerationRequest :one
@@ -16,7 +16,7 @@ SELECT
     d.id as draft_id,
     d.request_id,
     COUNT(i.id) as total_images,
-    COUNT(i.status = 'completed') as completed_images,
+    COUNT(i.status = 'success') as completed_images,
     bool_and(i.error_message IS NULL) as all_successful
 FROM generate_cocktail_drafts d
 JOIN generate_image_requests i ON i.draft_id = d.id
@@ -26,4 +26,4 @@ GROUP BY d.id, d.request_id;
 -- name: GetImagesForDraft :many
 SELECT *
 FROM generate_image_requests i
-WHERE i.draft_id = $1 AND i.status = 'completed';
+WHERE i.draft_id = $1 AND i.status = 'success';

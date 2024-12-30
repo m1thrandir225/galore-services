@@ -2,9 +2,12 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/m1thrandir225/galore-services/dto"
 	"log"
 	"net/http"
 
@@ -12,6 +15,32 @@ import (
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"golang.org/x/exp/rand"
 )
+
+func ConvertPromptsToAiInstructionDto(prompts []dto.PromptInstruction, imageRequests []db.GenerateImageRequest) (dto.AiInstructionDto, error) {
+	if len(prompts) != (len(imageRequests) - 1) {
+		return dto.AiInstructionDto{}, fmt.Errorf("the two given arrays are not of the same size")
+	}
+	instructions := make([]dto.AiInstructionData, len(prompts))
+	localRequests := imageRequests
+	for i, img := range localRequests {
+		if img.IsMain {
+			localRequests = append(localRequests[:i], localRequests[i+1:]...)
+			break
+		}
+	}
+
+	for i, prompt := range prompts {
+		imageUrl := localRequests[i].ImageUrl
+
+		instruction := dto.AiInstructionData{
+			Instruction:      prompt.Instruction,
+			InstructionImage: imageUrl.String,
+		}
+		instructions = append(instructions, instruction)
+	}
+
+	return dto.AiInstructionDto{Instructions: instructions}, nil
+}
 
 func (server *Server) registerBackgroundHandlers() {
 	server.scheduler.RegisterJob("send_mail", server.sendMailJob)
@@ -36,12 +65,291 @@ func (server *Server) registerBackgroundHandlers() {
 	Generate Image Job
 	*/
 	//TODO: implement generate image background job
+	server.scheduler.RegisterJob("generate_image", server.createImageGenerationRequest)
 
 	/**
 	Generate Cocktail Job
 	*/
 	//TODO: implement generate cocktail background job
+	server.scheduler.RegisterJob("generate_cocktail_draft", server.createCocktailDraft)
 
+	server.scheduler.RegisterJob("generate_cocktail_final", server.createGeneratedCocktail)
+
+}
+
+func (server *Server) createCocktailDraft(args map[string]interface{}) error {
+	log.Println("JOB STARTED: Creating Generate Cocktail Draft")
+
+	cocktailRequestIdStr, ok := args["cocktail_request_id"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: cocktail_request_id")
+	}
+	cocktailRequestId, err := uuid.Parse(cocktailRequestIdStr)
+	if err != nil {
+		return err
+	}
+
+	prompt, ok := args["prompt"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: prompt")
+	}
+
+	userIdStr, ok := args["user_id"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: user_id")
+	}
+
+	userId, err := uuid.Parse(userIdStr)
+	if err != nil {
+		return err
+	}
+
+	promptCocktail, err := server.cocktailGenerator.GenerateRecipe(prompt)
+	if err != nil {
+		return err
+	}
+	jsonInstructions, err := json.Marshal(promptCocktail.Instructions)
+	if err != nil {
+		return err
+	}
+
+	jsonIngredients, err := json.Marshal(promptCocktail.Ingredients)
+	if err != nil {
+		return err
+	}
+
+	createArgs := db.CreateGenerateCocktailDraftParams{
+		RequestID:       cocktailRequestId,
+		Name:            promptCocktail.Name,
+		Description:     promptCocktail.Description,
+		Ingredients:     jsonIngredients,
+		Instructions:    jsonInstructions,
+		MainImagePrompt: promptCocktail.ImagePrompt,
+	}
+
+	draft, err := server.store.CreateGenerateCocktailDraft(context.Background(), createArgs)
+	if err != nil {
+		return err
+	}
+
+	updateGenerateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+		ID:     draft.RequestID,
+		Status: db.GenerationStatusGeneratingImages,
+	}
+
+	_, err = server.store.UpdateGenerateCocktailRequest(context.Background(), updateGenerateRequestArgs)
+	if err != nil {
+		log.Println("ERR: error while updating generate request: " + err.Error())
+		return err
+	}
+
+	for _, promptInstruction := range promptCocktail.Instructions {
+		server.scheduler.EnqueueJob("generate_image", map[string]interface{}{
+			"cocktail_draft_id": draft.ID,
+			"image_prompt":      promptInstruction.ImagePrompt,
+			"is_main":           false,
+			"user_id":           userId,
+		})
+	}
+
+	server.scheduler.EnqueueJob("generate_image", map[string]interface{}{
+		"cocktail_draft_id": draft.ID,
+		"image_prompt":      draft.MainImagePrompt,
+		"is_main":           true,
+		"user_id":           userId,
+	})
+
+	return nil
+}
+
+func (server *Server) createImageGenerationRequest(args map[string]interface{}) error {
+	log.Println("JOB STARTED: Creating Images for Cocktail Draft")
+	cocktailDraftIdStr, ok := args["cocktail_draft_id"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: cocktail_draft_id")
+	}
+	cocktailDraftId, err := uuid.Parse(cocktailDraftIdStr)
+	if err != nil {
+		return err
+	}
+
+	isMain, ok := args["is_main"].(bool)
+	if !ok {
+		log.Println("missing required arguments: is_main")
+		return fmt.Errorf("missing required arguments: is_main")
+	}
+
+	imagePrompt, ok := args["image_prompt"].(string)
+	if !ok {
+		log.Println("missing required arguments: image_prompt")
+		return fmt.Errorf("missing required arguments: image_prompt")
+	}
+
+	userIdStr, ok := args["user_id"].(string)
+	if !ok {
+		log.Println("ERROR: missing required arguments: user_id")
+		return fmt.Errorf("missing required arguments: user_id")
+	}
+	userId, err := uuid.Parse(userIdStr)
+	if err != nil {
+		return err
+	}
+
+	createArgs := db.CreateImageGenerationRequestParams{
+		DraftID: cocktailDraftId,
+		Prompt:  imagePrompt,
+		Status:  db.ImageGenerationStatusGenerating,
+		IsMain:  isMain,
+	}
+
+	imageRequest, err := server.store.CreateImageGenerationRequest(context.Background(), createArgs)
+	if err != nil {
+		log.Println("ERR: error while creating image generation request: " + err.Error())
+		return err
+	}
+
+	//TODO: add image generation logic
+
+	//After the image is generated logic (if there is an image we update
+	updateArgs := db.UpdateImageGenerationRequestParams{
+		ID: imageRequest.ID,
+		ImageUrl: pgtype.Text{
+			String: "image_url",
+			Valid:  true,
+		},
+		ErrorMessage: pgtype.Text{
+			String: "",
+			Valid:  false,
+		},
+		Status: db.ImageGenerationStatusSuccess,
+	}
+	_, err = server.store.UpdateImageGenerationRequest(context.Background(), updateArgs)
+	if err != nil {
+		log.Println("ERR: error while updating image generation request: " + err.Error())
+		return err
+	}
+	draft, err := server.store.GetCocktailDraft(context.Background(), cocktailDraftId)
+	if err != nil {
+		return err
+	}
+	//Check if it's the last image that it's being generated from the draft request
+	data, err := server.store.CheckImageGenerationProgress(context.Background(), draft.RequestID)
+	if err != nil {
+		log.Println("ERR: error while checking image generation: " + err.Error())
+		return err
+	}
+
+	if !data.AllSuccessful {
+		log.Println("ERROR: image generation progress check failed")
+		return errors.New("there was a problem generating images")
+	}
+
+	var instructions []dto.PromptInstruction
+	err = json.Unmarshal(draft.Instructions, &instructions)
+	if err != nil {
+		log.Println("ERR: error while unmarshalling instructions: " + err.Error())
+		return err
+	}
+	if data.CompletedImages == int64(len(instructions)+1) {
+		server.scheduler.EnqueueJob("generate_cocktail_final", map[string]interface{}{
+			"cocktail_draft_id": cocktailDraftId,
+			"user_id":           userId,
+		})
+	}
+	return nil
+}
+
+func (server *Server) createGeneratedCocktail(args map[string]interface{}) error {
+	cocktailDraftIdStr, ok := args["cocktail_draft_id"].(string)
+	if !ok {
+		log.Println("ERROR: missing required arguments - [cocktail_draft_id]")
+		return errors.New("missing required arguments: cocktail_draft_id")
+	}
+	cocktailDraftId, err := uuid.Parse(cocktailDraftIdStr)
+	if err != nil {
+		return err
+	}
+
+	userIdStr, ok := args["user_id"].(string)
+	if !ok {
+		log.Println("ERROR: missing required arguments - [user_id]")
+		return errors.New("missing required arguments: user_id")
+	}
+
+	userId, err := uuid.Parse(userIdStr)
+	if err != nil {
+		return err
+	}
+
+	draft, err := server.store.GetCocktailDraft(context.Background(), cocktailDraftId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	imagesForDraft, err := server.store.GetImagesForDraft(context.Background(), draft.ID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	var mainImageUrl string
+	for _, img := range imagesForDraft {
+		if img.IsMain {
+			mainImageUrl = img.ImageUrl.String
+			break
+
+		}
+	}
+
+	var promptInstructions []dto.PromptInstruction
+	err = json.Unmarshal([]byte(draft.Instructions), &promptInstructions)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	aiInstructions, err := ConvertPromptsToAiInstructionDto(promptInstructions, imagesForDraft)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var ingredientData []dto.IngredientData
+	err = json.Unmarshal([]byte(draft.Ingredients), &ingredientData)
+
+	createFinalCocktailArgs := db.CreateGeneratedCocktailParams{
+		Name:         draft.Name,
+		UserID:       userId,
+		RequestID:    draft.RequestID,
+		DraftID:      draft.ID,
+		Instructions: aiInstructions,
+		Ingredients: dto.IngredientDto{
+			Ingredients: ingredientData,
+		},
+		Description:  draft.Description,
+		MainImageUrl: mainImageUrl,
+	}
+
+	finalCocktail, err := server.store.CreateGeneratedCocktail(context.Background(), createFinalCocktailArgs)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println(finalCocktail)
+	//TODO: SEND NOTIFICATION
+
+	updateGenerateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+		ID:     draft.RequestID,
+		Status: db.GenerationStatusSuccess,
+	}
+
+	_, err = server.store.UpdateGenerateCocktailRequest(context.Background(), updateGenerateRequestArgs)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 func (server *Server) sendMailJob(args map[string]interface{}) error {

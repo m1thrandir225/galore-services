@@ -19,9 +19,9 @@ type PromptRecipe struct {
 }
 
 type CocktailGenerator interface {
-	GenerateRecipe(referenceFlavours, referenceCocktails []string) (*PromptRecipe, error)
+	GenerateRecipe(prompt string) (*PromptCocktail, error)
 }
 
-func generatePrompt(referenceFlavours, referenceCocktails []string) string {
+func GeneratePrompt(referenceFlavours, referenceCocktails []string) string {
 	return fmt.Sprintf("The user has selected the following flavours as a reference: %s. And as reference cocktails he has selected the following: %s", strings.Join(referenceFlavours, ", "), strings.Join(referenceCocktails, ", "))
 }

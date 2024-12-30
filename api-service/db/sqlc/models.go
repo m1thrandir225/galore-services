@@ -166,15 +166,14 @@ type Flavour struct {
 }
 
 type GenerateCocktailDraft struct {
-	ID                uuid.UUID          `json:"id"`
-	RequestID         uuid.UUID          `json:"request_id"`
-	Name              string             `json:"name"`
-	Description       string             `json:"description"`
-	Instructions      []byte             `json:"instructions"`
-	Ingredients       []byte             `json:"ingredients"`
-	MainImagePrompt   string             `json:"main_image_prompt"`
-	StepsImagePrompts []string           `json:"steps_image_prompts"`
-	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	ID              uuid.UUID          `json:"id"`
+	RequestID       uuid.UUID          `json:"request_id"`
+	Name            string             `json:"name"`
+	Description     string             `json:"description"`
+	Instructions    []byte             `json:"instructions"`
+	Ingredients     []byte             `json:"ingredients"`
+	MainImagePrompt string             `json:"main_image_prompt"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
 type GenerateCocktailRequest struct {
@@ -191,6 +190,7 @@ type GenerateImageRequest struct {
 	ID           uuid.UUID             `json:"id"`
 	DraftID      uuid.UUID             `json:"draft_id"`
 	Prompt       string                `json:"prompt"`
+	IsMain       bool                  `json:"is_main"`
 	Status       ImageGenerationStatus `json:"status"`
 	ImageUrl     pgtype.Text           `json:"image_url"`
 	ErrorMessage pgtype.Text           `json:"error_message"`
@@ -199,17 +199,16 @@ type GenerateImageRequest struct {
 }
 
 type GeneratedCocktail struct {
-	ID               uuid.UUID `json:"id"`
-	UserID           uuid.UUID `json:"user_id"`
-	RequestID        uuid.UUID `json:"request_id"`
-	DraftID          uuid.UUID `json:"draft_id"`
-	Name             string    `json:"name"`
-	Description      string    `json:"description"`
-	MainImageUrl     string    `json:"main_image_url"`
-	AdditionalImages []string  `json:"additional_images"`
-	Instructions     []byte    `json:"instructions"`
-	Ingredients      []byte    `json:"ingredients"`
-	CreatedAt        time.Time `json:"created_at"`
+	ID           uuid.UUID            `json:"id"`
+	UserID       uuid.UUID            `json:"user_id"`
+	RequestID    uuid.UUID            `json:"request_id"`
+	DraftID      uuid.UUID            `json:"draft_id"`
+	Name         string               `json:"name"`
+	Description  string               `json:"description"`
+	MainImageUrl string               `json:"main_image_url"`
+	Instructions dto.AiInstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto    `json:"ingredients"`
+	CreatedAt    time.Time            `json:"created_at"`
 }
 
 type HotpCounter struct {

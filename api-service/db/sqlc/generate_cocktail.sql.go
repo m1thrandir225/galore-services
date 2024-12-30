@@ -9,18 +9,19 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	dto "github.com/m1thrandir225/galore-services/dto"
 )
 
 const createGeneratedCocktail = `-- name: CreateGeneratedCocktail :one
 INSERT INTO generated_cocktails (
+name,
 user_id,
 request_id,
 draft_id,
 instructions,
 ingredients,
 description,
-main_image_url,
-additional_images
+main_image_url
 )
 VALUES (
         $1,
@@ -32,22 +33,23 @@ VALUES (
         $7,
         $8
 )
-RETURNING id, user_id, request_id, draft_id, name, description, main_image_url, additional_images, instructions, ingredients, created_at
+RETURNING id, user_id, request_id, draft_id, name, description, main_image_url, instructions, ingredients, created_at
 `
 
 type CreateGeneratedCocktailParams struct {
-	UserID           uuid.UUID `json:"user_id"`
-	RequestID        uuid.UUID `json:"request_id"`
-	DraftID          uuid.UUID `json:"draft_id"`
-	Instructions     []byte    `json:"instructions"`
-	Ingredients      []byte    `json:"ingredients"`
-	Description      string    `json:"description"`
-	MainImageUrl     string    `json:"main_image_url"`
-	AdditionalImages []string  `json:"additional_images"`
+	Name         string               `json:"name"`
+	UserID       uuid.UUID            `json:"user_id"`
+	RequestID    uuid.UUID            `json:"request_id"`
+	DraftID      uuid.UUID            `json:"draft_id"`
+	Instructions dto.AiInstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto    `json:"ingredients"`
+	Description  string               `json:"description"`
+	MainImageUrl string               `json:"main_image_url"`
 }
 
 func (q *Queries) CreateGeneratedCocktail(ctx context.Context, arg CreateGeneratedCocktailParams) (GeneratedCocktail, error) {
 	row := q.db.QueryRow(ctx, createGeneratedCocktail,
+		arg.Name,
 		arg.UserID,
 		arg.RequestID,
 		arg.DraftID,
@@ -55,7 +57,6 @@ func (q *Queries) CreateGeneratedCocktail(ctx context.Context, arg CreateGenerat
 		arg.Ingredients,
 		arg.Description,
 		arg.MainImageUrl,
-		arg.AdditionalImages,
 	)
 	var i GeneratedCocktail
 	err := row.Scan(
@@ -66,7 +67,6 @@ func (q *Queries) CreateGeneratedCocktail(ctx context.Context, arg CreateGenerat
 		&i.Name,
 		&i.Description,
 		&i.MainImageUrl,
-		&i.AdditionalImages,
 		&i.Instructions,
 		&i.Ingredients,
 		&i.CreatedAt,
@@ -75,7 +75,7 @@ func (q *Queries) CreateGeneratedCocktail(ctx context.Context, arg CreateGenerat
 }
 
 const getGeneratedCocktail = `-- name: GetGeneratedCocktail :one
-SELECT id, user_id, request_id, draft_id, name, description, main_image_url, additional_images, instructions, ingredients, created_at
+SELECT id, user_id, request_id, draft_id, name, description, main_image_url, instructions, ingredients, created_at
 FROM generated_cocktails
 WHERE id = $1 LIMIT 1
 `
@@ -91,7 +91,6 @@ func (q *Queries) GetGeneratedCocktail(ctx context.Context, id uuid.UUID) (Gener
 		&i.Name,
 		&i.Description,
 		&i.MainImageUrl,
-		&i.AdditionalImages,
 		&i.Instructions,
 		&i.Ingredients,
 		&i.CreatedAt,
@@ -100,7 +99,7 @@ func (q *Queries) GetGeneratedCocktail(ctx context.Context, id uuid.UUID) (Gener
 }
 
 const getUserGeneratedCocktails = `-- name: GetUserGeneratedCocktails :many
-SELECT id, user_id, request_id, draft_id, name, description, main_image_url, additional_images, instructions, ingredients, created_at
+SELECT id, user_id, request_id, draft_id, name, description, main_image_url, instructions, ingredients, created_at
 FROM generated_cocktails
 WHERE user_id = $1
 `
@@ -122,7 +121,6 @@ func (q *Queries) GetUserGeneratedCocktails(ctx context.Context, userID uuid.UUI
 			&i.Name,
 			&i.Description,
 			&i.MainImageUrl,
-			&i.AdditionalImages,
 			&i.Instructions,
 			&i.Ingredients,
 			&i.CreatedAt,
