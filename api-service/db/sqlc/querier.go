@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CheckImageGenerationProgress(ctx context.Context, requestID uuid.UUID) (CheckImageGenerationProgressRow, error)
 	CheckWasCocktailFeatured(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	CleanupExpiredCounters(ctx context.Context) error
 	ClearExpiredRequests(ctx context.Context) error
@@ -21,7 +22,11 @@ type Querier interface {
 	CreateDailyFeatured(ctx context.Context, cocktailID uuid.UUID) (DailyFeaturedCocktail, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
+	CreateGenerateCocktailDraft(ctx context.Context, arg CreateGenerateCocktailDraftParams) (GenerateCocktailDraft, error)
+	CreateGenerateCocktailRequest(ctx context.Context, arg CreateGenerateCocktailRequestParams) (GenerateCocktailRequest, error)
+	CreateGeneratedCocktail(ctx context.Context, arg CreateGeneratedCocktailParams) (GeneratedCocktail, error)
 	CreateHotpCounter(ctx context.Context, arg CreateHotpCounterParams) error
+	CreateImageGenerationRequests(ctx context.Context, arg CreateImageGenerationRequestsParams) ([]GenerateImageRequest, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
 	CreateNotificationType(ctx context.Context, arg CreateNotificationTypeParams) (NotificationType, error)
 	CreateResetPasswordRequest(ctx context.Context, arg CreateResetPasswordRequestParams) (ResetPasswordRequest, error)
@@ -57,7 +62,9 @@ type Querier interface {
 	GetFCMTokenById(ctx context.Context, id uuid.UUID) (FcmToken, error)
 	GetFlavourId(ctx context.Context, id uuid.UUID) (Flavour, error)
 	GetFlavourName(ctx context.Context, name string) (Flavour, error)
+	GetGeneratedCocktail(ctx context.Context, id uuid.UUID) (GeneratedCocktail, error)
 	GetHomescreenForUser(ctx context.Context, userID uuid.UUID) ([]GetHomescreenForUserRow, error)
+	GetImagesForDraft(ctx context.Context, draftID uuid.UUID) ([]GenerateImageRequest, error)
 	GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error)
 	GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error)
 	GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (Flavour, error)
@@ -68,6 +75,8 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
 	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
+	GetUserGeneratedCocktails(ctx context.Context, userID uuid.UUID) ([]GeneratedCocktail, error)
+	GetUserGenerationRequests(ctx context.Context, userID uuid.UUID) ([]GenerateCocktailRequest, error)
 	GetUserHOTPSecret(ctx context.Context, id uuid.UUID) (string, error)
 	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
@@ -83,6 +92,7 @@ type Querier interface {
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateCocktail(ctx context.Context, arg UpdateCocktailParams) (Cocktail, error)
 	UpdateFlavour(ctx context.Context, arg UpdateFlavourParams) (Flavour, error)
+	UpdateImageGenerationRequest(ctx context.Context, arg UpdateImageGenerationRequestParams) (GenerateImageRequest, error)
 	UpdateNotificationType(ctx context.Context, arg UpdateNotificationTypeParams) (NotificationType, error)
 	UpdateResetPasswordRequest(ctx context.Context, arg UpdateResetPasswordRequestParams) (ResetPasswordRequest, error)
 	UpdateUserEmailNotifications(ctx context.Context, arg UpdateUserEmailNotificationsParams) (bool, error)

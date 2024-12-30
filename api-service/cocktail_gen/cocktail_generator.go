@@ -7,11 +7,11 @@ import (
 )
 
 type PromptCocktail struct {
-	Name             string               `json:"name"`
-	ShortDescription string               `json:"short_description"`
-	Instructions     dto.AiInstructionDto `json:"instructions"`
-	Ingredients      []dto.IngredientDto  `json:"ingredients"`
-	ImagePrompt      string               `json:"cocktail_image_prompt"`
+	Name         string               `json:"name"`
+	Description  string               `json:"short_description"`
+	Instructions dto.AiInstructionDto `json:"instructions"`
+	Ingredients  []dto.IngredientDto  `json:"ingredients"`
+	ImagePrompt  string               `json:"cocktail_image_prompt"`
 }
 
 type PromptRecipe struct {
