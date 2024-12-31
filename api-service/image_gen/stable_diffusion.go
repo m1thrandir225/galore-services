@@ -2,15 +2,11 @@ package image_gen
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
-	"sync"
-
-	"github.com/google/uuid"
 )
 
 type StableDiffusionGenerator struct {
@@ -18,7 +14,15 @@ type StableDiffusionGenerator struct {
 	ApiKey       string
 	OutputFormat string
 	AspectRatio  string
-	StylePreset  string
+}
+
+func NewStableDiffusionGenerator(url, apiKey, aspectRatio, outputFormat string) *StableDiffusionGenerator {
+	return &StableDiffusionGenerator{
+		Url:          url,
+		ApiKey:       apiKey,
+		OutputFormat: outputFormat,
+		AspectRatio:  aspectRatio,
+	}
 }
 
 func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClient *http.Client) (*GeneratedImage, error) {
@@ -93,45 +97,4 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 	}
 
 	return &imageGenerated, nil
-}
-
-// GenerateImages TODO: if an error pops up stop the context execution, current implementation will spend credits even if there is an error.
-func (generator *StableDiffusionGenerator) GenerateImages(prompts []string, httpClient *http.Client) ([]*GeneratedImage, error) {
-	var waitGroup sync.WaitGroup
-	imageChannel := make(chan *GeneratedImage, len(prompts))
-	errorChannel := make(chan error, len(prompts))
-
-	for _, prompt := range prompts {
-		waitGroup.Add(1)
-
-		go func(p string) {
-			defer waitGroup.Done()
-
-			image, err := generator.GenerateImage(p, httpClient)
-			if err != nil {
-				errorChannel <- err
-			} else {
-				imageChannel <- image
-			}
-		}(prompt)
-	}
-	waitGroup.Wait()
-	close(imageChannel)
-	close(errorChannel)
-
-	var images []*GeneratedImage
-	var errorz []error
-
-	for img := range imageChannel {
-		images = append(images, img)
-	}
-
-	for err := range errorChannel {
-		log.Println(err)
-		errorz = append(errorz, err)
-	}
-	if len(errorz) > 0 {
-		return nil, errors.New("there was a problem with the generation process, please try again")
-	}
-	return images, nil
 }

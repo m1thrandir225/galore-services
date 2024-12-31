@@ -10,5 +10,4 @@ type GeneratedImage struct {
 
 type ImageGenerator interface {
 	GenerateImage(prompt string, httpClient *http.Client) (*GeneratedImage, error)
-	GenerateImages(prompts []string, httpClient *http.Client) ([]*GeneratedImage, error)
 }
