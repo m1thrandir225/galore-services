@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/m1thrandir225/galore-services/dto"
+	"github.com/m1thrandir225/galore-services/util"
 	"log"
 	"net/http"
 
@@ -16,38 +17,12 @@ import (
 	"golang.org/x/exp/rand"
 )
 
-func ConvertPromptsToAiInstructionDto(prompts []dto.PromptInstruction, imageRequests []db.GenerateImageRequest) (dto.AiInstructionDto, error) {
-	if len(prompts) != (len(imageRequests) - 1) {
-		return dto.AiInstructionDto{}, fmt.Errorf("the two given arrays are not of the same size")
-	}
-	instructions := make([]dto.AiInstructionData, len(prompts))
-	localRequests := imageRequests
-	for i, img := range localRequests {
-		if img.IsMain {
-			localRequests = append(localRequests[:i], localRequests[i+1:]...)
-			break
-		}
-	}
-
-	for i, prompt := range prompts {
-		imageUrl := localRequests[i].ImageUrl
-
-		instruction := dto.AiInstructionData{
-			Instruction:      prompt.Instruction,
-			InstructionImage: imageUrl.String,
-		}
-		instructions = append(instructions, instruction)
-	}
-
-	return dto.AiInstructionDto{Instructions: instructions}, nil
-}
-
 func (server *Server) registerBackgroundHandlers() {
 	server.scheduler.RegisterJob("send_mail", server.sendMailJob)
 	/**
 	Generate Daily Featured Cocktails Cron
 	*/
-	server.scheduler.RegisterCronJob("generate_daily_featured", "*/30 * * * *") //Cron for every day
+	server.scheduler.RegisterCronJob("generate_daily_featured", "0 0 * * *") //Cron for every day
 	server.scheduler.RegisterJob("generate_daily_featured", server.generateDailyFeatured)
 
 	/**
@@ -307,7 +282,7 @@ func (server *Server) createGeneratedCocktail(args map[string]interface{}) error
 		return err
 	}
 
-	aiInstructions, err := ConvertPromptsToAiInstructionDto(promptInstructions, imagesForDraft)
+	aiInstructions, err := util.ConvertPromptsToAiInstructionDto(promptInstructions, imagesForDraft)
 	if err != nil {
 		log.Println(err)
 		return err
