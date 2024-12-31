@@ -39,6 +39,22 @@
               }
             },
             {
+              "column": "generated_cocktails.instructions",
+              "go_type": {
+                "import": "github.com/m1thrandir225/galore-services/dto",
+                "package": "dto",
+                "type": "AiInstructionDto"
+              }
+            },
+            {
+              "column": "generated_cocktails.ingredients",
+              "go_type": {
+                "import": "github.com/m1thrandir225/galore-services/dto",
+                "package": "dto",
+                "type": "IngredientDto"
+              }
+            },
+            {
               "column": "cocktails.ingredients",
               "go_type": {
                 "import": "github.com/m1thrandir225/galore-services/dto",

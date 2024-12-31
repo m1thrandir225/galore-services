@@ -31,6 +31,9 @@ type Config struct {
 	SMTPUser                  string        `mapstructure:"SMTP_USER"`
 	SMTPPass                  string        `mapstructure:"SMTP_PASS"`
 	TOTPSecret                string        `mapstructure:"TOTP_SECRET"`
+	OpenAIApiKey              string        `mapstructure:"OPENAI_API_KEY"`
+	OpenAIAssistantID         string        `mapstructure:"OPENAI_ASSISTANT_ID"`
+	OpenAIThreadURL           string        `mapstructure:"OPENAI_THREAD_URL"`
 	FirebaseServiceKey        string        `mapstructure:"FIREBASE_SERVICE_KEY"`
 }
 
@@ -75,6 +78,9 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("SMTP_USER")
 	viper.BindEnv("SMTP_PASS")
 	viper.BindEnv("TOTP_SECRET")
+	viper.BindEnv("OPENAI_API_KEY")
+	viper.BindEnv("OPENAI_ASSISTANT_ID")
+	viper.BindEnv("OPENAI_THREAD_URL")
 	viper.BindEnv("FIREBASE_SERVICE_KEY")
 
 	err = viper.Unmarshal(&config)

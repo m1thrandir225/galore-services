@@ -5,6 +5,8 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +14,93 @@ import (
 	dto "github.com/m1thrandir225/galore-services/dto"
 	"github.com/pgvector/pgvector-go"
 )
+
+type GenerationStatus string
+
+const (
+	GenerationStatusGeneratingCocktail GenerationStatus = "generating_cocktail"
+	GenerationStatusGeneratingImages   GenerationStatus = "generating_images"
+	GenerationStatusError              GenerationStatus = "error"
+	GenerationStatusSuccess            GenerationStatus = "success"
+)
+
+func (e *GenerationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = GenerationStatus(s)
+	case string:
+		*e = GenerationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for GenerationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullGenerationStatus struct {
+	GenerationStatus GenerationStatus `json:"generation_status"`
+	Valid            bool             `json:"valid"` // Valid is true if GenerationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullGenerationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.GenerationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.GenerationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullGenerationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.GenerationStatus), nil
+}
+
+type ImageGenerationStatus string
+
+const (
+	ImageGenerationStatusGenerating ImageGenerationStatus = "generating"
+	ImageGenerationStatusSuccess    ImageGenerationStatus = "success"
+	ImageGenerationStatusError      ImageGenerationStatus = "error"
+)
+
+func (e *ImageGenerationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ImageGenerationStatus(s)
+	case string:
+		*e = ImageGenerationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ImageGenerationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullImageGenerationStatus struct {
+	ImageGenerationStatus ImageGenerationStatus `json:"image_generation_status"`
+	Valid                 bool                  `json:"valid"` // Valid is true if ImageGenerationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullImageGenerationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ImageGenerationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ImageGenerationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullImageGenerationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ImageGenerationStatus), nil
+}
 
 type Category struct {
 	ID        uuid.UUID `json:"id"`
@@ -74,6 +163,52 @@ type Flavour struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type GenerateCocktailDraft struct {
+	ID              uuid.UUID          `json:"id"`
+	RequestID       uuid.UUID          `json:"request_id"`
+	Name            string             `json:"name"`
+	Description     string             `json:"description"`
+	Instructions    []byte             `json:"instructions"`
+	Ingredients     []byte             `json:"ingredients"`
+	MainImagePrompt string             `json:"main_image_prompt"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type GenerateCocktailRequest struct {
+	ID           uuid.UUID        `json:"id"`
+	UserID       uuid.UUID        `json:"user_id"`
+	Prompt       string           `json:"prompt"`
+	Status       GenerationStatus `json:"status"`
+	ErrorMessage pgtype.Text      `json:"error_message"`
+	UpdatedAt    time.Time        `json:"updated_at"`
+	CreatedAt    time.Time        `json:"created_at"`
+}
+
+type GenerateImageRequest struct {
+	ID           uuid.UUID             `json:"id"`
+	DraftID      uuid.UUID             `json:"draft_id"`
+	Prompt       string                `json:"prompt"`
+	IsMain       bool                  `json:"is_main"`
+	Status       ImageGenerationStatus `json:"status"`
+	ImageUrl     pgtype.Text           `json:"image_url"`
+	ErrorMessage pgtype.Text           `json:"error_message"`
+	CreatedAt    pgtype.Timestamptz    `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz    `json:"updated_at"`
+}
+
+type GeneratedCocktail struct {
+	ID           uuid.UUID            `json:"id"`
+	UserID       uuid.UUID            `json:"user_id"`
+	RequestID    uuid.UUID            `json:"request_id"`
+	DraftID      uuid.UUID            `json:"draft_id"`
+	Name         string               `json:"name"`
+	Description  string               `json:"description"`
+	MainImageUrl string               `json:"main_image_url"`
+	Instructions dto.AiInstructionDto `json:"instructions"`
+	Ingredients  dto.IngredientDto    `json:"ingredients"`
+	CreatedAt    time.Time            `json:"created_at"`
 }
 
 type HotpCounter struct {
