@@ -117,6 +117,7 @@ func (server *Server) setupRouter() {
 	Generate Cocktail Routes
 	*/
 	authRoutes.POST("/generate-cocktail", server.createGenerateCocktailRequest)
+	v1.POST("/generate-image", server.generateImage)
 	//v1.POST("/generate", server.generateCocktail)
 
 	server.setupMigrationServiceRoutes(v1)

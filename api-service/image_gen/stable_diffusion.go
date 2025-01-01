@@ -9,8 +9,16 @@ import (
 	"net/http"
 )
 
+type StableDiffusionModel string
+
+const (
+	StableDiffusionModelUltra StableDiffusionModel = "ultra"
+	StableDiffusionModelCore  StableDiffusionModel = "core"
+	StableDiffusionModelSD3   StableDiffusionModel = "sd3"
+)
+
 type StableDiffusionGenerator struct {
-	Url          string
+	BaseURL      string
 	ApiKey       string
 	OutputFormat string
 	AspectRatio  string
@@ -18,15 +26,29 @@ type StableDiffusionGenerator struct {
 
 func NewStableDiffusionGenerator(url, apiKey, aspectRatio, outputFormat string) *StableDiffusionGenerator {
 	return &StableDiffusionGenerator{
-		Url:          url,
+		BaseURL:      url,
 		ApiKey:       apiKey,
 		OutputFormat: outputFormat,
 		AspectRatio:  aspectRatio,
 	}
 }
 
-func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClient *http.Client) (*GeneratedImage, error) {
+func (generator *StableDiffusionGenerator) generateUrlBasedOnModel(model StableDiffusionModel) (string, error) {
+	switch model {
+	case StableDiffusionModelUltra:
+		return fmt.Sprintf("%s/ultra", generator.BaseURL), nil
+	case StableDiffusionModelCore:
+		return fmt.Sprintf("%s/core", generator.BaseURL), nil
+	case StableDiffusionModelSD3:
+		return fmt.Sprintf("%s/sd3", generator.BaseURL), nil
+	default:
+		return "", fmt.Errorf("unknown model: %s", model)
+	}
+}
+
+func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClient *http.Client, model string) (*GeneratedImage, error) {
 	buffer := &bytes.Buffer{}
+
 	var imageGenerated GeneratedImage
 	mpw := multipart.NewWriter(buffer)
 
@@ -65,13 +87,18 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", generator.Url, buffer)
+	urlForModel, err := generator.generateUrlBasedOnModel(StableDiffusionModel(model))
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", urlForModel, buffer)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", mpw.FormDataContentType())
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", generator.ApiKey))
-	req.Header.Set("Accept", fmt.Sprintf("image/%s", generator.OutputFormat))
+	req.Header.Set("Accept", "image/*")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -80,14 +107,13 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 
 	defer resp.Body.Close()
 
-	// Check HTTP status code before processing body
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code with body: %s", string(body))
 	}
 
 	imageGenerated = GeneratedImage{

@@ -65,21 +65,68 @@ func main() {
 		return nil
 	}
 
+	/**
+	FILE STORE
+	*/
 	localStorage := storage.NewLocalStorage("./public")
+	/**
+	DB STORE
+	*/
 	store := db.NewStore(connPool)
-	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
-	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
-	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
-	scheduler := scheduler.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
-	cocktailGenerator := cocktail_gen.NewOpenAIPromptGenerator(config.OpenAIApiKey, config.OpenAIAssistantID, config.OpenAIThreadURL)
-	imageGenerator := image_gen.NewStableDiffusionGenerator(config.StableDiffusionURL, config.StableDiffusionApiKey, "16:9", "png")
+	/**
+	CACHE STORE
+	*/
+	cacheStore := cache.NewRedisStore(
+		config.CacheSource,
+		config.CachePassword,
+	)
+	/**
+	CATEGORIZER SERVICE
+	*/
+	categorizer := categorizer.NewGaloreCategorizer(
+		config.CategorizerServiceAddress,
+		config.CategorizerServiceKey,
+	)
+	/**
+	EMBEDDING SERVICE
+	*/
+	embeddingService := embedding.NewGaloreEmbeddingService(
+		config.EmbeddingServiceAddress,
+		config.EmbeddingServiceKey,
+	)
+	/**
+	BACKGROUND TASK PROCESSOR & SCHEDULER
+	*/
+	scheduler := scheduler.NewGoworkScheduler(
+		"galore-work-pool",
+		config.WorkerSource,
+	)
+	/**
+	COCKTAIL RECIPE GENERATION SERVICE
+	*/
+	cocktailGenerator := cocktail_gen.NewOpenAIPromptGenerator(
+		config.OpenAIApiKey,
+		config.OpenAIAssistantID,
+		config.OpenAIThreadURL,
+	)
+	/**
+	IMAGE GENERATION SERVICE
+	*/
+	imageGenerator := image_gen.NewStableDiffusionGenerator(
+		config.StableDiffusionURL,
+		config.StableDiffusionApiKey,
+		"16:9",
+		"png",
+	)
 	mailService := mail.NewGenericMail(
 		config.SMTPHost,
 		config.SMTPPort,
 		config.SMTPUser,
 		config.SMTPPass,
 	)
-
+	/**
+	NOTIFICATION SERVICE
+	*/
 	fcmNotifications, err := notifications.NewFirebaseNotifications(config.FirebaseServiceKey)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot initialize firebase notifications.")

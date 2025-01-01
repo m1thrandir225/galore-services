@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/m1thrandir225/galore-services/cocktail_gen"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
@@ -11,6 +12,11 @@ import (
 type GenerateCocktailRequest struct {
 	ReferenceFlavours  []string `json:"reference_flavours" binding:"required"`
 	ReferenceCocktails []string `json:"reference_cocktails" binding:"required"`
+}
+
+type GenerateImageRequest struct {
+	Prompt string `json:"prompt" binding:"required"`
+	Model  string `json:"model" binding:"required"`
 }
 
 type CreateGenerateCocktailRequest struct {
@@ -69,4 +75,29 @@ func (server *Server) generateCocktail(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, prompt)
+}
+
+func (server *Server) generateImage(ctx *gin.Context) {
+	var req GenerateImageRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	httpClient := &http.Client{}
+
+	generatedImage, err := server.imageGenerator.GenerateImage(req.Prompt, httpClient, req.Model)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	filePath, err := server.storage.UploadFile(generatedImage.Content, "generated-images", fmt.Sprintf("%s%s", generatedImage.FileName, generatedImage.FileExt))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	log.Println(filePath)
+
+	ctx.JSON(http.StatusOK, generatedImage)
 }
