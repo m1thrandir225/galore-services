@@ -10,6 +10,10 @@ SET status = $2
 WHERE id = $1
 RETURNING *;
 
+-- name: GetGenerationRequest :one
+SELECT * from generate_cocktail_requests
+WHERE id = $1 LIMIT 1;
+
 -- name: GetUserGenerationRequests :many
 SELECT * FROM generate_cocktail_requests
 WHERE user_id = $1

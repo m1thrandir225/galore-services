@@ -65,6 +65,7 @@ const (
 	ImageGenerationStatusGenerating ImageGenerationStatus = "generating"
 	ImageGenerationStatusSuccess    ImageGenerationStatus = "success"
 	ImageGenerationStatusError      ImageGenerationStatus = "error"
+	ImageGenerationStatusCancelled  ImageGenerationStatus = "cancelled"
 )
 
 func (e *ImageGenerationStatus) Scan(src interface{}) error {

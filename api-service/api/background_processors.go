@@ -18,37 +18,37 @@ import (
 )
 
 func (server *Server) registerBackgroundHandlers() {
-	server.scheduler.RegisterJob("send_mail", server.sendMailJob)
+	server.scheduler.RegisterJob("send_mail", false, server.sendMailJob)
 	/**
 	Generate Daily Featured Cocktails Cron
 	*/
 	server.scheduler.RegisterCronJob("generate_daily_featured", "0 0 * * *") //Cron for every day
-	server.scheduler.RegisterJob("generate_daily_featured", server.generateDailyFeatured)
+	server.scheduler.RegisterJob("generate_daily_featured", true, server.generateDailyFeatured)
 
 	/**
 	Cocktail Migration Cron
 	*/
 	server.scheduler.RegisterCronJob("migrate_cocktails", "0 0 1 * *")
-	server.scheduler.RegisterJob("migrate_cocktails", server.migrateCocktails)
+	server.scheduler.RegisterJob("migrate_cocktails", true, server.migrateCocktails)
 
 	/**
 	Send Notification Job
 	*/
-	server.scheduler.RegisterJob("send_notification", server.sendNotification)
+	server.scheduler.RegisterJob("send_notification", false, server.sendNotification)
 
 	/**
 	Generate Image Job
 	*/
 	//TODO: implement generate image background job
-	server.scheduler.RegisterJob("generate_image", server.createImageGenerationRequest)
+	server.scheduler.RegisterJob("generate_image", true, server.createImageGenerationRequest)
 
 	/**
 	Generate Cocktail Job
 	*/
 	//TODO: implement generate cocktail background job
-	server.scheduler.RegisterJob("generate_cocktail_draft", server.createCocktailDraft)
+	server.scheduler.RegisterJob("generate_cocktail_draft", true, server.createCocktailDraft)
 
-	server.scheduler.RegisterJob("generate_cocktail_final", server.createGeneratedCocktail)
+	server.scheduler.RegisterJob("generate_cocktail_final", true, server.createGeneratedCocktail)
 
 }
 
@@ -120,18 +120,20 @@ func (server *Server) createCocktailDraft(args map[string]interface{}) error {
 
 	for _, promptInstruction := range promptCocktail.Instructions {
 		server.scheduler.EnqueueJob("generate_image", map[string]interface{}{
-			"cocktail_draft_id": draft.ID,
-			"image_prompt":      promptInstruction.ImagePrompt,
-			"is_main":           false,
-			"user_id":           userId,
+			"cocktail_draft_id":   draft.ID,
+			"image_prompt":        promptInstruction.ImagePrompt,
+			"is_main":             false,
+			"user_id":             userId,
+			"generate_request_id": draft.RequestID,
 		})
 	}
 
 	server.scheduler.EnqueueJob("generate_image", map[string]interface{}{
-		"cocktail_draft_id": draft.ID,
-		"image_prompt":      draft.MainImagePrompt,
-		"is_main":           true,
-		"user_id":           userId,
+		"cocktail_draft_id":   draft.ID,
+		"image_prompt":        draft.MainImagePrompt,
+		"is_main":             true,
+		"user_id":             userId,
+		"generate_request_id": draft.RequestID,
 	})
 
 	return nil
@@ -144,6 +146,15 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		return fmt.Errorf("missing required arguments: cocktail_draft_id")
 	}
 	cocktailDraftId, err := uuid.Parse(cocktailDraftIdStr)
+	if err != nil {
+		return err
+	}
+
+	generateRequestIdStr, ok := args["generate_request_id"].(string)
+	if !ok {
+		return fmt.Errorf("missing required arguments: generate_request_id")
+	}
+	generateRequestId, err := uuid.Parse(generateRequestIdStr)
 	if err != nil {
 		return err
 	}
@@ -170,6 +181,34 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		return err
 	}
 
+	generateRequest, err := server.store.GetGenerationRequest(context.Background(), generateRequestId)
+	if err != nil {
+		return err
+	}
+
+	/**
+	Check if the request has a status error (i.e one of the previous images had an error),
+	if it does then just cancel the current image generation process
+	*/
+	if generateRequest.Status == db.GenerationStatusError {
+		createArgs := db.CreateImageGenerationRequestParams{
+			DraftID: cocktailDraftId,
+			Prompt:  imagePrompt,
+			Status:  db.ImageGenerationStatusCancelled,
+			IsMain:  isMain,
+		}
+
+		_, imageReqErr := server.store.CreateImageGenerationRequest(context.Background(), createArgs)
+		if imageReqErr != nil {
+			log.Println("ERR: error while creating image generation request: " + err.Error())
+			return imageReqErr
+		}
+		return nil
+	}
+
+	/*
+		If the parent request for the draft doesn't have an error continue with the generation process
+	*/
 	createArgs := db.CreateImageGenerationRequestParams{
 		DraftID: cocktailDraftId,
 		Prompt:  imagePrompt,
@@ -182,14 +221,65 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		log.Println("ERR: error while creating image generation request: " + err.Error())
 		return err
 	}
+	httpClient := &http.Client{}
 
-	//TODO: add image generation logic
+	/**
+	Generate
+	*/
+	generatedImageData, err := server.imageGenerator.GenerateImage(imageRequest.Prompt, httpClient, "core")
+	if err != nil {
+		errorUpdateArgs := db.UpdateImageGenerationRequestParams{
+			ID: imageRequest.ID,
+			ImageUrl: pgtype.Text{
+				String: "",
+				Valid:  false,
+			},
+			ErrorMessage: pgtype.Text{
+				String: err.Error(),
+				Valid:  true,
+			},
+			Status: db.ImageGenerationStatusError,
+		}
+		_, updateImageReqErr := server.store.UpdateImageGenerationRequest(context.Background(), errorUpdateArgs)
+		if updateImageReqErr != nil {
+			log.Println("ERR: error while updating image generation request: " + err.Error())
+			return err
+		}
+	}
+	/**
+	Upload the generated image to the current storage implementation
+	If it errors then update the current image request
+	*/
 
-	//After the image is generated logic (if there is an image we update
-	updateArgs := db.UpdateImageGenerationRequestParams{
+	uploadedFilePath, err := server.storage.UploadFile(
+		generatedImageData.Content,
+		"generated-images",
+		fmt.Sprintf("%s%s", generatedImageData.FileName, generatedImageData.FileExt),
+	)
+	if err != nil {
+		errorUpdateArgs := db.UpdateImageGenerationRequestParams{
+			ID: imageRequest.ID,
+			ImageUrl: pgtype.Text{
+				String: "",
+				Valid:  false,
+			},
+			ErrorMessage: pgtype.Text{
+				String: err.Error(),
+				Valid:  true,
+			},
+			Status: db.ImageGenerationStatusError,
+		}
+		_, updateImageReqErr := server.store.UpdateImageGenerationRequest(context.Background(), errorUpdateArgs)
+		if updateImageReqErr != nil {
+			log.Println("ERR: error while updating image generation request: " + err.Error())
+			return err
+		}
+	}
+
+	successUpdateArgs := db.UpdateImageGenerationRequestParams{
 		ID: imageRequest.ID,
 		ImageUrl: pgtype.Text{
-			String: "image_url",
+			String: uploadedFilePath,
 			Valid:  true,
 		},
 		ErrorMessage: pgtype.Text{
@@ -198,26 +288,52 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		},
 		Status: db.ImageGenerationStatusSuccess,
 	}
-	_, err = server.store.UpdateImageGenerationRequest(context.Background(), updateArgs)
+	_, err = server.store.UpdateImageGenerationRequest(context.Background(), successUpdateArgs)
+
 	if err != nil {
 		log.Println("ERR: error while updating image generation request: " + err.Error())
 		return err
 	}
+
+	/*
+		Fetch the draft for the image to check if this is the last one that needs to be generated
+	*/
 	draft, err := server.store.GetCocktailDraft(context.Background(), cocktailDraftId)
 	if err != nil {
 		return err
 	}
-	//Check if it's the last image that it's being generated from the draft request
+
+	/*
+		Get the current status of all the image requests
+	*/
 	data, err := server.store.CheckImageGenerationProgress(context.Background(), draft.RequestID)
 	if err != nil {
 		log.Println("ERR: error while checking image generation: " + err.Error())
 		return err
 	}
 
+	/*
+		If there is one that is not successful, update the parent generate_request to status failed so the following ones can be cancelled
+	*/
 	if !data.AllSuccessful {
-		log.Println("ERROR: image generation progress check failed")
-		return errors.New("there was a problem generating images")
+		log.Println("ERROR: not all images completed the generation process successfully")
+
+		updateGenerateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+			ID:     generateRequestId,
+			Status: db.GenerationStatusError,
+		}
+		_, err = server.store.UpdateGenerateCocktailRequest(context.Background(), updateGenerateRequestArgs)
+
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		return nil
 	}
+	/*
+		Logic for comparing if this image_generation request is the last one, if it is then schedule the generation of the final cocktail
+	*/
 
 	var instructions []dto.PromptInstruction
 	err = json.Unmarshal(draft.Instructions, &instructions)
@@ -225,6 +341,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		log.Println("ERR: error while unmarshalling instructions: " + err.Error())
 		return err
 	}
+
 	if data.CompletedImages == int64(len(instructions)+1) {
 		server.scheduler.EnqueueJob("generate_cocktail_final", map[string]interface{}{
 			"cocktail_draft_id": cocktailDraftId,

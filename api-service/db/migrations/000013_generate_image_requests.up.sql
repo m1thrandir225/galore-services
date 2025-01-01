@@ -1,7 +1,8 @@
 CREATE TYPE image_generation_status as ENUM (
     'generating',
     'success',
-    'error'
+    'error',
+    'cancelled'
 );
 
 CREATE TABLE generate_image_requests (
