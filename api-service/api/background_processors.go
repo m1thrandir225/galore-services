@@ -342,7 +342,8 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		return err
 	}
 
-	if data.CompletedImages == int64(len(instructions)+1) {
+	if data.TotalImages == data.CompletedImages && data.CompletedImages == int64(len(instructions)+1) {
+		log.Println("INFO: all images completed the generation process successfully")
 		server.scheduler.EnqueueJob("generate_cocktail_final", map[string]interface{}{
 			"cocktail_draft_id": cocktailDraftId,
 			"user_id":           userId,
