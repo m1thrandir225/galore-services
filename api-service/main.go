@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/m1thrandir225/galore-services/cocktail_gen"
+	"github.com/m1thrandir225/galore-services/image_gen"
 	"github.com/m1thrandir225/galore-services/notifications"
 	"os"
 
@@ -35,6 +36,7 @@ type ginServerConfig struct {
 	MailService         mail.MailService
 	NotificationService notifications.NotificationService
 	CocktailGenerator   cocktail_gen.CocktailGenerator
+	ImageGenerator      image_gen.ImageGenerator
 }
 
 func main() {
@@ -63,21 +65,68 @@ func main() {
 		return nil
 	}
 
+	/**
+	FILE STORE
+	*/
 	localStorage := storage.NewLocalStorage("./public")
+	/**
+	DB STORE
+	*/
 	store := db.NewStore(connPool)
-	cacheStore := cache.NewRedisStore(config.CacheSource, config.CachePassword)
-	categorizer := categorizer.NewGaloreCategorizer(config.CategorizerServiceAddress, config.CategorizerServiceKey)
-	embeddingService := embedding.NewGaloreEmbeddingService(config.EmbeddingServiceAddress, config.EmbeddingServiceKey)
-	scheduler := scheduler.NewGoworkScheduler("galore-work-pool", config.WorkerSource)
-	cocktailGenerator := cocktail_gen.NewOpenAIPromptGenerator(config.OpenAIApiKey, config.OpenAIAssistantID, config.OpenAIThreadURL)
-
+	/**
+	CACHE STORE
+	*/
+	cacheStore := cache.NewRedisStore(
+		config.CacheSource,
+		config.CachePassword,
+	)
+	/**
+	CATEGORIZER SERVICE
+	*/
+	categorizer := categorizer.NewGaloreCategorizer(
+		config.CategorizerServiceAddress,
+		config.CategorizerServiceKey,
+	)
+	/**
+	EMBEDDING SERVICE
+	*/
+	embeddingService := embedding.NewGaloreEmbeddingService(
+		config.EmbeddingServiceAddress,
+		config.EmbeddingServiceKey,
+	)
+	/**
+	BACKGROUND TASK PROCESSOR & SCHEDULER
+	*/
+	scheduler := scheduler.NewGoworkScheduler(
+		"galore-work-pool",
+		config.WorkerSource,
+	)
+	/**
+	COCKTAIL RECIPE GENERATION SERVICE
+	*/
+	cocktailGenerator := cocktail_gen.NewOpenAIPromptGenerator(
+		config.OpenAIApiKey,
+		config.OpenAIAssistantID,
+		config.OpenAIThreadURL,
+	)
+	/**
+	IMAGE GENERATION SERVICE
+	*/
+	imageGenerator := image_gen.NewStableDiffusionGenerator(
+		config.StableDiffusionURL,
+		config.StableDiffusionApiKey,
+		"16:9",
+		"png",
+	)
 	mailService := mail.NewGenericMail(
 		config.SMTPHost,
 		config.SMTPPort,
 		config.SMTPUser,
 		config.SMTPPass,
 	)
-
+	/**
+	NOTIFICATION SERVICE
+	*/
 	fcmNotifications, err := notifications.NewFirebaseNotifications(config.FirebaseServiceKey)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot initialize firebase notifications.")
@@ -94,6 +143,7 @@ func main() {
 		MailService:         mailService,
 		NotificationService: fcmNotifications,
 		CocktailGenerator:   cocktailGenerator,
+		ImageGenerator:      imageGenerator,
 	}
 	runGinServer(serverConfig)
 }
@@ -110,6 +160,7 @@ func runGinServer(serverConfig ginServerConfig) {
 		serverConfig.MailService,
 		serverConfig.NotificationService,
 		serverConfig.CocktailGenerator,
+		serverConfig.ImageGenerator,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create server.")

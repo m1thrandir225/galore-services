@@ -34,6 +34,8 @@ type Config struct {
 	OpenAIApiKey              string        `mapstructure:"OPENAI_API_KEY"`
 	OpenAIAssistantID         string        `mapstructure:"OPENAI_ASSISTANT_ID"`
 	OpenAIThreadURL           string        `mapstructure:"OPENAI_THREAD_URL"`
+	StableDiffusionURL        string        `mapstructure:"STABLE_DIFFUSION_URL"`
+	StableDiffusionApiKey     string        `mapstructure:"STABLE_DIFFUSION_API_KEY"`
 	FirebaseServiceKey        string        `mapstructure:"FIREBASE_SERVICE_KEY"`
 }
 
@@ -81,6 +83,8 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.BindEnv("OPENAI_API_KEY")
 	viper.BindEnv("OPENAI_ASSISTANT_ID")
 	viper.BindEnv("OPENAI_THREAD_URL")
+	viper.BindEnv("STABLE_DIFFUSION_URL")
+	viper.BindEnv("STABLE_DIFFUSION_API_KEY")
 	viper.BindEnv("FIREBASE_SERVICE_KEY")
 
 	err = viper.Unmarshal(&config)

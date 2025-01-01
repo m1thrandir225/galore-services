@@ -2,27 +2,53 @@ package image_gen
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
-	"sync"
+)
 
-	"github.com/google/uuid"
+type StableDiffusionModel string
+
+const (
+	StableDiffusionModelUltra StableDiffusionModel = "ultra"
+	StableDiffusionModelCore  StableDiffusionModel = "core"
+	StableDiffusionModelSD3   StableDiffusionModel = "sd3"
 )
 
 type StableDiffusionGenerator struct {
-	Url          string
+	BaseURL      string
 	ApiKey       string
 	OutputFormat string
 	AspectRatio  string
-	StylePreset  string
 }
 
-func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClient *http.Client) (*GeneratedImage, error) {
+func NewStableDiffusionGenerator(url, apiKey, aspectRatio, outputFormat string) *StableDiffusionGenerator {
+	return &StableDiffusionGenerator{
+		BaseURL:      url,
+		ApiKey:       apiKey,
+		OutputFormat: outputFormat,
+		AspectRatio:  aspectRatio,
+	}
+}
+
+func (generator *StableDiffusionGenerator) generateUrlBasedOnModel(model StableDiffusionModel) (string, error) {
+	switch model {
+	case StableDiffusionModelUltra:
+		return fmt.Sprintf("%s/ultra", generator.BaseURL), nil
+	case StableDiffusionModelCore:
+		return fmt.Sprintf("%s/core", generator.BaseURL), nil
+	case StableDiffusionModelSD3:
+		return fmt.Sprintf("%s/sd3", generator.BaseURL), nil
+	default:
+		return "", fmt.Errorf("unknown model: %s", model)
+	}
+}
+
+func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClient *http.Client, model string) (*GeneratedImage, error) {
 	buffer := &bytes.Buffer{}
+
 	var imageGenerated GeneratedImage
 	mpw := multipart.NewWriter(buffer)
 
@@ -61,13 +87,18 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", generator.Url, buffer)
+	urlForModel, err := generator.generateUrlBasedOnModel(StableDiffusionModel(model))
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", urlForModel, buffer)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", mpw.FormDataContentType())
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", generator.ApiKey))
-	req.Header.Set("Accept", fmt.Sprintf("image/%s", generator.OutputFormat))
+	req.Header.Set("Accept", "image/*")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -76,14 +107,13 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 
 	defer resp.Body.Close()
 
-	// Check HTTP status code before processing body
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code with body: %s", string(body))
 	}
 
 	imageGenerated = GeneratedImage{
@@ -93,45 +123,4 @@ func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClie
 	}
 
 	return &imageGenerated, nil
-}
-
-// GenerateImages TODO: if an error pops up stop the context execution, current implementation will spend credits even if there is an error.
-func (generator *StableDiffusionGenerator) GenerateImages(prompts []string, httpClient *http.Client) ([]*GeneratedImage, error) {
-	var waitGroup sync.WaitGroup
-	imageChannel := make(chan *GeneratedImage, len(prompts))
-	errorChannel := make(chan error, len(prompts))
-
-	for _, prompt := range prompts {
-		waitGroup.Add(1)
-
-		go func(p string) {
-			defer waitGroup.Done()
-
-			image, err := generator.GenerateImage(p, httpClient)
-			if err != nil {
-				errorChannel <- err
-			} else {
-				imageChannel <- image
-			}
-		}(prompt)
-	}
-	waitGroup.Wait()
-	close(imageChannel)
-	close(errorChannel)
-
-	var images []*GeneratedImage
-	var errorz []error
-
-	for img := range imageChannel {
-		images = append(images, img)
-	}
-
-	for err := range errorChannel {
-		log.Println(err)
-		errorz = append(errorz, err)
-	}
-	if len(errorz) > 0 {
-		return nil, errors.New("there was a problem with the generation process, please try again")
-	}
-	return images, nil
 }

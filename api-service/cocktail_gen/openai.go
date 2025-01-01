@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"slices"
 	"time"
@@ -178,8 +177,6 @@ func (generator *OpenAIPromptGenerator) createRun(httpClient http.Client, thread
 	}
 	runUrl := fmt.Sprintf("%s/%s/runs", generator.ThreadUrl, thread.Id)
 
-	log.Println(runUrl)
-
 	req, err := http.NewRequest("POST", runUrl, bytes.NewBuffer(jsonPayload))
 
 	if err != nil {
@@ -216,8 +213,6 @@ func (run *Run) pollAndCheckRun(httpClient http.Client, threadUrl, apiKey string
 	viableStatuses := []string{"completed", "cancelled", "failed", "incomplete", "expired"}
 
 	for !slices.Contains(viableStatuses, run.Status) {
-		log.Println(slices.Contains(viableStatuses, run.Status))
-		log.Println(run.Status)
 		time.Sleep(5 * time.Second)
 		newRun, err := run.checkRunStatus(httpClient, threadUrl, apiKey)
 		if err != nil {
@@ -234,7 +229,6 @@ func (run *Run) pollAndCheckRun(httpClient http.Client, threadUrl, apiKey string
 
 func (run *Run) checkRunStatus(httpClient http.Client, threadUrl, apiKey string) (*Run, error) {
 	url := fmt.Sprintf("%s/%s/runs/%s", threadUrl, run.ThreadId, run.Id)
-	log.Println(url)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -250,8 +244,6 @@ func (run *Run) checkRunStatus(httpClient http.Client, threadUrl, apiKey string)
 		return nil, err
 	}
 	defer response.Body.Close()
-
-	log.Println(response.Status)
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {

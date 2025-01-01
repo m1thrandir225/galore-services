@@ -17,7 +17,7 @@ SELECT
     d.id as draft_id,
     d.request_id,
     COUNT(i.id) as total_images,
-    COUNT(i.status = 'success') as completed_images,
+    COUNT(*) FILTER (WHERE i.status = 'success') as completed_images,
     bool_and(i.error_message IS NULL) as all_successful
 FROM generate_cocktail_drafts d
 JOIN generate_image_requests i ON i.draft_id = d.id

@@ -39,6 +39,26 @@ func (q *Queries) CreateGenerateCocktailRequest(ctx context.Context, arg CreateG
 	return i, err
 }
 
+const getGenerationRequest = `-- name: GetGenerationRequest :one
+SELECT id, user_id, prompt, status, error_message, updated_at, created_at from generate_cocktail_requests
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetGenerationRequest(ctx context.Context, id uuid.UUID) (GenerateCocktailRequest, error) {
+	row := q.db.QueryRow(ctx, getGenerationRequest, id)
+	var i GenerateCocktailRequest
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Prompt,
+		&i.Status,
+		&i.ErrorMessage,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUserGenerationRequests = `-- name: GetUserGenerationRequests :many
 SELECT id, user_id, prompt, status, error_message, updated_at, created_at FROM generate_cocktail_requests
 WHERE user_id = $1

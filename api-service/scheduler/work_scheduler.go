@@ -41,8 +41,20 @@ func (p *GoworkScheduler) RegisterCronJob(name, cronSpec string) {
 	p.workerPool.PeriodicallyEnqueue(cronSpec, name)
 }
 
-func (p *GoworkScheduler) RegisterJob(jobName string, handler func(args map[string]interface{}) error) {
-	p.workerPool.Job(jobName, func(job *work.Job) error {
+func (p *GoworkScheduler) RegisterJob(jobName string, noRetry bool, handler func(args map[string]interface{}) error) {
+	var jobOptions work.JobOptions
+
+	if noRetry {
+		jobOptions = work.JobOptions{
+			MaxFails: 1,
+		}
+	} else {
+		jobOptions = work.JobOptions{
+			MaxFails: 0,
+		}
+	}
+
+	p.workerPool.JobWithOptions(jobName, jobOptions, func(job *work.Job) error {
 		args := make(map[string]interface{})
 		for key, val := range job.Args {
 			args[key] = val

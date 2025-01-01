@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/m1thrandir225/galore-services/cocktail_gen"
+	"github.com/m1thrandir225/galore-services/image_gen"
 	"github.com/m1thrandir225/galore-services/notifications"
 	"log"
 
@@ -32,6 +33,7 @@ type Server struct {
 	mailService         mail.MailService
 	notificationService notifications.NotificationService
 	cocktailGenerator   cocktail_gen.CocktailGenerator
+	imageGenerator      image_gen.ImageGenerator
 }
 
 func NewServer(
@@ -45,7 +47,8 @@ func NewServer(
 	mailService mail.MailService,
 	notificationService notifications.NotificationService,
 	cocktailGenerator cocktail_gen.CocktailGenerator,
-	
+	imageGenerator image_gen.ImageGenerator,
+
 ) (*Server, error) {
 	log.Println(config)
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
@@ -65,6 +68,7 @@ func NewServer(
 		mailService:         mailService,
 		notificationService: notificationService,
 		cocktailGenerator:   cocktailGenerator,
+		imageGenerator:      imageGenerator,
 	}
 	if server.config.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)

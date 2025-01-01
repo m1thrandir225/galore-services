@@ -8,11 +8,6 @@ import (
 	"net/http"
 )
 
-type GenerateCocktailRequest struct {
-	ReferenceFlavours  []string `json:"reference_flavours" binding:"required"`
-	ReferenceCocktails []string `json:"reference_cocktails" binding:"required"`
-}
-
 type CreateGenerateCocktailRequest struct {
 	ReferenceFlavours  []string `json:"reference_flavours" binding:"required"`
 	ReferenceCocktails []string `json:"reference_cocktails" binding:"required"`
@@ -52,21 +47,4 @@ func (server *Server) createGenerateCocktailRequest(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, cocktailRequest)
 
-}
-
-func (server *Server) generateCocktail(ctx *gin.Context) {
-	var req GenerateCocktailRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	cocktailPrompt := cocktail_gen.GeneratePrompt(req.ReferenceFlavours, req.ReferenceCocktails)
-
-	prompt, err := server.cocktailGenerator.GenerateRecipe(cocktailPrompt)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.JSON(http.StatusOK, prompt)
 }
