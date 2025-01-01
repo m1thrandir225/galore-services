@@ -26,7 +26,7 @@ func ConvertPromptsToAiInstructionDto(prompts []dto.PromptInstruction, imageRequ
 			Instruction:      prompt.Instruction,
 			InstructionImage: imageUrl.String,
 		}
-		instructions = append(instructions, instruction)
+		instructions[i] = instruction
 	}
 
 	return dto.AiInstructionDto{Instructions: instructions}, nil
