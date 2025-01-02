@@ -24,7 +24,8 @@ RETURNING *;
 -- name: GetUserGeneratedCocktails :many
 SELECT *
 FROM generated_cocktails
-WHERE user_id = $1;
+WHERE user_id = $1
+ORDER BY created_at DESC;
 
 -- name: GetGeneratedCocktail :one
 SELECT *

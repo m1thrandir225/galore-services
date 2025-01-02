@@ -41,6 +41,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// CheckImageGenerationProgress mocks base method.
+func (m *MockStore) CheckImageGenerationProgress(arg0 context.Context, arg1 uuid.UUID) (db.CheckImageGenerationProgressRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckImageGenerationProgress", arg0, arg1)
+	ret0, _ := ret[0].(db.CheckImageGenerationProgressRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckImageGenerationProgress indicates an expected call of CheckImageGenerationProgress.
+func (mr *MockStoreMockRecorder) CheckImageGenerationProgress(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckImageGenerationProgress", reflect.TypeOf((*MockStore)(nil).CheckImageGenerationProgress), arg0, arg1)
+}
+
 // CheckWasCocktailFeatured mocks base method.
 func (m *MockStore) CheckWasCocktailFeatured(arg0 context.Context, arg1 uuid.UUID) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
@@ -189,6 +204,51 @@ func (mr *MockStoreMockRecorder) CreateFlavour(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFlavour", reflect.TypeOf((*MockStore)(nil).CreateFlavour), arg0, arg1)
 }
 
+// CreateGenerateCocktailDraft mocks base method.
+func (m *MockStore) CreateGenerateCocktailDraft(arg0 context.Context, arg1 db.CreateGenerateCocktailDraftParams) (db.GenerateCocktailDraft, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGenerateCocktailDraft", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateCocktailDraft)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateGenerateCocktailDraft indicates an expected call of CreateGenerateCocktailDraft.
+func (mr *MockStoreMockRecorder) CreateGenerateCocktailDraft(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGenerateCocktailDraft", reflect.TypeOf((*MockStore)(nil).CreateGenerateCocktailDraft), arg0, arg1)
+}
+
+// CreateGenerateCocktailRequest mocks base method.
+func (m *MockStore) CreateGenerateCocktailRequest(arg0 context.Context, arg1 db.CreateGenerateCocktailRequestParams) (db.GenerateCocktailRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGenerateCocktailRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateCocktailRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateGenerateCocktailRequest indicates an expected call of CreateGenerateCocktailRequest.
+func (mr *MockStoreMockRecorder) CreateGenerateCocktailRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGenerateCocktailRequest", reflect.TypeOf((*MockStore)(nil).CreateGenerateCocktailRequest), arg0, arg1)
+}
+
+// CreateGeneratedCocktail mocks base method.
+func (m *MockStore) CreateGeneratedCocktail(arg0 context.Context, arg1 db.CreateGeneratedCocktailParams) (db.GeneratedCocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGeneratedCocktail", arg0, arg1)
+	ret0, _ := ret[0].(db.GeneratedCocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateGeneratedCocktail indicates an expected call of CreateGeneratedCocktail.
+func (mr *MockStoreMockRecorder) CreateGeneratedCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGeneratedCocktail", reflect.TypeOf((*MockStore)(nil).CreateGeneratedCocktail), arg0, arg1)
+}
+
 // CreateHotpCounter mocks base method.
 func (m *MockStore) CreateHotpCounter(arg0 context.Context, arg1 db.CreateHotpCounterParams) error {
 	m.ctrl.T.Helper()
@@ -201,6 +261,21 @@ func (m *MockStore) CreateHotpCounter(arg0 context.Context, arg1 db.CreateHotpCo
 func (mr *MockStoreMockRecorder) CreateHotpCounter(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHotpCounter", reflect.TypeOf((*MockStore)(nil).CreateHotpCounter), arg0, arg1)
+}
+
+// CreateImageGenerationRequest mocks base method.
+func (m *MockStore) CreateImageGenerationRequest(arg0 context.Context, arg1 db.CreateImageGenerationRequestParams) (db.GenerateImageRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateImageGenerationRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateImageRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateImageGenerationRequest indicates an expected call of CreateImageGenerationRequest.
+func (mr *MockStoreMockRecorder) CreateImageGenerationRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateImageGenerationRequest", reflect.TypeOf((*MockStore)(nil).CreateImageGenerationRequest), arg0, arg1)
 }
 
 // CreateNotification mocks base method.
@@ -627,6 +702,21 @@ func (mr *MockStoreMockRecorder) GetCocktailCategory(arg0, arg1 any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCocktailCategory", reflect.TypeOf((*MockStore)(nil).GetCocktailCategory), arg0, arg1)
 }
 
+// GetCocktailDraft mocks base method.
+func (m *MockStore) GetCocktailDraft(arg0 context.Context, arg1 uuid.UUID) (db.GenerateCocktailDraft, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCocktailDraft", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateCocktailDraft)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCocktailDraft indicates an expected call of GetCocktailDraft.
+func (mr *MockStoreMockRecorder) GetCocktailDraft(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCocktailDraft", reflect.TypeOf((*MockStore)(nil).GetCocktailDraft), arg0, arg1)
+}
+
 // GetCocktailsForCategory mocks base method.
 func (m *MockStore) GetCocktailsForCategory(arg0 context.Context, arg1 uuid.UUID) ([]db.GetCocktailsForCategoryRow, error) {
 	m.ctrl.T.Helper()
@@ -717,6 +807,36 @@ func (mr *MockStoreMockRecorder) GetFlavourName(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFlavourName", reflect.TypeOf((*MockStore)(nil).GetFlavourName), arg0, arg1)
 }
 
+// GetGeneratedCocktail mocks base method.
+func (m *MockStore) GetGeneratedCocktail(arg0 context.Context, arg1 uuid.UUID) (db.GeneratedCocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGeneratedCocktail", arg0, arg1)
+	ret0, _ := ret[0].(db.GeneratedCocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGeneratedCocktail indicates an expected call of GetGeneratedCocktail.
+func (mr *MockStoreMockRecorder) GetGeneratedCocktail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGeneratedCocktail", reflect.TypeOf((*MockStore)(nil).GetGeneratedCocktail), arg0, arg1)
+}
+
+// GetGenerationRequest mocks base method.
+func (m *MockStore) GetGenerationRequest(arg0 context.Context, arg1 uuid.UUID) (db.GenerateCocktailRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGenerationRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateCocktailRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGenerationRequest indicates an expected call of GetGenerationRequest.
+func (mr *MockStoreMockRecorder) GetGenerationRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGenerationRequest", reflect.TypeOf((*MockStore)(nil).GetGenerationRequest), arg0, arg1)
+}
+
 // GetHomescreenForUser mocks base method.
 func (m *MockStore) GetHomescreenForUser(arg0 context.Context, arg1 uuid.UUID) ([]db.GetHomescreenForUserRow, error) {
 	m.ctrl.T.Helper()
@@ -730,6 +850,36 @@ func (m *MockStore) GetHomescreenForUser(arg0 context.Context, arg1 uuid.UUID) (
 func (mr *MockStoreMockRecorder) GetHomescreenForUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHomescreenForUser", reflect.TypeOf((*MockStore)(nil).GetHomescreenForUser), arg0, arg1)
+}
+
+// GetImagesForDraft mocks base method.
+func (m *MockStore) GetImagesForDraft(arg0 context.Context, arg1 uuid.UUID) ([]db.GenerateImageRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetImagesForDraft", arg0, arg1)
+	ret0, _ := ret[0].([]db.GenerateImageRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetImagesForDraft indicates an expected call of GetImagesForDraft.
+func (mr *MockStoreMockRecorder) GetImagesForDraft(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImagesForDraft", reflect.TypeOf((*MockStore)(nil).GetImagesForDraft), arg0, arg1)
+}
+
+// GetIncompleteUserGenerationRequests mocks base method.
+func (m *MockStore) GetIncompleteUserGenerationRequests(arg0 context.Context, arg1 uuid.UUID) ([]db.GenerateCocktailRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetIncompleteUserGenerationRequests", arg0, arg1)
+	ret0, _ := ret[0].([]db.GenerateCocktailRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetIncompleteUserGenerationRequests indicates an expected call of GetIncompleteUserGenerationRequests.
+func (mr *MockStoreMockRecorder) GetIncompleteUserGenerationRequests(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIncompleteUserGenerationRequests", reflect.TypeOf((*MockStore)(nil).GetIncompleteUserGenerationRequests), arg0, arg1)
 }
 
 // GetLikedCocktail mocks base method.
@@ -880,6 +1030,36 @@ func (m *MockStore) GetUserFCMTokens(arg0 context.Context, arg1 uuid.UUID) ([]db
 func (mr *MockStoreMockRecorder) GetUserFCMTokens(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFCMTokens", reflect.TypeOf((*MockStore)(nil).GetUserFCMTokens), arg0, arg1)
+}
+
+// GetUserGeneratedCocktails mocks base method.
+func (m *MockStore) GetUserGeneratedCocktails(arg0 context.Context, arg1 uuid.UUID) ([]db.GeneratedCocktail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserGeneratedCocktails", arg0, arg1)
+	ret0, _ := ret[0].([]db.GeneratedCocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserGeneratedCocktails indicates an expected call of GetUserGeneratedCocktails.
+func (mr *MockStoreMockRecorder) GetUserGeneratedCocktails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGeneratedCocktails", reflect.TypeOf((*MockStore)(nil).GetUserGeneratedCocktails), arg0, arg1)
+}
+
+// GetUserGenerationRequests mocks base method.
+func (m *MockStore) GetUserGenerationRequests(arg0 context.Context, arg1 uuid.UUID) ([]db.GenerateCocktailRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserGenerationRequests", arg0, arg1)
+	ret0, _ := ret[0].([]db.GenerateCocktailRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserGenerationRequests indicates an expected call of GetUserGenerationRequests.
+func (mr *MockStoreMockRecorder) GetUserGenerationRequests(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGenerationRequests", reflect.TypeOf((*MockStore)(nil).GetUserGenerationRequests), arg0, arg1)
 }
 
 // GetUserHOTPSecret mocks base method.
@@ -1103,6 +1283,36 @@ func (m *MockStore) UpdateFlavour(arg0 context.Context, arg1 db.UpdateFlavourPar
 func (mr *MockStoreMockRecorder) UpdateFlavour(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFlavour", reflect.TypeOf((*MockStore)(nil).UpdateFlavour), arg0, arg1)
+}
+
+// UpdateGenerateCocktailRequest mocks base method.
+func (m *MockStore) UpdateGenerateCocktailRequest(arg0 context.Context, arg1 db.UpdateGenerateCocktailRequestParams) (db.GenerateCocktailRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateGenerateCocktailRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateCocktailRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateGenerateCocktailRequest indicates an expected call of UpdateGenerateCocktailRequest.
+func (mr *MockStoreMockRecorder) UpdateGenerateCocktailRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGenerateCocktailRequest", reflect.TypeOf((*MockStore)(nil).UpdateGenerateCocktailRequest), arg0, arg1)
+}
+
+// UpdateImageGenerationRequest mocks base method.
+func (m *MockStore) UpdateImageGenerationRequest(arg0 context.Context, arg1 db.UpdateImageGenerationRequestParams) (db.GenerateImageRequest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateImageGenerationRequest", arg0, arg1)
+	ret0, _ := ret[0].(db.GenerateImageRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateImageGenerationRequest indicates an expected call of UpdateImageGenerationRequest.
+func (mr *MockStoreMockRecorder) UpdateImageGenerationRequest(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateImageGenerationRequest", reflect.TypeOf((*MockStore)(nil).UpdateImageGenerationRequest), arg0, arg1)
 }
 
 // UpdateNotificationType mocks base method.

@@ -40,16 +40,16 @@ func (m *MockCocktailGenerator) EXPECT() *MockCocktailGeneratorMockRecorder {
 }
 
 // GenerateRecipe mocks base method.
-func (m *MockCocktailGenerator) GenerateRecipe(arg0, arg1 []string) (*cocktail_gen.PromptRecipe, error) {
+func (m *MockCocktailGenerator) GenerateRecipe(arg0 string) (*cocktail_gen.PromptCocktail, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateRecipe", arg0, arg1)
-	ret0, _ := ret[0].(*cocktail_gen.PromptRecipe)
+	ret := m.ctrl.Call(m, "GenerateRecipe", arg0)
+	ret0, _ := ret[0].(*cocktail_gen.PromptCocktail)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenerateRecipe indicates an expected call of GenerateRecipe.
-func (mr *MockCocktailGeneratorMockRecorder) GenerateRecipe(arg0, arg1 any) *gomock.Call {
+func (mr *MockCocktailGeneratorMockRecorder) GenerateRecipe(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateRecipe", reflect.TypeOf((*MockCocktailGenerator)(nil).GenerateRecipe), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateRecipe", reflect.TypeOf((*MockCocktailGenerator)(nil).GenerateRecipe), arg0)
 }

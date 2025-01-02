@@ -318,7 +318,7 @@ func (generator *OpenAIPromptGenerator) GenerateRecipe(prompt string) (*PromptCo
 
 	err = thread.addMessageToThread(*httpClient, prompt, generator.ThreadUrl, generator.ApiKey)
 	if err != nil {
-		return nil, errors.New("there was a problem adding a message to the thread")
+		return nil, errors.New("there was a problem adding a message to the thread: " + err.Error())
 	}
 
 	run, err := generator.createRun(*httpClient, thread)

@@ -38,6 +38,8 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
 	authRoutes.GET("/users/:id/flavours", server.getUserLikedFlavours)
 	authRoutes.GET("/users/:id/cocktails", server.getUserLikedCocktails)
+	authRoutes.GET("/users/:id/generated-cocktails", server.getUserGeneratedCocktails)
+	authRoutes.GET("/users/:id/generate-requests", server.getIncompleteUserCocktailGenerationRequests)
 	authRoutes.GET("/users/:id/categories", server.getCategoriesBasedOnLikedFlavours)
 	authRoutes.GET("/users/:id/homescreen", server.getHomescreenForUser)
 	authRoutes.GET("/users/:id/notifications", server.getUserNotifications)
@@ -116,6 +118,7 @@ func (server *Server) setupRouter() {
 	/**
 	Generate Cocktail Routes
 	*/
+	authRoutes.GET("/generated/:id", server.getGeneratedCocktail)
 	authRoutes.POST("/generate-cocktail", server.createGenerateCocktailRequest)
 
 	server.setupMigrationServiceRoutes(v1)

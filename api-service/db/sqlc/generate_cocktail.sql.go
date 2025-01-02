@@ -102,6 +102,7 @@ const getUserGeneratedCocktails = `-- name: GetUserGeneratedCocktails :many
 SELECT id, user_id, request_id, draft_id, name, description, main_image_url, instructions, ingredients, created_at
 FROM generated_cocktails
 WHERE user_id = $1
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUserGeneratedCocktails(ctx context.Context, userID uuid.UUID) ([]GeneratedCocktail, error) {

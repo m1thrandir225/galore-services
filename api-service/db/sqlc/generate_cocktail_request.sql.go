@@ -59,6 +59,40 @@ func (q *Queries) GetGenerationRequest(ctx context.Context, id uuid.UUID) (Gener
 	return i, err
 }
 
+const getIncompleteUserGenerationRequests = `-- name: GetIncompleteUserGenerationRequests :many
+SELECT id, user_id, prompt, status, error_message, updated_at, created_at FROM generate_cocktail_requests
+WHERE user_id = $1 AND status != 'success'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetIncompleteUserGenerationRequests(ctx context.Context, userID uuid.UUID) ([]GenerateCocktailRequest, error) {
+	rows, err := q.db.Query(ctx, getIncompleteUserGenerationRequests, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GenerateCocktailRequest{}
+	for rows.Next() {
+		var i GenerateCocktailRequest
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Prompt,
+			&i.Status,
+			&i.ErrorMessage,
+			&i.UpdatedAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserGenerationRequests = `-- name: GetUserGenerationRequests :many
 SELECT id, user_id, prompt, status, error_message, updated_at, created_at FROM generate_cocktail_requests
 WHERE user_id = $1

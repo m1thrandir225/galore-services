@@ -67,6 +67,7 @@ type Querier interface {
 	GetGenerationRequest(ctx context.Context, id uuid.UUID) (GenerateCocktailRequest, error)
 	GetHomescreenForUser(ctx context.Context, userID uuid.UUID) ([]GetHomescreenForUserRow, error)
 	GetImagesForDraft(ctx context.Context, draftID uuid.UUID) ([]GenerateImageRequest, error)
+	GetIncompleteUserGenerationRequests(ctx context.Context, userID uuid.UUID) ([]GenerateCocktailRequest, error)
 	GetLikedCocktail(ctx context.Context, arg GetLikedCocktailParams) (GetLikedCocktailRow, error)
 	GetLikedCocktails(ctx context.Context, userID uuid.UUID) ([]GetLikedCocktailsRow, error)
 	GetLikedFlavour(ctx context.Context, arg GetLikedFlavourParams) (Flavour, error)

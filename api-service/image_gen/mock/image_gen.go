@@ -41,31 +41,16 @@ func (m *MockImageGenerator) EXPECT() *MockImageGeneratorMockRecorder {
 }
 
 // GenerateImage mocks base method.
-func (m *MockImageGenerator) GenerateImage(arg0 string, arg1 *http.Client) (*image_gen.GeneratedImage, error) {
+func (m *MockImageGenerator) GenerateImage(arg0 string, arg1 *http.Client, arg2 string) (*image_gen.GeneratedImage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateImage", arg0, arg1)
+	ret := m.ctrl.Call(m, "GenerateImage", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*image_gen.GeneratedImage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenerateImage indicates an expected call of GenerateImage.
-func (mr *MockImageGeneratorMockRecorder) GenerateImage(arg0, arg1 any) *gomock.Call {
+func (mr *MockImageGeneratorMockRecorder) GenerateImage(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateImage", reflect.TypeOf((*MockImageGenerator)(nil).GenerateImage), arg0, arg1)
-}
-
-// GenerateImages mocks base method.
-func (m *MockImageGenerator) GenerateImages(arg0 []string, arg1 *http.Client) ([]*image_gen.GeneratedImage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateImages", arg0, arg1)
-	ret0, _ := ret[0].([]*image_gen.GeneratedImage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GenerateImages indicates an expected call of GenerateImages.
-func (mr *MockImageGeneratorMockRecorder) GenerateImages(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateImages", reflect.TypeOf((*MockImageGenerator)(nil).GenerateImages), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateImage", reflect.TypeOf((*MockImageGenerator)(nil).GenerateImage), arg0, arg1, arg2)
 }

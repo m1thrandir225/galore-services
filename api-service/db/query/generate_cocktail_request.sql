@@ -18,3 +18,8 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM generate_cocktail_requests
 WHERE user_id = $1
 ORDER BY created_at DESC;
+
+-- name: GetIncompleteUserGenerationRequests :many
+SELECT * FROM generate_cocktail_requests
+WHERE user_id = $1 AND status != 'success'
+ORDER BY created_at DESC;
