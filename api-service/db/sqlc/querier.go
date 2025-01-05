@@ -12,14 +12,12 @@ import (
 
 type Querier interface {
 	CheckImageGenerationProgress(ctx context.Context, requestID uuid.UUID) (CheckImageGenerationProgressRow, error)
-	CheckWasCocktailFeatured(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	CleanupExpiredCounters(ctx context.Context) error
 	ClearExpiredRequests(ctx context.Context) error
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCategoryFlavour(ctx context.Context, arg CreateCategoryFlavourParams) (CategoryFlavour, error)
 	CreateCocktail(ctx context.Context, arg CreateCocktailParams) (Cocktail, error)
 	CreateCocktailCategory(ctx context.Context, arg CreateCocktailCategoryParams) (CocktailCategory, error)
-	CreateDailyFeatured(ctx context.Context, cocktailID uuid.UUID) (DailyFeaturedCocktail, error)
 	CreateFCMToken(ctx context.Context, arg CreateFCMTokenParams) (FcmToken, error)
 	CreateFlavour(ctx context.Context, name string) (Flavour, error)
 	CreateGenerateCocktailDraft(ctx context.Context, arg CreateGenerateCocktailDraftParams) (GenerateCocktailDraft, error)
@@ -32,7 +30,6 @@ type Querier interface {
 	CreateResetPasswordRequest(ctx context.Context, arg CreateResetPasswordRequestParams) (ResetPasswordRequest, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
-	CreateUserCocktail(ctx context.Context, arg CreateUserCocktailParams) (CreatedCocktail, error)
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
 	DeleteCategoryFlavour(ctx context.Context, id uuid.UUID) error
 	DeleteCocktail(ctx context.Context, id uuid.UUID) error
@@ -43,7 +40,7 @@ type Querier interface {
 	DeleteOlderFeatured(ctx context.Context) error
 	DeleteSession(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
-	DeleteUserCocktail(ctx context.Context, id uuid.UUID) error
+	GenerateFeaturedForToday(ctx context.Context) ([]DailyFeaturedCocktail, error)
 	GetAllCategories(ctx context.Context) ([]Category, error)
 	GetAllFlavours(ctx context.Context) ([]Flavour, error)
 	GetAllTypes(ctx context.Context) ([]NotificationType, error)
@@ -76,7 +73,6 @@ type Querier interface {
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	GetUserCocktail(ctx context.Context, id uuid.UUID) (CreatedCocktail, error)
 	GetUserFCMTokens(ctx context.Context, userID uuid.UUID) ([]FcmToken, error)
 	GetUserGeneratedCocktails(ctx context.Context, userID uuid.UUID) ([]GeneratedCocktail, error)
 	GetUserGenerationRequests(ctx context.Context, userID uuid.UUID) ([]GenerateCocktailRequest, error)

@@ -51,7 +51,6 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/cocktails/:id", server.getCocktail)
 	authRoutes.PUT("/cocktails/:id", server.updateCocktail)
 	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
-	authRoutes.GET("/cocktails/:id/was_featured", server.checkWasCocktailFeatured)
 	authRoutes.GET("/cocktails/:id/categories", server.getCategoriesForCocktail)
 	authRoutes.GET("/cocktails/:id/simillar", server.getSimilarCocktails)
 
@@ -66,7 +65,6 @@ func (server *Server) setupRouter() {
 	Daily Featured Cocktail Routes
 	*/
 	authRoutes.GET("/cocktails/featured", server.getDailyFeatured)
-	authRoutes.POST("/cocktails/featured", server.createDailyFeatured)
 	authRoutes.DELETE("/cocktails/featured", server.deleteOlderFeatured)
 
 	/**

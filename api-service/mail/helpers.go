@@ -8,10 +8,11 @@ import (
 )
 
 type TemplateData struct {
+	Title   string
 	Message string
 }
 
-func generateTemplateWithMessage(message string) string {
+func generateTemplateWithMessage(title, message string) string {
 	htmlTemplate := `
 <!--
 * This email was built using Tabular.
@@ -180,7 +181,7 @@ text-decoration: none
 <td class="t8" style="width:500px;">
 <!--<![endif]-->
 <table class="t7" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr>
-<td class="t6" style="padding:0 0 25px 0;"><h1 class="t5" style="margin:0;Margin:0;font-family:Albert Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:41px;font-weight:800;font-style:normal;font-size:39px;text-decoration:none;text-transform:none;letter-spacing:-1.56px;direction:ltr;color:#191919;text-align:left;mso-line-height-rule:exactly;mso-text-raise:1px;">Password Reset Request</h1></td>
+<td class="t6" style="padding:0 0 25px 0;"><h1 class="t5" style="margin:0;Margin:0;font-family:Albert Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:41px;font-weight:800;font-style:normal;font-size:39px;text-decoration:none;text-transform:none;letter-spacing:-1.56px;direction:ltr;color:#191919;text-align:left;mso-line-height-rule:exactly;mso-text-raise:1px;">{{.Title}}</h1></td>
 </tr></table>
 </td>
 </tr></table>
@@ -239,13 +240,12 @@ text-decoration: none
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
+	data := TemplateData{
+		Title:   title,
+		Message: message,
+	}
 
-	// Create a PasswordResetData instance with the OTP value
-	data := TemplateData{Message: message}
-
-	// Create a buffer to store the rendered template
 	var renderedHTML bytes.Buffer
-
 	// Execute the template with the data
 	err = tmpl.Execute(&renderedHTML, data)
 	if err != nil {
@@ -257,17 +257,20 @@ text-decoration: none
 }
 
 func GeneratePasswordResetSuccessfullyMail() string {
+	title := fmt.Sprintf("Password Reset Successfully")
 	message := fmt.Sprintf("You have successfully reset your password.")
-	return generateTemplateWithMessage(message)
+	return generateTemplateWithMessage(title, message)
 }
 
 func GeneratePasswordOTPMail(otp string) string {
-	message := fmt.Sprintf("You requested a password reset. Here is your OTP Code: %s", otp)
+	title := fmt.Sprintf("Password Reset Request")
+	message := fmt.Sprintf("You requested a password reset. Here is your OTP Code: <strong>%s</strong>", otp)
 
-	return generateTemplateWithMessage(message)
+	return generateTemplateWithMessage(title, message)
 }
 
 func GenerateWelcomeMail(email string) string {
+	title := fmt.Sprintf("Welcome to Galore")
 	message := fmt.Sprintf("Hi, %s. Thank you for registering to the Galore app. Hope you enjoy our services.", email)
-	return generateTemplateWithMessage(message)
+	return generateTemplateWithMessage(title, message)
 }

@@ -12,9 +12,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jackc/pgx/v5"
 	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"golang.org/x/exp/rand"
 )
 
 func (server *Server) registerBackgroundHandlers() {
@@ -39,13 +37,11 @@ func (server *Server) registerBackgroundHandlers() {
 	/**
 	Generate Image Job
 	*/
-	//TODO: implement generate image background job
 	server.scheduler.RegisterJob("generate_image", true, server.createImageGenerationRequest)
 
 	/**
 	Generate Cocktail Job
 	*/
-	//TODO: implement generate cocktail background job
 	server.scheduler.RegisterJob("generate_cocktail_draft", true, server.createCocktailDraft)
 
 	server.scheduler.RegisterJob("generate_cocktail_final", true, server.createGeneratedCocktail)
@@ -79,10 +75,23 @@ func (server *Server) createCocktailDraft(args map[string]interface{}) error {
 		return err
 	}
 
+	/**
+	Generate prompt cocktail
+	If there is an error during the generation process, update the status of the initial request
+	*/
 	promptCocktail, err := server.cocktailGenerator.GenerateRecipe(prompt)
 	if err != nil {
+		updateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+			ID:     cocktailRequestId,
+			Status: db.GenerationStatusError,
+		}
+		_, uErr := server.store.UpdateGenerateCocktailRequest(context.Background(), updateRequestArgs)
+		if uErr != nil {
+			return uErr
+		}
 		return err
 	}
+
 	jsonInstructions, err := json.Marshal(promptCocktail.Instructions)
 	if err != nil {
 		return err
@@ -480,53 +489,23 @@ func (server *Server) sendMailJob(args map[string]interface{}) error {
 
 func (server *Server) generateDailyFeatured(args map[string]interface{}) error {
 	log.Println("JOB STARTED: Generate daily featured")
-	numberOfFeatured := 10
 
-	todaysFeatured, err := server.store.GetDailyFeatured(context.Background())
+	todayFeatured, err := server.store.GetDailyFeatured(context.Background())
 	if err != nil {
-		return fmt.Errorf("there was an error getting the today's featured cocktails: %s", err.Error())
+		return err
 	}
 
-	if len(todaysFeatured) >= numberOfFeatured {
-		log.Println("Today's featured already generated")
-		return nil
+	if len(todayFeatured) != 0 {
+		return fmt.Errorf("today's featured are already generated")
 	}
 
-	allCocktails, err := server.store.SearchCocktails(context.Background(), "")
+	_, err = server.store.GenerateFeaturedForToday(context.Background())
 	if err != nil {
-		return fmt.Errorf("there was a problem with getting all the cocktails from the databse: %s", err.Error())
+		log.Println("ERROR: there was an error generating daily featured for today(" + err.Error() + ")")
+
+		return err
 	}
 
-	rand.Shuffle(len(allCocktails), func(i, j int) {
-		allCocktails[i], allCocktails[j] = allCocktails[j], allCocktails[i]
-	})
-
-	var featuredCocktails []db.Cocktail
-
-	for i := 0; i < numberOfFeatured; i++ {
-		cocktail := allCocktails[i]
-		_, err := server.store.CheckWasCocktailFeatured(context.Background(), cocktail.ID)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				featuredCocktails = append(featuredCocktails, cocktail)
-			} else {
-				return fmt.Errorf("failed to check if cocktail %s was featured: %v", cocktail.ID, err)
-			}
-		} else {
-			continue
-		}
-	}
-
-	if len(featuredCocktails) < numberOfFeatured {
-		return fmt.Errorf("unable to find enough unfeatured cocktails")
-	}
-
-	for _, cocktail := range featuredCocktails {
-		_, err = server.store.CreateDailyFeatured(context.Background(), cocktail.ID)
-		if err != nil {
-			return fmt.Errorf("failed to mark cocktail %s as featured: %v", cocktail.ID, err)
-		}
-	}
 	return nil
 }
 

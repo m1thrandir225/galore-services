@@ -134,18 +134,6 @@ type CocktailCategory struct {
 	CategoryID uuid.UUID `json:"category_id"`
 }
 
-type CreatedCocktail struct {
-	ID           uuid.UUID            `json:"id"`
-	Name         string               `json:"name"`
-	Image        string               `json:"image"`
-	Ingredients  dto.IngredientDto    `json:"ingredients"`
-	Instructions dto.AiInstructionDto `json:"instructions"`
-	Description  string               `json:"description"`
-	UserID       uuid.UUID            `json:"user_id"`
-	Embedding    pgvector.Vector      `json:"embedding"`
-	CreatedAt    time.Time            `json:"created_at"`
-}
-
 type DailyFeaturedCocktail struct {
 	ID         uuid.UUID `json:"id"`
 	CocktailID uuid.UUID `json:"cocktail_id"`
@@ -272,6 +260,6 @@ type User struct {
 	HotpSecret                string      `json:"hotp_secret"`
 	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
 	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`
-	CreatedAt                 time.Time   `json:"created_at"`
 	Birthday                  pgtype.Date `json:"birthday"`
+	CreatedAt                 time.Time   `json:"created_at"`
 }

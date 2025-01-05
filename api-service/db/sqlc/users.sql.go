@@ -90,7 +90,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
+SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, birthday, created_at FROM users 
 WHERE id = $1 LIMIT 1
 `
 
@@ -106,14 +106,14 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.HotpSecret,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
-		&i.CreatedAt,
 		&i.Birthday,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, created_at, birthday FROM users 
+SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, birthday, created_at FROM users 
 WHERE email = $1 LIMIT 1
 `
 
@@ -129,8 +129,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.HotpSecret,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
-		&i.CreatedAt,
 		&i.Birthday,
+		&i.CreatedAt,
 	)
 	return i, err
 }

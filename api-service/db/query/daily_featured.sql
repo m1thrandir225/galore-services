@@ -1,16 +1,29 @@
--- name: CreateDailyFeatured :one
-INSERT INTO daily_featured_cocktails (
-    cocktail_id
-) VALUES (
- $1
-) RETURNING *;
-
--- name: CheckWasCocktailFeatured :one
-SELECT c.id
-FROM cocktails c
-JOIN daily_featured_cocktails dfc ON dfc.cocktail_id = c.id
-WHERE dfc.created_at >= CURRENT_DATE - INTERVAL '7 days' AND c.id = $1;
-
+-- name: GenerateFeaturedForToday :many
+WITH today_featured AS (
+    SELECT COUNT(*) AS count
+    FROM daily_featured_cocktails
+    WHERE DATE(created_at) = CURRENT_DATE
+),
+     not_recently_featured AS (
+         SELECT c.id
+         FROM cocktails c
+         WHERE NOT EXISTS (
+             SELECT 1
+             FROM daily_featured_cocktails df
+             WHERE df.cocktail_id = c.id
+               AND df.created_at > CURRENT_DATE - INTERVAL '7 days'
+         )
+     )
+INSERT INTO daily_featured_cocktails (cocktail_id)
+SELECT random_cocktails.id
+FROM (
+         SELECT nrf.id
+         FROM not_recently_featured nrf
+         ORDER BY RANDOM()
+         LIMIT 10
+     ) random_cocktails
+WHERE (SELECT count FROM today_featured) < 10
+RETURNING *;
 
 -- name: GetDailyFeatured :many
 SELECT c.id,

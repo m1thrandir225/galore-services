@@ -56,21 +56,6 @@ func (mr *MockStoreMockRecorder) CheckImageGenerationProgress(arg0, arg1 any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckImageGenerationProgress", reflect.TypeOf((*MockStore)(nil).CheckImageGenerationProgress), arg0, arg1)
 }
 
-// CheckWasCocktailFeatured mocks base method.
-func (m *MockStore) CheckWasCocktailFeatured(arg0 context.Context, arg1 uuid.UUID) (uuid.UUID, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckWasCocktailFeatured", arg0, arg1)
-	ret0, _ := ret[0].(uuid.UUID)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckWasCocktailFeatured indicates an expected call of CheckWasCocktailFeatured.
-func (mr *MockStoreMockRecorder) CheckWasCocktailFeatured(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckWasCocktailFeatured", reflect.TypeOf((*MockStore)(nil).CheckWasCocktailFeatured), arg0, arg1)
-}
-
 // CleanupExpiredCounters mocks base method.
 func (m *MockStore) CleanupExpiredCounters(arg0 context.Context) error {
 	m.ctrl.T.Helper()
@@ -157,21 +142,6 @@ func (m *MockStore) CreateCocktailCategory(arg0 context.Context, arg1 db.CreateC
 func (mr *MockStoreMockRecorder) CreateCocktailCategory(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCocktailCategory", reflect.TypeOf((*MockStore)(nil).CreateCocktailCategory), arg0, arg1)
-}
-
-// CreateDailyFeatured mocks base method.
-func (m *MockStore) CreateDailyFeatured(arg0 context.Context, arg1 uuid.UUID) (db.DailyFeaturedCocktail, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateDailyFeatured", arg0, arg1)
-	ret0, _ := ret[0].(db.DailyFeaturedCocktail)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateDailyFeatured indicates an expected call of CreateDailyFeatured.
-func (mr *MockStoreMockRecorder) CreateDailyFeatured(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDailyFeatured", reflect.TypeOf((*MockStore)(nil).CreateDailyFeatured), arg0, arg1)
 }
 
 // CreateFCMToken mocks base method.
@@ -353,21 +323,6 @@ func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), arg0, arg1)
 }
 
-// CreateUserCocktail mocks base method.
-func (m *MockStore) CreateUserCocktail(arg0 context.Context, arg1 db.CreateUserCocktailParams) (db.CreatedCocktail, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUserCocktail", arg0, arg1)
-	ret0, _ := ret[0].(db.CreatedCocktail)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateUserCocktail indicates an expected call of CreateUserCocktail.
-func (mr *MockStoreMockRecorder) CreateUserCocktail(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserCocktail", reflect.TypeOf((*MockStore)(nil).CreateUserCocktail), arg0, arg1)
-}
-
 // DeleteCategory mocks base method.
 func (m *MockStore) DeleteCategory(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -508,18 +463,19 @@ func (mr *MockStoreMockRecorder) DeleteUser(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockStore)(nil).DeleteUser), arg0, arg1)
 }
 
-// DeleteUserCocktail mocks base method.
-func (m *MockStore) DeleteUserCocktail(arg0 context.Context, arg1 uuid.UUID) error {
+// GenerateFeaturedForToday mocks base method.
+func (m *MockStore) GenerateFeaturedForToday(arg0 context.Context) ([]db.DailyFeaturedCocktail, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUserCocktail", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "GenerateFeaturedForToday", arg0)
+	ret0, _ := ret[0].([]db.DailyFeaturedCocktail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// DeleteUserCocktail indicates an expected call of DeleteUserCocktail.
-func (mr *MockStoreMockRecorder) DeleteUserCocktail(arg0, arg1 any) *gomock.Call {
+// GenerateFeaturedForToday indicates an expected call of GenerateFeaturedForToday.
+func (mr *MockStoreMockRecorder) GenerateFeaturedForToday(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserCocktail", reflect.TypeOf((*MockStore)(nil).DeleteUserCocktail), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateFeaturedForToday", reflect.TypeOf((*MockStore)(nil).GenerateFeaturedForToday), arg0)
 }
 
 // GetAllCategories mocks base method.
@@ -1000,21 +956,6 @@ func (m *MockStore) GetUserByEmail(arg0 context.Context, arg1 string) (db.User, 
 func (mr *MockStoreMockRecorder) GetUserByEmail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockStore)(nil).GetUserByEmail), arg0, arg1)
-}
-
-// GetUserCocktail mocks base method.
-func (m *MockStore) GetUserCocktail(arg0 context.Context, arg1 uuid.UUID) (db.CreatedCocktail, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserCocktail", arg0, arg1)
-	ret0, _ := ret[0].(db.CreatedCocktail)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserCocktail indicates an expected call of GetUserCocktail.
-func (mr *MockStoreMockRecorder) GetUserCocktail(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCocktail", reflect.TypeOf((*MockStore)(nil).GetUserCocktail), arg0, arg1)
 }
 
 // GetUserFCMTokens mocks base method.

@@ -15,34 +15,6 @@ import (
 	"github.com/pgvector/pgvector-go"
 )
 
-const checkWasCocktailFeatured = `-- name: CheckWasCocktailFeatured :one
-SELECT c.id
-FROM cocktails c
-JOIN daily_featured_cocktails dfc ON dfc.cocktail_id = c.id
-WHERE dfc.created_at >= CURRENT_DATE - INTERVAL '7 days' AND c.id = $1
-`
-
-func (q *Queries) CheckWasCocktailFeatured(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, checkWasCocktailFeatured, id)
-	err := row.Scan(&id)
-	return id, err
-}
-
-const createDailyFeatured = `-- name: CreateDailyFeatured :one
-INSERT INTO daily_featured_cocktails (
-    cocktail_id
-) VALUES (
- $1
-) RETURNING id, cocktail_id, created_at
-`
-
-func (q *Queries) CreateDailyFeatured(ctx context.Context, cocktailID uuid.UUID) (DailyFeaturedCocktail, error) {
-	row := q.db.QueryRow(ctx, createDailyFeatured, cocktailID)
-	var i DailyFeaturedCocktail
-	err := row.Scan(&i.ID, &i.CocktailID, &i.CreatedAt)
-	return i, err
-}
-
 const deleteOlderFeatured = `-- name: DeleteOlderFeatured :exec
 DELETE FROM daily_featured_cocktails
 WHERE created_at < NOW() - INTERVAL '7 days'
@@ -51,6 +23,54 @@ WHERE created_at < NOW() - INTERVAL '7 days'
 func (q *Queries) DeleteOlderFeatured(ctx context.Context) error {
 	_, err := q.db.Exec(ctx, deleteOlderFeatured)
 	return err
+}
+
+const generateFeaturedForToday = `-- name: GenerateFeaturedForToday :many
+WITH today_featured AS (
+    SELECT COUNT(*) AS count
+    FROM daily_featured_cocktails
+    WHERE DATE(created_at) = CURRENT_DATE
+),
+     not_recently_featured AS (
+         SELECT c.id
+         FROM cocktails c
+         WHERE NOT EXISTS (
+             SELECT 1
+             FROM daily_featured_cocktails df
+             WHERE df.cocktail_id = c.id
+               AND df.created_at > CURRENT_DATE - INTERVAL '7 days'
+         )
+     )
+INSERT INTO daily_featured_cocktails (cocktail_id)
+SELECT random_cocktails.id
+FROM (
+         SELECT nrf.id
+         FROM not_recently_featured nrf
+         ORDER BY RANDOM()
+         LIMIT 10
+     ) random_cocktails
+WHERE (SELECT count FROM today_featured) < 10
+RETURNING id, cocktail_id, created_at
+`
+
+func (q *Queries) GenerateFeaturedForToday(ctx context.Context) ([]DailyFeaturedCocktail, error) {
+	rows, err := q.db.Query(ctx, generateFeaturedForToday)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []DailyFeaturedCocktail{}
+	for rows.Next() {
+		var i DailyFeaturedCocktail
+		if err := rows.Scan(&i.ID, &i.CocktailID, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getDailyFeatured = `-- name: GetDailyFeatured :many

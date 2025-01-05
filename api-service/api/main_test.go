@@ -29,6 +29,8 @@ func newTestServer(
 		EmbeddingServiceAddress: "http://localhost:8000",
 		EmbeddingServiceKey:     "testing",
 	}
+
+	//TODO: fix test server config
 	server, err := NewServer(
 		config,
 		store,

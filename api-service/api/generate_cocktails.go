@@ -93,7 +93,7 @@ func (server *Server) createGenerateCocktailRequest(ctx *gin.Context) {
 		return
 	}
 
-	server.scheduler.EnqueueJob("generate_cocktail_draft", map[string]interface{}{
+	_ = server.scheduler.EnqueueJob("generate_cocktail_draft", map[string]interface{}{
 		"user_id":             payload.UserId,
 		"prompt":              cocktailPrompt,
 		"cocktail_request_id": cocktailRequest.ID,
