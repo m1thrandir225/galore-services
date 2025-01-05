@@ -2,6 +2,12 @@ package api
 
 import (
 	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
+	mockcocktailgen "github.com/m1thrandir225/galore-services/cocktail_gen/mock"
+	mockimagegen "github.com/m1thrandir225/galore-services/image_gen/mock"
+	mockmail "github.com/m1thrandir225/galore-services/mail/mock"
+	mocknotifications "github.com/m1thrandir225/galore-services/notifications/mock"
+	mockscheduler "github.com/m1thrandir225/galore-services/scheduler/mock"
+	"go.uber.org/mock/gomock"
 	"os"
 	"testing"
 	"time"
@@ -17,6 +23,7 @@ import (
 
 func newTestServer(
 	t *testing.T,
+	ctrl *gomock.Controller,
 	store db.Store,
 	cacheStore cache.KeyValueStore,
 	fileStorage storage.FileService,
@@ -24,13 +31,20 @@ func newTestServer(
 	embeddingService embedding.EmbeddingService,
 ) *Server {
 	config := util.Config{
-		TokenSymmetricKey:       util.RandomString(33),
-		AccessTokenDuration:     time.Minute,
+		Environment:             "testing",
 		EmbeddingServiceAddress: "http://localhost:8000",
 		EmbeddingServiceKey:     "testing",
+		TokenSymmetricKey:       util.RandomString(32),
+		AccessTokenDuration:     time.Minute,
+		RefreshTokenDuration:    time.Minute,
+		TOTPSecret:              util.RandomString(32),
 	}
+	mockScheduler := mockscheduler.NewMockSchedulerService(ctrl)
+	mockMail := mockmail.NewMockMailService(ctrl)
+	mockNotifications := mocknotifications.NewMockNotificationService(ctrl)
+	mockCocktailGenerator := mockcocktailgen.NewMockCocktailGenerator(ctrl)
+	mockImageGenerator := mockimagegen.NewMockImageGenerator(ctrl)
 
-	//TODO: fix test server config
 	server, err := NewServer(
 		config,
 		store,
@@ -38,6 +52,11 @@ func newTestServer(
 		cacheStore,
 		embeddingService,
 		categorizer,
+		mockScheduler,
+		mockMail,
+		mockNotifications,
+		mockCocktailGenerator,
+		mockImageGenerator,
 	)
 	require.NoError(t, err)
 	return server

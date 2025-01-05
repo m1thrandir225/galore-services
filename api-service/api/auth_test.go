@@ -130,7 +130,7 @@ func TestLoginUserApi(t *testing.T) {
 			storage := mockstorage.NewMockFileService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, nil, nil)
+			server := newTestServer(t, ctrl, store, nil, storage, nil, nil)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -241,7 +241,7 @@ func TestLogoutApi(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil, nil, nil)
+			server := newTestServer(t, ctrl, store, nil, nil, nil, nil)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -329,7 +329,7 @@ func TestRefreshTokenApi(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 
 			tc.buildStubs(store)
-			server := newTestServer(t, store, nil, nil, nil, nil)
+			server := newTestServer(t, ctrl, store, nil, nil, nil, nil)
 			recorder := httptest.NewRecorder()
 
 			var refreshToken string

@@ -129,7 +129,7 @@ func TestCreateCategoryApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -232,7 +232,7 @@ func TestGetCategoriesApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/categories")
@@ -330,7 +330,7 @@ func TestGetCategoryByIdApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/categories/%s", testCase.categoryId)
@@ -440,7 +440,7 @@ func TestDeleteCategoryApi(t *testing.T) {
 
 				testCase.buildStubs(store)
 
-				server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+				server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 				recorder := httptest.NewRecorder()
 
 				url := fmt.Sprintf("/api/v1/categories/%s", testCase.categoryId)
@@ -576,7 +576,7 @@ func TestUpdateCategoryApi(t *testing.T) {
 
 		testCase.buildStubs(store)
 
-		server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+		server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 		recorder := httptest.NewRecorder()
 
 		data, err := json.Marshal(testCase.body)

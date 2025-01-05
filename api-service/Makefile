@@ -43,5 +43,8 @@ mock:
 	mockgen -package mockcocktailgen -destination cocktail_gen/mock/cocktail_gen.go github.com/m1thrandir225/galore-services/cocktail_gen CocktailGenerator
 	mockgen -package mockimagegen -destination image_gen/mock/image_gen.go github.com/m1thrandir225/galore-services/image_gen ImageGenerator
 	mockgen -package mockcategorize -destination categorizer_service/mock/categorizer.go github.com/m1thrandir225/galore-services/categorizer_service CategorizerService
+	mockgen -package mockscheduler -destination scheduler/mock/scheduler.go github.com/m1thrandir225/galore-services/scheduler SchedulerService
+	mockgen -package mocknotifications -destination notifications/mock/notifications.go github.com/m1thrandir225/galore-services/notifications NotificationService
+	mockgen -package mockmail -destination mail/mock/mail.go github.com/m1thrandir225/galore-services/mail MailService
 
 .PHONY: network postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 new_migration db_docs db_schema sqlc test server mock proto evans redisURL)" -verbose down 1

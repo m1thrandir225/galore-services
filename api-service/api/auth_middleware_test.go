@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -90,7 +91,10 @@ func TestAuthMiddleware(t *testing.T) {
 		testCase := testCases[i]
 
 		t.Run(testCase.name, func(t *testing.T) {
-			server := newTestServer(t, nil, nil, nil, nil, nil)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			server := newTestServer(t, ctrl, nil, nil, nil, nil, nil)
 			authPath := "/auth"
 			server.router.GET(
 				authPath,

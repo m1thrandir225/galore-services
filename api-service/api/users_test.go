@@ -144,7 +144,7 @@ func TestGetUserDetailsApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
@@ -250,7 +250,7 @@ func TestDeleteUserApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s", testCase.userId)
@@ -497,7 +497,7 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -691,7 +691,7 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -847,7 +847,7 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)

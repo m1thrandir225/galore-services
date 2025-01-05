@@ -123,7 +123,7 @@ func TestCreateNotificationTypeApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -230,7 +230,7 @@ func TestGetNotificationTypeApi(t *testing.T) {
 			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types/%s", testCase.notificationTypeId)
@@ -320,7 +320,7 @@ func TestGetNotificationTypesApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types")
@@ -426,7 +426,7 @@ func TestDeleteNotificationTypeApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/notification_types/%s", testCase.notificationTypeId)
@@ -577,7 +577,7 @@ func TestUpdateNotificationTypeApi(t *testing.T) {
 
 			testCase.buildStubs(store)
 
-			server := newTestServer(t, store, nil, storage, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, storage, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)

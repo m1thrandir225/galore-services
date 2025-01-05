@@ -125,7 +125,7 @@ func TestCreateNotification(t *testing.T) {
 			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -291,7 +291,7 @@ func TestUpdateNotificationStatus(t *testing.T) {
 			embeddingService := mockembedding.NewMockEmbeddingService(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -408,7 +408,7 @@ func TestGetUserNotifications(t *testing.T) {
 
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store, nil, nil, categorizer, embeddingService)
+			server := newTestServer(t, ctrl, store, nil, nil, categorizer, embeddingService)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/users/%s/notifications", tc.userId)
