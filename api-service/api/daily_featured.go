@@ -24,13 +24,3 @@ func (server *Server) getDailyFeatured(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, featuredItems)
 }
-
-func (server *Server) deleteOlderFeatured(ctx *gin.Context) {
-	err := server.store.DeleteOlderFeatured(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.Status(http.StatusOK)
-}

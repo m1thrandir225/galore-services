@@ -33,8 +33,6 @@ func (server *Server) setupRouter() {
 		adminRoutes := authRoutes.Group("/admin")
 		adminRoutes.Use(adminMiddleware(server.store))
 		{
-			adminRoutes.DELETE("/cocktails/featured", server.deleteOlderFeatured)
-
 			/**
 			Notification Type Routes
 			*/

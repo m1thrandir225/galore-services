@@ -24,6 +24,11 @@ func (server *Server) registerBackgroundHandlers() {
 	server.scheduler.RegisterJob("generate_daily_featured", true, server.generateDailyFeatured)
 
 	/**
+	Generate Daily Featured Deletion CRON
+	*/
+	server.scheduler.RegisterCronJob("delete_older_daily_featured", "0 0 * * MON")
+	server.scheduler.RegisterJob("delete_older_daily_featured", true, server.deleteOlderFeatured)
+	/**
 	Cocktail Migration Cron
 	*/
 	server.scheduler.RegisterCronJob("migrate_cocktails", "0 0 1 * *")
@@ -600,5 +605,17 @@ func (server *Server) sendNotification(args map[string]interface{}) error {
 		return err
 	}
 
+	return nil
+}
+
+func (server *Server) deleteOlderFeatured(args map[string]interface{}) error {
+	log.Println("JOB STARTED: Deleting Older Daily Featured Cocktails")
+
+	err := server.store.DeleteOlderFeatured(context.Background())
+	if err != nil {
+		return err
+	}
+
+	log.Println("JOB FINISHED: Deleted Older Daily Featured Cocktails")
 	return nil
 }
