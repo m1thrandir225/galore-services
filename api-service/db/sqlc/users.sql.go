@@ -90,7 +90,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, birthday, created_at FROM users 
+SELECT id, email, name, password, avatar_url, role, hotp_secret, enabled_push_notifications, enabled_email_notifications, birthday, created_at FROM users 
 WHERE id = $1 LIMIT 1
 `
 
@@ -103,6 +103,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Name,
 		&i.Password,
 		&i.AvatarUrl,
+		&i.Role,
 		&i.HotpSecret,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
@@ -113,7 +114,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, password, avatar_url, hotp_secret, enabled_push_notifications, enabled_email_notifications, birthday, created_at FROM users 
+SELECT id, email, name, password, avatar_url, role, hotp_secret, enabled_push_notifications, enabled_email_notifications, birthday, created_at FROM users 
 WHERE email = $1 LIMIT 1
 `
 
@@ -126,6 +127,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Name,
 		&i.Password,
 		&i.AvatarUrl,
+		&i.Role,
 		&i.HotpSecret,
 		&i.EnabledPushNotifications,
 		&i.EnabledEmailNotifications,
@@ -145,6 +147,19 @@ func (q *Queries) GetUserHOTPSecret(ctx context.Context, id uuid.UUID) (string, 
 	var hotp_secret string
 	err := row.Scan(&hotp_secret)
 	return hotp_secret, err
+}
+
+const getUserRole = `-- name: GetUserRole :one
+SELECT role
+FROM users u
+WHERE u.id = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserRole(ctx context.Context, id uuid.UUID) (UserRoles, error) {
+	row := q.db.QueryRow(ctx, getUserRole, id)
+	var role UserRoles
+	err := row.Scan(&role)
+	return role, err
 }
 
 const updateUserEmailNotifications = `-- name: UpdateUserEmailNotifications :one

@@ -79,6 +79,7 @@ type Querier interface {
 	GetUserHOTPSecret(ctx context.Context, id uuid.UUID) (string, error)
 	GetUserLikedFlavours(ctx context.Context, userID uuid.UUID) ([]Flavour, error)
 	GetUserNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	GetUserRole(ctx context.Context, id uuid.UUID) (UserRoles, error)
 	IncreaseCounter(ctx context.Context, userID uuid.UUID) (HotpCounter, error)
 	InvalidateSession(ctx context.Context, id uuid.UUID) (Session, error)
 	IsCocktailLiked(ctx context.Context, arg IsCocktailLikedParams) (bool, error)

@@ -24,100 +24,124 @@ func (server *Server) setupRouter() {
 	/**
 	Private Routes
 	*/
-	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes := v1.Group("/")
+	authRoutes.Use(authMiddleware(server.tokenMaker))
+	{
+		/**
+		Admin Routes
+		*/
+		adminRoutes := authRoutes.Group("/admin")
+		adminRoutes.Use(adminMiddleware(server.store))
+		{
+			adminRoutes.DELETE("/cocktails/featured", server.deleteOlderFeatured)
 
-	authRoutes.POST("/logout", server.logout)
-	/**
-	User Routes
-	*/
-	authRoutes.GET("/users/:id", server.getUserDetails)
-	authRoutes.DELETE("/users/:id", server.deleteUser)
-	authRoutes.POST("/users/:id", server.updateUserInformation)
-	authRoutes.PUT("/users/:id/password", server.updateUserPassword)
-	authRoutes.PUT("/users/:id/push-notifications", server.updateUserPushNotifications)
-	authRoutes.PUT("/users/:id/email-notifications", server.updateUserEmailNotifications)
-	authRoutes.GET("/users/:id/flavours", server.getUserLikedFlavours)
-	authRoutes.GET("/users/:id/cocktails", server.getUserLikedCocktails)
-	authRoutes.GET("/users/:id/generated-cocktails", server.getUserGeneratedCocktails)
-	authRoutes.GET("/users/:id/generate-requests", server.getIncompleteUserCocktailGenerationRequests)
-	authRoutes.GET("/users/:id/categories", server.getCategoriesBasedOnLikedFlavours)
-	authRoutes.GET("/users/:id/homescreen", server.getHomescreenForUser)
-	authRoutes.GET("/users/:id/notifications", server.getUserNotifications)
-	/**
-	Cocktail Routes
-	*/
-	authRoutes.GET("/cocktails", server.getCocktails)
-	authRoutes.POST("/cocktails", server.createCocktail)
-	authRoutes.GET("/cocktails/:id", server.getCocktail)
-	authRoutes.PUT("/cocktails/:id", server.updateCocktail)
-	authRoutes.DELETE("/cocktails/:id", server.deleteCocktail)
-	authRoutes.GET("/cocktails/:id/categories", server.getCategoriesForCocktail)
-	authRoutes.GET("/cocktails/:id/simillar", server.getSimilarCocktails)
+			/**
+			Notification Type Routes
+			*/
+			notificationTypesRoutes := adminRoutes.Group("/notification_types")
 
-	/**
-	Liked Cocktail Routes
-	*/
-	authRoutes.POST("/cocktails/:id/is_liked", server.getCocktailLikedStatus)
-	authRoutes.POST("/cocktails/:id/like", server.likeCocktail)
-	authRoutes.POST("/cocktails/:id/unlike", server.unlikeCocktail)
+			notificationTypesRoutes.GET("/", server.getNotificationTypes)
+			notificationTypesRoutes.POST("/", server.createNotificationType)
+			notificationTypesRoutes.GET("/:id", server.getNotificationType)
+			notificationTypesRoutes.DELETE("/:id", server.deleteNotificationType)
+			notificationTypesRoutes.PUT("/:id", server.updateNotificationType)
+		}
 
-	/**
-	Daily Featured Cocktail Routes
-	*/
-	authRoutes.GET("/cocktails/featured", server.getDailyFeatured)
-	authRoutes.DELETE("/cocktails/featured", server.deleteOlderFeatured)
+		/**
+		User Routes
+		*/
+		userRoutes := authRoutes.Group("/users")
 
-	/**
-	Category Routes
-	*/
-	authRoutes.GET("/categories", server.getAllCategories)
-	authRoutes.POST("/categories", server.createCategory)
-	authRoutes.GET("/categories/:id", server.getCategoryById)
-	authRoutes.DELETE("/categories/:id", server.deleteCategory)
-	authRoutes.PATCH("/categories/:id", server.updateCategory)
-	authRoutes.GET("/categories/:id/cocktails", server.getCocktailsByCategory)
+		userRoutes.GET("/:id", server.getUserDetails)
+		userRoutes.DELETE("/:id", server.deleteUser)
+		userRoutes.POST("/:id", server.updateUserInformation)
+		userRoutes.PUT("/:id/password", server.updateUserPassword)
+		userRoutes.PUT("/:id/push-notifications", server.updateUserPushNotifications)
+		userRoutes.PUT("/:id/email-notifications", server.updateUserEmailNotifications)
+		userRoutes.GET("/:id/flavours", server.getUserLikedFlavours)
+		userRoutes.GET("/:id/cocktails", server.getUserLikedCocktails)
+		userRoutes.GET("/:id/generated-cocktails", server.getUserGeneratedCocktails)
+		userRoutes.GET("/:id/generate-requests", server.getIncompleteUserCocktailGenerationRequests)
+		userRoutes.GET("/:id/categories", server.getCategoriesBasedOnLikedFlavours)
+		userRoutes.GET("/:id/homescreen", server.getHomescreenForUser)
+		userRoutes.GET("/:id/notifications", server.getUserNotifications)
 
-	/**
-	Flavour Routes
-	*/
-	authRoutes.GET("/flavours", server.getAllFlavours)
-	authRoutes.POST("/flavours", server.createFlavour)
-	authRoutes.GET("/flavours/:id", server.getFlavourId)
-	authRoutes.DELETE("/flavours/:id", server.deleteFlavour)
-	authRoutes.PATCH("/flavours/:id", server.updateFlavour)
-	/**
-	Liked Flavour Routes
-	*/
-	authRoutes.GET("/flavours/:id/like", server.getLikedFlavour)
-	authRoutes.POST("/flavours/like", server.likeFlavours)
-	authRoutes.POST("/flavours/:id/like", server.likeFlavour)
-	authRoutes.POST("/flavours/:id/unlike", server.unlikeFlavour)
+		/**
+		Cocktail Routes
+		*/
+		cocktailRoutes := authRoutes.Group("/cocktails")
 
-	/**
-	Category Flavour Routes
-	*/
-	authRoutes.POST("/category_flavour", server.createCategoryFlavour)
-	authRoutes.DELETE("/category_flavour/:id", server.deleteCategoryFlavour)
+		cocktailRoutes.GET("/", server.getCocktails)
+		cocktailRoutes.POST("/", server.createCocktail)
+		cocktailRoutes.GET("/:id", server.getCocktail)
+		cocktailRoutes.PUT("/:id", server.updateCocktail)
+		cocktailRoutes.DELETE("/:id", server.deleteCocktail)
+		cocktailRoutes.GET("/:id/categories", server.getCategoriesForCocktail)
+		cocktailRoutes.GET("/:id/simillar", server.getSimilarCocktails)
 
-	/**
-	Notification Type Routes
-	*/
-	authRoutes.GET("/notification_types", server.getNotificationTypes)
-	authRoutes.POST("/notification_types", server.createNotificationType)
-	authRoutes.GET("/notification_types/:id", server.getNotificationType)
-	authRoutes.DELETE("/notification_types/:id", server.deleteNotificationType)
-	authRoutes.PUT("/notification_types/:id", server.updateNotificationType)
-	/**
-	Notifications Routes
-	*/
-	authRoutes.POST("/notifications", server.createNotification)
-	authRoutes.PATCH("/notifications/:id", server.updateNotificationStatus)
+		/**
+		Liked Cocktail Routes
+		*/
+		cocktailRoutes.POST("/:id/is_liked", server.getCocktailLikedStatus)
+		cocktailRoutes.POST("/:id/like", server.likeCocktail)
+		cocktailRoutes.POST("/:id/unlike", server.unlikeCocktail)
 
-	/**
-	Generate Cocktail Routes
-	*/
-	authRoutes.GET("/generated/:id", server.getGeneratedCocktail)
-	authRoutes.POST("/generate-cocktail", server.createGenerateCocktailRequest)
+		/**
+		Daily Featured Cocktail Routes
+		*/
+		cocktailRoutes.GET("/featured", server.getDailyFeatured)
+
+		/**
+		Category Routes
+		*/
+		categoryRoutes := authRoutes.Group("/categories")
+		categoryRoutes.GET("/", server.getAllCategories)
+		categoryRoutes.POST("/", server.createCategory)
+		categoryRoutes.GET("/:id", server.getCategoryById)
+		categoryRoutes.DELETE("/:id", server.deleteCategory)
+		categoryRoutes.PATCH("/:id", server.updateCategory)
+		categoryRoutes.GET("/:id/cocktails", server.getCocktailsByCategory)
+
+		/**
+		Flavour Routes
+		*/
+		flavourRoutes := authRoutes.Group("/flavours")
+
+		flavourRoutes.GET("/", server.getAllFlavours)
+		flavourRoutes.POST("/", server.createFlavour)
+		flavourRoutes.GET("/:id", server.getFlavourId)
+		flavourRoutes.DELETE("/:id", server.deleteFlavour)
+		flavourRoutes.PATCH("/:id", server.updateFlavour)
+
+		/**
+		Liked Flavour Routes
+		*/
+		flavourRoutes.GET("/:id/like", server.getLikedFlavour)
+		flavourRoutes.POST("/like", server.likeFlavours)
+		flavourRoutes.POST("/:id/like", server.likeFlavour)
+		flavourRoutes.POST("/:id/unlike", server.unlikeFlavour)
+
+		/**
+		Category Flavour Routes
+		*/
+		authRoutes.POST("/category_flavour", server.createCategoryFlavour)
+		authRoutes.DELETE("/category_flavour/:id", server.deleteCategoryFlavour)
+
+		/**
+		Notifications Routes
+		*/
+		notificationRoutes := authRoutes.Group("/notifications")
+
+		notificationRoutes.POST("/", server.createNotification)
+		notificationRoutes.PATCH("/:id", server.updateNotificationStatus)
+
+		/**
+		Generate Cocktail Routes
+		*/
+		authRoutes.GET("/generated/:id", server.getGeneratedCocktail)
+		authRoutes.POST("/generate-cocktail", server.createGenerateCocktailRequest)
+
+	}
 
 	server.setupMigrationServiceRoutes(v1)
 	server.setupCategorizerServiceRoutes(v1)

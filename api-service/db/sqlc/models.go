@@ -103,6 +103,48 @@ func (ns NullImageGenerationStatus) Value() (driver.Value, error) {
 	return string(ns.ImageGenerationStatus), nil
 }
 
+type UserRoles string
+
+const (
+	UserRolesUser  UserRoles = "user"
+	UserRolesAdmin UserRoles = "admin"
+)
+
+func (e *UserRoles) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRoles(s)
+	case string:
+		*e = UserRoles(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRoles: %T", src)
+	}
+	return nil
+}
+
+type NullUserRoles struct {
+	UserRoles UserRoles `json:"user_roles"`
+	Valid     bool      `json:"valid"` // Valid is true if UserRoles is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRoles) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRoles, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRoles.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRoles) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRoles), nil
+}
+
 type Category struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
@@ -257,6 +299,7 @@ type User struct {
 	Name                      string      `json:"name"`
 	Password                  string      `json:"password"`
 	AvatarUrl                 string      `json:"avatar_url"`
+	Role                      UserRoles   `json:"role"`
 	HotpSecret                string      `json:"hotp_secret"`
 	EnabledPushNotifications  bool        `json:"enabled_push_notifications"`
 	EnabledEmailNotifications bool        `json:"enabled_email_notifications"`

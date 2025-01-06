@@ -52,6 +52,11 @@ UPDATE users
 SET password = $2
 WHERE id = $1;
 
+-- name: GetUserRole :one
+SELECT role
+FROM users u
+WHERE u.id = $1 LIMIT 1;
+
 -- name: DeleteUser :exec
 DELETE FROM users 
 WHERE id = $1 
