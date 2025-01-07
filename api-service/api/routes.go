@@ -30,9 +30,46 @@ func (server *Server) setupRouter() {
 		/**
 		Admin Routes
 		*/
-		adminRoutes := authRoutes.Group("/admin")
+		adminRoutes := authRoutes.Group("/")
 		adminRoutes.Use(adminMiddleware(server.store))
 		{
+			/**
+			Admin User Routes
+			*/
+
+			/**
+			Admin Cocktail Routes
+			*/
+			cocktailAdminRoutes := adminRoutes.Group("/cocktails")
+
+			cocktailAdminRoutes.POST("/", server.createCocktail)
+			cocktailAdminRoutes.DELETE("/:id", server.deleteCocktail)
+			cocktailAdminRoutes.PUT("/:id", server.updateCocktail)
+
+			/**
+			Admin Category Routes
+			*/
+			categoryAdminRoutes := adminRoutes.Group("/categories")
+
+			categoryAdminRoutes.POST("/", server.createCategory)
+			categoryAdminRoutes.PATCH("/:id", server.updateCategory)
+			categoryAdminRoutes.DELETE("/:id", server.deleteCategory)
+
+			/**
+			Admin Flavour Routes
+			*/
+			flavourAdminRoutes := adminRoutes.Group("/flavours")
+
+			flavourAdminRoutes.POST("/", server.createFlavour)
+			flavourAdminRoutes.DELETE("/:id", server.deleteFlavour)
+			flavourAdminRoutes.PATCH("/:id", server.updateFlavour)
+
+			/**
+			Category Flavour Routes
+			*/
+			adminRoutes.POST("/category_flavour", server.createCategoryFlavour)
+			adminRoutes.DELETE("/category_flavour/:id", server.deleteCategoryFlavour)
+
 			/**
 			Notification Type Routes
 			*/
@@ -50,6 +87,7 @@ func (server *Server) setupRouter() {
 		*/
 		userRoutes := authRoutes.Group("/users")
 
+		//TODO: add verification to check if the user-id is the one in the context
 		userRoutes.GET("/:id", server.getUserDetails)
 		userRoutes.DELETE("/:id", server.deleteUser)
 		userRoutes.POST("/:id", server.updateUserInformation)
@@ -70,10 +108,7 @@ func (server *Server) setupRouter() {
 		cocktailRoutes := authRoutes.Group("/cocktails")
 
 		cocktailRoutes.GET("/", server.getCocktails)
-		cocktailRoutes.POST("/", server.createCocktail)
 		cocktailRoutes.GET("/:id", server.getCocktail)
-		cocktailRoutes.PUT("/:id", server.updateCocktail)
-		cocktailRoutes.DELETE("/:id", server.deleteCocktail)
 		cocktailRoutes.GET("/:id/categories", server.getCategoriesForCocktail)
 		cocktailRoutes.GET("/:id/simillar", server.getSimilarCocktails)
 
@@ -93,24 +128,19 @@ func (server *Server) setupRouter() {
 		Category Routes
 		*/
 		categoryRoutes := authRoutes.Group("/categories")
+
 		categoryRoutes.GET("/", server.getAllCategories)
-		categoryRoutes.POST("/", server.createCategory)
 		categoryRoutes.GET("/:id", server.getCategoryById)
-		categoryRoutes.DELETE("/:id", server.deleteCategory)
-		categoryRoutes.PATCH("/:id", server.updateCategory)
 		categoryRoutes.GET("/:id/cocktails", server.getCocktailsByCategory)
 
 		/**
 		Flavour Routes
 		*/
+
 		flavourRoutes := authRoutes.Group("/flavours")
 
 		flavourRoutes.GET("/", server.getAllFlavours)
-		flavourRoutes.POST("/", server.createFlavour)
 		flavourRoutes.GET("/:id", server.getFlavourId)
-		flavourRoutes.DELETE("/:id", server.deleteFlavour)
-		flavourRoutes.PATCH("/:id", server.updateFlavour)
-
 		/**
 		Liked Flavour Routes
 		*/
@@ -118,12 +148,6 @@ func (server *Server) setupRouter() {
 		flavourRoutes.POST("/like", server.likeFlavours)
 		flavourRoutes.POST("/:id/like", server.likeFlavour)
 		flavourRoutes.POST("/:id/unlike", server.unlikeFlavour)
-
-		/**
-		Category Flavour Routes
-		*/
-		authRoutes.POST("/category_flavour", server.createCategoryFlavour)
-		authRoutes.DELETE("/category_flavour/:id", server.deleteCategoryFlavour)
 
 		/**
 		Notifications Routes
