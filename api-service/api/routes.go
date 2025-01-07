@@ -92,8 +92,8 @@ func (server *Server) setupRouter() {
 	Category Routes
 	*/
 	authRoutes.GET("/categories", server.getAllCategories)
-	authRoutes.GET("/categories:id", server.getCategoryById)
-	authRoutes.GET("/categories:id/cocktails", server.getCocktailsByCategory)
+	authRoutes.GET("/categories/:id", server.getCategoryById)
+	authRoutes.GET("/categories/:id/cocktails", server.getCocktailsByCategory)
 
 	/**
 	Flavour Routes
