@@ -17,9 +17,6 @@ class Migrator:
     def __init__(self, url: str, api_key: str, max_retries: int = 5):
         self.url = url
         self.api_key = api_key
-        self.updated_cocktails_cache = (
-            set()
-        )  # Cache to store successfully updated cocktail names or IDs
         self.max_retries = max_retries
 
     async def wait_for_service(self):
@@ -45,11 +42,6 @@ class Migrator:
         await self.wait_for_service()
 
         for cocktail in cocktails:
-            # Use cocktail name or ID as a unique identifier for the cache
-            if cocktail.name in self.updated_cocktails_cache:
-                logging.info(f"Skipping {cocktail.name}, already updated.")
-                return
-
             try:
                 filename = f"{str(uuid.uuid4())}.jpg"
                 files = {
@@ -73,9 +65,6 @@ class Migrator:
                 files["file"][1].close()
 
                 logging.info(f"Successfully updated {cocktail.name}.")
-
-                # Add cocktail name to cache after a successful update
-                self.updated_cocktails_cache.add(cocktail.name)
 
             except Exception as e:
                 logging.error(f"Error updating {cocktail.name}: {e}")
