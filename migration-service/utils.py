@@ -18,7 +18,7 @@ def download_image(url: str):
 
     folder_path = "./temp"
 
-    os.makedirs(os.path.dirname(folder_path), 511, True)
+    os.makedirs(folder_path, mode=0o777, exist_ok=True)
 
     file_path = folder_path + "/" + filename
     with open(file_path, "wb") as file:
