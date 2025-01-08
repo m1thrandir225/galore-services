@@ -26,6 +26,8 @@ func (server *Server) setupRouter() {
 	*/
 	authRoutes := v1.Group("/").Use(authMiddleware(server.tokenMaker))
 
+	authRoutes.POST("/logout", server.logout)
+
 	/**
 	Admin Routes
 	*/
