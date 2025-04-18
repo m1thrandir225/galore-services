@@ -25,9 +25,14 @@ func NewGaloreCategorizer(url, apiKey string) *GaloreCategorizer {
 	}
 }
 
-/**
-* Calls the categorizer to categorize the current cocktail
- */
+// Description:
+// Calls the categorizer service to categorize the current cocktail
+//
+// Parameters:
+// cocktail: db.Cocktail
+//
+// Returns:
+// error
 func (categorizer *GaloreCategorizer) CategorizeCocktail(cocktail db.Cocktail) error {
 	requestJson, err := json.Marshal(cocktail)
 	if err != nil {
@@ -41,6 +46,10 @@ func (categorizer *GaloreCategorizer) CategorizeCocktail(cocktail db.Cocktail) e
 	)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-key", categorizer.ApiKey)
+
+	if err != nil {
+		return err
+	}
 
 	client := &http.Client{}
 

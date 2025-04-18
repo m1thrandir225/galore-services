@@ -3,10 +3,11 @@ package image_gen
 import (
 	"bytes"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"mime/multipart"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type StableDiffusionModel string
@@ -17,6 +18,14 @@ const (
 	StableDiffusionModelSD3   StableDiffusionModel = "sd3"
 )
 
+// Description:
+// A Stable Diffusion implementation of the image_generator service.
+//
+// Parameters:
+// BaseURL: string
+// ApiKey: string
+// OutputFormat: string
+// AspectRatio: string
 type StableDiffusionGenerator struct {
 	BaseURL      string
 	ApiKey       string
@@ -24,6 +33,17 @@ type StableDiffusionGenerator struct {
 	AspectRatio  string
 }
 
+// Description:
+// Returns a new StableDiffusionGenerator object
+//
+// Parameters:
+// url: string,
+// apiKey: string,
+// aspectRatio: string,
+// outputFormat: string
+//
+// Return:
+// *StableDiffusionGenerator
 func NewStableDiffusionGenerator(url, apiKey, aspectRatio, outputFormat string) *StableDiffusionGenerator {
 	return &StableDiffusionGenerator{
 		BaseURL:      url,
@@ -33,6 +53,16 @@ func NewStableDiffusionGenerator(url, apiKey, aspectRatio, outputFormat string) 
 	}
 }
 
+// Description:
+// Helper function to generate an appropriate url based on the selected model
+// used for generating the images
+//
+// Parameters:
+// model: StableDiffusionModel
+//
+// Return:
+// string
+// error
 func (generator *StableDiffusionGenerator) generateUrlBasedOnModel(model StableDiffusionModel) (string, error) {
 	switch model {
 	case StableDiffusionModelUltra:
@@ -46,6 +76,18 @@ func (generator *StableDiffusionGenerator) generateUrlBasedOnModel(model StableD
 	}
 }
 
+// Description:
+// A method that sends a request to stable diffusion and returns a newly
+// generated image
+//
+// Parameters:
+// prompt: string
+// httpClient: *http.Client,
+// model: string
+//
+// Return:
+// *GeneratedImage,
+// error
 func (generator *StableDiffusionGenerator) GenerateImage(prompt string, httpClient *http.Client, model string) (*GeneratedImage, error) {
 	buffer := &bytes.Buffer{}
 

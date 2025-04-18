@@ -30,13 +30,11 @@ type ThreadMessage struct {
 	Content string `json:"content"`
 }
 type Thread struct {
-	Id        string `json:"id"`
-	Object    string `json:"object"`
-	CreatedAt int    `json:"created_at"`
-	Metadata  struct {
-	} `json:"metadata"`
-	ToolResources struct {
-	} `json:"tool_resources"`
+	Id            string   `json:"id"`
+	Object        string   `json:"object"`
+	CreatedAt     int      `json:"created_at"`
+	Metadata      struct{} `json:"metadata"`
+	ToolResources struct{} `json:"tool_resources"`
 }
 
 type RunPayload struct {
@@ -62,8 +60,7 @@ type Run struct {
 	Tools             []struct {
 		Type string `json:"type"`
 	} `json:"tools"`
-	Metadata struct {
-	} `json:"metadata"`
+	Metadata            struct{}    `json:"metadata"`
 	Usage               interface{} `json:"usage"`
 	Temperature         float64     `json:"temperature"`
 	TopP                float64     `json:"top_p"`
@@ -94,8 +91,7 @@ type Message struct {
 	AssistantId string        `json:"assistant_id"`
 	RunId       string        `json:"run_id"`
 	Attachments []interface{} `json:"attachments"`
-	Metadata    struct {
-	} `json:"metadata"`
+	Metadata    struct{}      `json:"metadata"`
 }
 
 type ListMessagesResponse struct {
@@ -178,7 +174,6 @@ func (generator *OpenAIPromptGenerator) createRun(httpClient http.Client, thread
 	runUrl := fmt.Sprintf("%s/%s/runs", generator.ThreadUrl, thread.Id)
 
 	req, err := http.NewRequest("POST", runUrl, bytes.NewBuffer(jsonPayload))
-
 	if err != nil {
 		return nil, errors.New("there was a problem creating the request: " + err.Error())
 	}

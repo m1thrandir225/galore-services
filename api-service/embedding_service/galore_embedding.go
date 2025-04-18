@@ -8,19 +8,41 @@ import (
 	"net/http"
 )
 
+// Description:
+// Galore implementation for the embedding service
+//
+// Parameters:
+// url: string
+// apiKey: string
 type GaloreEmbeddingService struct {
 	Url    string
 	ApiKey string
 }
 
+// Description:
+// The request object sent out to the GaloreEmbeddingService
 type GaloreEmbeddingServiceRequest struct {
 	Text string `json:"text" binding:"required"`
 }
 
+// Description:
+// The return response of a succesful request from the service.
+//
+// Return:
+// Embedding: [][]float32
 type GaloreEmbeddingServiceResponse struct {
 	Embedding [][]float32 `json:"embedding" binding:"required"`
 }
 
+// Description:
+// Creates and returns a new object of the GaloreEmbeddingService
+//
+// Parameters:
+// url: string
+// apiKey: string
+//
+// Return:
+// *GaloreEmbeddingService
 func NewGaloreEmbeddingService(url, apiKey string) *GaloreEmbeddingService {
 	return &GaloreEmbeddingService{
 		Url:    url,
@@ -28,6 +50,16 @@ func NewGaloreEmbeddingService(url, apiKey string) *GaloreEmbeddingService {
 	}
 }
 
+// Description:
+// Sends a request to the embedding service which returns a embedding for a given
+// text
+//
+// Parameters:
+// text: string
+//
+// Return:
+// []float32
+// error
 func (generator *GaloreEmbeddingService) GenerateEmbedding(text string) ([]float32, error) {
 	request := GaloreEmbeddingServiceRequest{
 		Text: text,

@@ -5,6 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
@@ -16,12 +23,6 @@ import (
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestCreateCategoryApi(t *testing.T) {
@@ -145,6 +146,7 @@ func TestCreateCategoryApi(t *testing.T) {
 		})
 	}
 }
+
 func TestGetCategoriesApi(t *testing.T) {
 	userId, err := uuid.NewRandom()
 	require.NoError(t, err)
@@ -245,6 +247,7 @@ func TestGetCategoriesApi(t *testing.T) {
 		})
 	}
 }
+
 func TestGetCategoryByIdApi(t *testing.T) {
 	userId, err := uuid.NewRandom()
 	require.NoError(t, err)
@@ -343,6 +346,7 @@ func TestGetCategoryByIdApi(t *testing.T) {
 		})
 	}
 }
+
 func TestDeleteCategoryApi(t *testing.T) {
 	userId, err := uuid.NewRandom()
 	require.NoError(t, err)
@@ -367,7 +371,6 @@ func TestDeleteCategoryApi(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-
 			},
 		},
 		{
@@ -381,7 +384,6 @@ func TestDeleteCategoryApi(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
-
 			},
 		},
 		{
@@ -408,7 +410,6 @@ func TestDeleteCategoryApi(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-
 			},
 		},
 		{
@@ -421,7 +422,6 @@ func TestDeleteCategoryApi(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
-
 			},
 		},
 	}
@@ -454,6 +454,7 @@ func TestDeleteCategoryApi(t *testing.T) {
 		})
 	}
 }
+
 func TestUpdateCategoryApi(t *testing.T) {
 	userId, err := uuid.NewRandom()
 	require.NoError(t, err)

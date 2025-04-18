@@ -1048,6 +1048,21 @@ func (mr *MockStoreMockRecorder) GetUserNotifications(arg0, arg1 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserNotifications", reflect.TypeOf((*MockStore)(nil).GetUserNotifications), arg0, arg1)
 }
 
+// GetUserRole mocks base method.
+func (m *MockStore) GetUserRole(arg0 context.Context, arg1 uuid.UUID) (db.UserRoles, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserRole", arg0, arg1)
+	ret0, _ := ret[0].(db.UserRoles)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserRole indicates an expected call of GetUserRole.
+func (mr *MockStoreMockRecorder) GetUserRole(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserRole", reflect.TypeOf((*MockStore)(nil).GetUserRole), arg0, arg1)
+}
+
 // IncreaseCounter mocks base method.
 func (m *MockStore) IncreaseCounter(arg0 context.Context, arg1 uuid.UUID) (db.HotpCounter, error) {
 	m.ctrl.T.Helper()
