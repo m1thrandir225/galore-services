@@ -5,6 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	mockdb "github.com/m1thrandir225/galore-services/db/mock"
@@ -14,17 +20,11 @@ import (
 	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 )
 
 func TestRegisterUserApi(t *testing.T) {
-	//TODO: implement
-	//user := randomUser(t)
-
+	// TODO: implement
+	// user := randomUser(t)
 }
 
 func TestLoginUserApi(t *testing.T) {
@@ -310,7 +310,6 @@ func TestRefreshTokenApi(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().InvalidateSession(gomock.Any(), sessionId).Times(1).Return(db.Session{}, nil)
-
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
