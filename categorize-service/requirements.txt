@@ -1,6 +1,6 @@
-fastapi[standard]>=0.113.0,<0.114.0
-pydantic>=2.7.0,<3.0.0
-pydantic-settings~=2.6.1
+fastapi[all]~=0.115
+pydantic>=2.11
+pydantic-settings~=2.9.1
 requests~=2.32.3
-uvicorn==0.15.0
+uvicorn==0.34
 python-dateutil~=2.9.0.post0
