@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Description:
+// Hold all required configuration fields passed by environment variables
 type Config struct {
 	Environment               string        `mapstructure:"ENVIRONMENT"`
 	DBSource                  string        `mapstructure:"DB_SOURCE"`
@@ -39,6 +41,16 @@ type Config struct {
 	FirebaseServiceKey        string        `mapstructure:"FIREBASE_SERVICE_KEY"`
 }
 
+// Description:
+// A method that loads environment variables and verifies if they are in the
+// specified config format
+//
+// Parameters:
+// path: string - the path of the .env file
+//
+// Return:
+// config: Config,
+// err: error
 func LoadConfig(path string) (config Config, err error) {
 	/*
 	 * Load Viper config
