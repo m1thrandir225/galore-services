@@ -1,5 +1,5 @@
 import logging
-from typing import Set
+from typing import Optional, Set
 
 import requests
 from requests import HTTPError
@@ -12,11 +12,14 @@ from models.flavour_map import flavor_map
 """
 Categorizer
 """
+
+
 class Categorizer:
     def __init__(self, cocktail: DetailedCocktail, api_service_url: str, api_key: str):
         self.cocktail = cocktail
         self.api_service_url = api_service_url
-        self.api_key =  api_key
+        self.api_key = api_key
+
     """
         Should categorize the cocktail based on 3 categories: 
         1. Based on is it alcoholic
@@ -39,7 +42,7 @@ class Categorizer:
         try:
             response = requests.get(
                 self.api_service_url + "/category/" + category_tag,
-                headers={"x-api-key":self.api_key},
+                headers={"x-api-key": self.api_key},
             )
             response.raise_for_status()
 
@@ -52,7 +55,7 @@ class Categorizer:
                 return None
             return False
 
-    def __create_category(self, category: CategoryDTO) -> Category:
+    def __create_category(self, category: CategoryDTO) -> Optional[Category]:
         """Creates a new category"""
         try:
             response = requests.post(
@@ -61,38 +64,42 @@ class Categorizer:
                     "name": category.name,
                     "tag": category.tag,
                 },
-                headers={"x-api-key":self.api_key},
+                headers={"x-api-key": self.api_key},
             )
             if not response.ok:
                 raise Exception(f"Error status code: {response.status_code}")
 
             logging.info(f"Created new category {category.name}")
             j = response.json()
+
             return Category(**j)
         except HTTPError as e:
-            logging.error(f"Failed to create new category {category.name}, error: {e.response.text}")
+            logging.error(
+                f"Failed to create new category {category.name}, error: {e.response.text}"
+            )
 
     def __create_category_cocktail(self, category_id: str):
         """Creates a category_cocktail object with an existing category and cocktail"""
         try:
-            data = {
-                "category_id": category_id,
-                "cocktail_id": str(self.cocktail.id)
-            }
+            data = {"category_id": category_id, "cocktail_id": str(self.cocktail.id)}
             response = requests.post(
                 self.api_service_url + "/category_cocktail",
                 json=data,
-                headers={"x-api-key":self.api_key},
+                headers={"x-api-key": self.api_key},
             )
             response.raise_for_status()
 
-            logging.info(f"Created new cocktail_category object with category_id:{category_id}, cocktail_id:{self.cocktail.id}")
+            logging.info(
+                f"Created new cocktail_category object with category_id:{category_id}, cocktail_id:{self.cocktail.id}"
+            )
         except HTTPError as e:
-            logging.info(f"Failed to create ne cocktail_category object with category_id:{category_id}, error: {e.response.text}")
+            logging.info(
+                f"Failed to create ne cocktail_category object with category_id:{category_id}, error: {e.response.text}"
+            )
 
     def categorize_by_glass(self):
         """Categorizes the cocktail by glass"""
-        glass_type =  self.cocktail.glass
+        glass_type = self.cocktail.glass
         tag_glass_type = to_snake_case(glass_type.lower())
 
         category = self.__category_exists(category_tag=tag_glass_type)
@@ -174,4 +181,3 @@ class Categorizer:
                 )
                 new_category = self.__create_category(category=category_dto)
                 self.__create_category_cocktail(category_id=str(new_category.id))
-
