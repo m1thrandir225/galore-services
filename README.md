@@ -13,8 +13,8 @@ Currently, it has the following services:
 The following repository is a part of a larger project named Galore: 
 - [**Check out the Android App**](https://github.com/m1thrandir225/galore-android)
 - [**Check out the iOS App**](https://github.com/m1thrandir225/galore-ios)
-- [**Check out the Admin Dashboard**](https://github.com/m1thrandir225/galore-dashboard)
-- **Check out the Landing Site (TBA)**
+- [**Check out the Admin Dashboard(WIP)**](https://github.com/m1thrandir225/galore-dashboard)
+- [**Check out the Landing Site**](https://github.com/m1thrandir225/galore-landing)
 
 # Run Locally 
 Each of the services contains a `.env.example` file that shows what parameters you need to run each 
