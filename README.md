@@ -23,3 +23,5 @@ service separately.
 If you want to run them using a `docker-compose` setup there are multiple also in the base directory 
 `.env.example` files for each service that requires some kind of configuration.
 
+---
+License MIT © [Sebastijan Zindl](./LICENSE)
