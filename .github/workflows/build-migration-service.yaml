@@ -17,7 +17,7 @@ env:
   SERVICE_NAME: migration-service
 
 jobs:
-  build-and-push-api-service:
+  build-and-push-migration-service:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

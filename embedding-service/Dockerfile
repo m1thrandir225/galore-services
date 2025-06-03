@@ -11,8 +11,8 @@ ENV HF_HOME=/app/.cache/huggingface
 
 # Preload the Hugging Face model
 RUN python -c "from transformers import BertTokenizer, BertModel; \
-    BertTokenizer.from_pretrained('bert-base-uncased'); \
-    BertModel.from_pretrained('bert-base-uncased')"
+  BertTokenizer.from_pretrained('bert-base-uncased'); \
+  BertModel.from_pretrained('bert-base-uncased')"
 
 COPY . .
 

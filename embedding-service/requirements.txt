@@ -3,8 +3,8 @@ pydantic>=2.11
 pydantic-settings~=2.9.1
 requests~=2.32.3
 uvicorn==0.34
-
-hf-xet==1.0.3
-
+hf-xet>=1.1
+accelerate==1.7.0
+psutil==7.0.0
 torch>=2.6
 transformers>=4.51
