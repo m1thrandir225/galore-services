@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: migration-service
+  namespace: galore
+  labels:
+    app: migration-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: migration-service
+  template:
+    metadata:
+      labels:
+        app: migration-service
+    spec:
+      containers:
+        - name: migration-service
+          image: m1thrandir/galore:migration-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+          envFrom:
+            - secretRef:
+                name: migration-service-env
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 60
+            periodSeconds: 40
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: migration-service
+  namespace: galore
+  labels:
+    app: migration-service
+spec:
+  type: ClusterIP
+  selector:
+    app: migration-service
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8001
+
+
