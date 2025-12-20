@@ -1,5 +1,4 @@
-// Description:
-// Security package for Galore. Mainly for OTP generation & validation
+// Package security used for OTP generation & validation
 package security
 
 import (
@@ -10,16 +9,7 @@ import (
 	"github.com/pquerna/otp/hotp"
 )
 
-// Description:
-// Generates a hash based OTP code
-//
-// Parameters:
-// secret: string
-// counter: uin64
-//
-// Return:
-// string
-// error
+// GenerateHOTP generates a hash based OTP code
 func GenerateHOTP(secret string, counter uint64) (string, error) {
 	opts := hotp.ValidateOpts{
 		Digits:    otp.DigitsSix,
@@ -33,17 +23,7 @@ func GenerateHOTP(secret string, counter uint64) (string, error) {
 	return code, nil
 }
 
-// Description:
-// A method that validates a given hash based OTP code
-//
-// Parameters:
-// secret: string
-// providedOTP: string
-// counter: uint64
-//
-// Return:
-// bool
-// error
+// ValidateHOTP validates a given hash based OTP code
 func ValidateHOTP(secret string, providedOTP string, counter uint64) (bool, error) {
 	opts := hotp.ValidateOpts{
 		Digits:    otp.DigitsSix,
@@ -58,12 +38,7 @@ func ValidateHOTP(secret string, providedOTP string, counter uint64) (bool, erro
 	return valid, nil
 }
 
-// Description:
-// Generates a unique OTP secret for a user
-//
-// Return:
-// string
-// error
+// GenerateOTPSecret generates a unique OTP secret for a user
 func GenerateOTPSecret() (string, error) {
 	secret := make([]byte, 20)
 

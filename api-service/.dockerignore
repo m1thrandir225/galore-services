@@ -9,6 +9,8 @@ contrib/
 .env
 .env.example
 .gitignore
+public/
+vendor/
 
 ##
 ## Common with .gitignore
