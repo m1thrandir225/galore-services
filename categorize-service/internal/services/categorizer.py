@@ -1,24 +1,21 @@
 import logging
-from typing import Optional, Set
+from typing import Literal
 
 import requests
+from internal.config import to_snake_case
+from internal.models import Category, CategoryDTO, DetailedCocktail, flavor_map
 from requests import HTTPError
 
-from models.category import Category, CategoryDTO
-from models.detailed_cocktail import DetailedCocktail
-from utils import to_snake_case
-from models.flavour_map import flavor_map
 
-"""
-Categorizer
-"""
+class CategorizeService:
+    """
+    Categorizer
+    """
 
-
-class Categorizer:
     def __init__(self, cocktail: DetailedCocktail, api_service_url: str, api_key: str):
-        self.cocktail = cocktail
-        self.api_service_url = api_service_url
-        self.api_key = api_key
+        self.cocktail: DetailedCocktail = cocktail
+        self.api_service_url: str = api_service_url
+        self.api_key: str = api_key
 
     """
         Should categorize the cocktail based on 3 categories: 
@@ -31,14 +28,13 @@ class Categorizer:
         and them create the category_cocktail object.
     """
 
-    def __category_exists(self, category_tag: str) -> Category or False or None:
+    def __category_exists(self, category_tag: str) -> Category | Literal[False] | None:
         """
         Checks to see if the given category exists
         1. If the category exists, return it.
         2. If the category does not exist, return False.
         3. If there is an error, return None
         """
-
         try:
             response = requests.get(
                 self.api_service_url + "/category/" + category_tag,
@@ -48,6 +44,7 @@ class Categorizer:
 
             j = response.json()
             return Category(**j)
+
         except HTTPError as e:
             code = e.response.status_code
             if code != 404:
@@ -55,7 +52,7 @@ class Categorizer:
                 return None
             return False
 
-    def __create_category(self, category: CategoryDTO) -> Optional[Category]:
+    def __create_category(self, category: CategoryDTO) -> Category | None:
         """Creates a new category"""
         try:
             response = requests.post(
@@ -72,7 +69,7 @@ class Categorizer:
             logging.info(f"Created new category {category.name}")
             j = response.json()
 
-            return Category(**j)
+            return Category.model_validate(j)
         except HTTPError as e:
             logging.error(
                 f"Failed to create new category {category.name}, error: {e.response.text}"
@@ -120,13 +117,17 @@ class Categorizer:
                 tag=tag_glass_type,
             )
             new_category = self.__create_category(category=category_dto)
+
+            if new_category is None:
+                raise Exception("")
+
             self.__create_category_cocktail(category_id=str(new_category.id))
 
-    def __get_flavours_for_cocktail(self) -> Set[str]:
-        flavours = set()
+    def __get_flavours_for_cocktail(self) -> set[str]:
+        flavours: set[str] = set()
         for ingredient in self.cocktail.ingredients.ingredients:
             name = ingredient.name.lower()
-            for key, flavour in flavor_map.items():
+            for _, flavour in flavor_map.items():
                 if flavour in name:
                     flavours.add(flavour)
 
@@ -149,6 +150,9 @@ class Categorizer:
                     tag=tag,
                 )
                 new_category = self.__create_category(category=category_dto)
+                if new_category is None:
+                    raise Exception("")
+
                 self.__create_category_cocktail(category_id=str(new_category.id))
 
     def categorize_by_alcohol(self):
@@ -168,6 +172,9 @@ class Categorizer:
                     tag=alcoholic_tag,
                 )
                 new_category = self.__create_category(category=category_dto)
+                if new_category is None:
+                    raise Exception("")
+
                 self.__create_category_cocktail(category_id=str(new_category.id))
         else:
             category = self.__category_exists(category_tag=not_alcoholic_tag)
@@ -180,4 +187,8 @@ class Categorizer:
                     tag=not_alcoholic_tag,
                 )
                 new_category = self.__create_category(category=category_dto)
+
+                if new_category is None:
+                    raise Exception("")
+
                 self.__create_category_cocktail(category_id=str(new_category.id))

@@ -19,3 +19,7 @@ tests
 scripts
 postman
 Dockerfile
+.git
+.venv
+.idea
+

@@ -1,13 +1,21 @@
-FROM python:3.9
+FROM python:3.14-slim as builder
 
 WORKDIR /app
 
-COPY requirements.txt .
+RUN pip install uv 
 
-RUN pip install --upgrade setuptools[core]
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+COPY ./pyproject.toml ./uv.lock ./ 
 
+RUN uv sync 
+RUN uv cache clean
+
+FROM python:3.14-slim as runner 
+
+WORKDIR /app
+
+COPY --from=builder /app/.venv /app/.venv
 COPY . .
-EXPOSE 8003
 
-CMD ["fastapi", "run", "app.py", "--proxy-headers","--port", "8003"]
+ENV PATH="/app/.venv/bin:$PATH"
+
+RUN ["uvicorn", "main:app", "--proxy-headers", "--port", "8003"]
