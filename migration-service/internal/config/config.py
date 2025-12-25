@@ -7,4 +7,4 @@ class Settings(BaseSettings):
     api_key: str
     parser_url: str
     parser_single_url: str
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env")  # pyright: ignore[reportUnannotatedClassAttribute]

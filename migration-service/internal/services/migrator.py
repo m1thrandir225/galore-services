@@ -1,25 +1,22 @@
 import json
+import logging
 import time
+import uuid
 from dataclasses import asdict
 
-import logging
-from typing import List
-import uuid
-
 import requests
-from requests import HTTPError, request
+from requests import HTTPError
 
-import utils
-from models.detailed_cocktail import DetailedCocktail
+from ..models import DetailedCocktail
 
 
-class Migrator:
+class MigrateService:
     def __init__(self, url: str, api_key: str, max_retries: int = 5):
-        self.url = url
-        self.api_key = api_key
-        self.max_retries = max_retries
+        self.url: str = url
+        self.api_key: str = api_key
+        self.max_retries: int = max_retries
 
-    async def wait_for_service(self):
+    async def wait_for_service(self) -> bool:
         """
         Wait for the service to be available
         """
@@ -30,16 +27,17 @@ class Migrator:
                 response.raise_for_status()
                 logging.info("Service is ready!")
                 return True
-            except HTTPError as e:
-                logging.warning(f"Service not ready, attempt {attempt + 1}/{self.max_retries}")
+            except HTTPError:
+                logging.warning(
+                    f"Service not ready, attempt {attempt + 1}/{self.max_retries}"
+                )
                 time.sleep(5)  # Wait 5 seconds between retries
 
         raise Exception("Could not connect to the service after multiple attempts")
 
-
-    async def update_cocktails(self, cocktails: List[DetailedCocktail]):
+    async def update_cocktails(self, cocktails: list[DetailedCocktail]) -> None:
         """Updates cocktails by sending data to the given URL with a caching mechanism."""
-        await self.wait_for_service()
+        _ = await self.wait_for_service()
 
         for cocktail in cocktails:
             try:
@@ -56,7 +54,7 @@ class Migrator:
                     "isAlcoholic": cocktail.isAlcoholic,
                 }
 
-                response = requests.post(
+                _ = requests.post(
                     self.url + "/migration/cocktails",
                     files=files,
                     data=data,
@@ -68,3 +66,4 @@ class Migrator:
 
             except Exception as e:
                 logging.error(f"Error updating {cocktail.name}: {e}")
+

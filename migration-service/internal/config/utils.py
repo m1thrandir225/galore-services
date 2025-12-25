@@ -1,15 +1,16 @@
 import os
-from typing import Dict, List
-from models.ingredient import IngredientData, IngredientDto
-import requests, json
+from ..models import IngredientData, IngredientDto
+import requests
 
-def has_alc(alcoholic):
+
+def has_alc(alcoholic: str) -> bool:
     if alcoholic == "Alcoholic":
-        return  True
+        return True
     else:
         return False
 
-def download_image(url: str):
+
+def download_image(url: str) -> str:
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -26,8 +27,8 @@ def download_image(url: str):
     return file_path
 
 
-def format_ingredients(json_data: Dict[str, str]) -> IngredientDto:
-    ingredients = []
+def format_ingredients(json_data: dict[str, str]) -> IngredientDto:
+    ingredients: list[IngredientData] = []
     ingredient_name_key = "strIngredient"
     ingredient_amount_key = "strMeasure"
 
@@ -38,7 +39,7 @@ def format_ingredients(json_data: Dict[str, str]) -> IngredientDto:
         name = json_data["{}{}".format(ingredient_name_key, i)]
         amount = json_data["{}{}".format(ingredient_amount_key, i)]
 
-        ingredient = IngredientData(name, amount)
+        ingredient = IngredientData(name=name, amount=amount)
         ingredients.append(ingredient)
 
-    return IngredientDto(ingredients)
+    return IngredientDto(ingredients=ingredients)
