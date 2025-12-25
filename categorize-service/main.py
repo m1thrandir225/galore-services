@@ -2,9 +2,9 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
-from internal.config import Settings
-from internal.models import DetailedCocktail
-from internal.services import CategorizeService
+from .internal.config import Settings
+from .internal.models import DetailedCocktail
+from .internal.services import CategorizeService
 
 
 @lru_cache

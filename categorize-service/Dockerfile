@@ -1,21 +1,15 @@
-FROM python:3.14-slim as builder
+FROM python:3.14-slim
 
 WORKDIR /app
 
-RUN pip install uv 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 COPY ./pyproject.toml ./uv.lock ./ 
 
-RUN uv sync 
-RUN uv cache clean
+RUN uv pip install --system -r pyproject.toml 
 
-FROM python:3.14-slim as runner 
+COPY . . 
 
-WORKDIR /app
+EXPOSE 8003
 
-COPY --from=builder /app/.venv /app/.venv
-COPY . .
-
-ENV PATH="/app/.venv/bin:$PATH"
-
-RUN ["uvicorn", "main:app", "--proxy-headers", "--port", "8003"]
+CMD ["fastapi", "run", "--host", "0.0.0.0", "--port", "8003", "--proxy-headers"]

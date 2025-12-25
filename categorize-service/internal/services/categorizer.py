@@ -2,8 +2,8 @@ import logging
 from typing import Literal
 
 import requests
-from internal.config import to_snake_case
-from internal.models import Category, CategoryDTO, DetailedCocktail, flavor_map
+from ..config import to_snake_case
+from ..models import Category, CategoryDTO, DetailedCocktail, flavor_map
 from requests import HTTPError
 
 
