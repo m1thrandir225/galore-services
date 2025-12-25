@@ -125,10 +125,11 @@ class CategorizeService:
 
     def __get_flavours_for_cocktail(self) -> set[str]:
         flavours: set[str] = set()
+        print(self.cocktail.ingredients.ingredients)
         for ingredient in self.cocktail.ingredients.ingredients:
             name = ingredient.name.lower()
-            for _, flavour in flavor_map.items():
-                if flavour in name:
+            for key, flavour in flavor_map.items():
+                if key in name:
                     flavours.add(flavour)
 
         return flavours

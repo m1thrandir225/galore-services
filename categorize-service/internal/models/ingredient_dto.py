@@ -5,4 +5,3 @@ from .ingredient import Ingredient
 
 class IngredientDTO(BaseModel):
     ingredients: list[Ingredient]
-
