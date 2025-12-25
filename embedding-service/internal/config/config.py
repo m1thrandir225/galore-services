@@ -5,4 +5,4 @@ class Settings(BaseSettings):
     app_name: str = "Galore-Embedding-Service"
     api_key: str
     environment: str
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env")  # pyright: ignore[reportUnannotatedClassAttribute]
