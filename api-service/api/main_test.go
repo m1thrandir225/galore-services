@@ -1,23 +1,25 @@
 package api
 
 import (
-	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
-	mockcocktailgen "github.com/m1thrandir225/galore-services/cocktail_gen/mock"
-	mockimagegen "github.com/m1thrandir225/galore-services/image_gen/mock"
-	mockmail "github.com/m1thrandir225/galore-services/mail/mock"
-	mocknotifications "github.com/m1thrandir225/galore-services/notifications/mock"
-	mockscheduler "github.com/m1thrandir225/galore-services/scheduler/mock"
-	"go.uber.org/mock/gomock"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/m1thrandir225/galore-services/internal/cache"
+	"github.com/m1thrandir225/galore-services/internal/categorizer"
+	"github.com/m1thrandir225/galore-services/internal/config"
+	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/embedding"
+	"github.com/m1thrandir225/galore-services/internal/image/mock"
+	"github.com/m1thrandir225/galore-services/internal/mail/mock"
+	"github.com/m1thrandir225/galore-services/internal/notifications/mock"
+	"github.com/m1thrandir225/galore-services/internal/recipe/mock"
+	"github.com/m1thrandir225/galore-services/internal/scheduler/mock"
+	"github.com/m1thrandir225/galore-services/internal/storage"
+	"github.com/m1thrandir225/galore-services/internal/util"
+	"go.uber.org/mock/gomock"
+
 	"github.com/gin-gonic/gin"
-	"github.com/m1thrandir225/galore-services/cache"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	embedding "github.com/m1thrandir225/galore-services/embedding_service"
-	"github.com/m1thrandir225/galore-services/storage"
-	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,12 +27,12 @@ func newTestServer(
 	t *testing.T,
 	ctrl *gomock.Controller,
 	store db.Store,
-	cacheStore cache.KeyValueStore,
-	fileStorage storage.FileService,
-	categorizer categorizer.CategorizerService,
-	embeddingService embedding.EmbeddingService,
+	cacheStore cache.Store,
+	fileStorage storage.Service,
+	categorizer categorizer.Service,
+	embeddingService embedding.Service,
 ) *Server {
-	config := util.Config{
+	config := config.Config{
 		Environment:             "testing",
 		EmbeddingServiceAddress: "http://localhost:8000",
 		EmbeddingServiceKey:     "testing",

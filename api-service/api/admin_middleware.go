@@ -2,11 +2,12 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+
 	"net/http"
 )
 
-func adminMiddleware(store db.Store) gin.HandlerFunc {
+func adminMiddleware(store db2.Store) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		payload, err := getPayloadFromContext(ctx)
 		if err != nil {
@@ -19,7 +20,7 @@ func adminMiddleware(store db.Store) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
-		if userRole != db.UserRolesAdmin {
+		if userRole != db2.UserRolesAdmin {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, errorResponse(err))
 			return
 		}

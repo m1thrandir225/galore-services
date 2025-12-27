@@ -11,10 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/dto"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/dto"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
 	"github.com/pgvector/pgvector-go"
 )
 
@@ -82,7 +82,7 @@ func (server *Server) createCocktail(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateCocktailParams{
+	arg := db2.CreateCocktailParams{
 		Name:         requestData.Name,
 		Image:        fileName,
 		Glass:        requestData.Glass,
@@ -152,7 +152,7 @@ func (server *Server) createCocktailMigrate(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateCocktailParams{
+	arg := db2.CreateCocktailParams{
 		Name:         requestData.Name,
 		Image:        fileName,
 		Glass:        requestData.Glass,
@@ -249,17 +249,17 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 		return
 	}
 
-	cachedCocktailJson, cacheErr := server.cache.GetItem(ctx, cocktailId.String())
+	cachedCocktailJson, cacheErr := server.cache.Get(ctx, cocktailId.String())
 	if cacheErr == nil {
 		// Cache Hit, this was recently accessed
-		var cachedCocktailData db.Cocktail
+		var cachedCocktailData db2.Cocktail
 		err = json.Unmarshal([]byte(cachedCocktailJson), &cachedCocktailData)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
 
-		cachedCocktailData.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, cachedCocktailData.Image)
+		cachedCocktailData.Image = util.URLFromFilePath(server.config.HTTPServerAddress, cachedCocktailData.Image)
 		ctx.JSON(http.StatusOK, cachedCocktailData)
 	}
 
@@ -281,14 +281,14 @@ func (server *Server) getCocktail(ctx *gin.Context) {
 			return
 		}
 
-		saveCacheError := server.cache.SaveItem(ctx, cocktail.ID.String(), string(cocktailJson))
+		saveCacheError := server.cache.Save(ctx, cocktail.ID.String(), string(cocktailJson))
 		if saveCacheError != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(saveCacheError))
 			return
 		}
 	}
 
-	cocktail.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, cocktail.Image)
+	cocktail.Image = util.URLFromFilePath(server.config.HTTPServerAddress, cocktail.Image)
 
 	ctx.JSON(http.StatusOK, cocktail)
 }
@@ -342,7 +342,7 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	arg := db.UpdateCocktailParams{
+	arg := db2.UpdateCocktailParams{
 		ID:           cocktailId,
 		Name:         requestData.Name,
 		Instructions: requestData.Instructions,
@@ -358,7 +358,7 @@ func (server *Server) updateCocktail(ctx *gin.Context) {
 		return
 	}
 
-	updated.Image = util.UrlFromFilePath(server.config.HTTPServerAddress, updated.Image)
+	updated.Image = util.URLFromFilePath(server.config.HTTPServerAddress, updated.Image)
 
 	ctx.JSON(http.StatusOK, updated)
 }
@@ -379,7 +379,7 @@ func (server *Server) getCategoriesForCocktail(ctx *gin.Context) {
 
 	categories, err := server.store.GetCategoriesForCocktail(ctx, cocktailId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -406,7 +406,7 @@ func (server *Server) getSimilarCocktails(ctx *gin.Context) {
 
 	cocktails, err := server.store.GetCocktailAndSimilar(ctx, cocktailId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -416,8 +416,8 @@ func (server *Server) getSimilarCocktails(ctx *gin.Context) {
 }
 
 type Section struct {
-	Cocktails []db.Cocktail `json:"cocktails"`
-	Category  db.Category   `json:"category"`
+	Cocktails []db2.Cocktail `json:"cocktails"`
+	Category  db2.Category   `json:"category"`
 }
 
 func (server *Server) getHomescreenForUser(ctx *gin.Context) {
@@ -436,7 +436,7 @@ func (server *Server) getHomescreenForUser(ctx *gin.Context) {
 
 	data, err := server.store.GetHomescreenForUser(ctx, userId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -446,11 +446,11 @@ func (server *Server) getHomescreenForUser(ctx *gin.Context) {
 	sections := make([]Section, 0)
 	for _, row := range data {
 		cocktailIds := row.Cocktails
-		cocktails := make([]db.Cocktail, 0)
+		cocktails := make([]db2.Cocktail, 0)
 		for _, cocktailId := range cocktailIds {
 			cocktail, cErr := server.store.GetCocktail(ctx, cocktailId)
 			if cErr != nil {
-				if errors.Is(cErr, db.ErrRecordNotFound) {
+				if errors.Is(cErr, db2.ErrRecordNotFound) {
 					continue
 				}
 				ctx.JSON(http.StatusInternalServerError, errorResponse(cErr))
@@ -461,7 +461,7 @@ func (server *Server) getHomescreenForUser(ctx *gin.Context) {
 
 		category, cgErr := server.store.GetCategoryById(ctx, row.CategoryID)
 		if cgErr != nil {
-			if errors.Is(cgErr, db.ErrRecordNotFound) {
+			if errors.Is(cgErr, db2.ErrRecordNotFound) {
 				ctx.JSON(http.StatusNotFound, errorResponse(cgErr))
 				return
 			}

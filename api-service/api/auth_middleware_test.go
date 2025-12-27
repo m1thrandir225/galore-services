@@ -2,15 +2,16 @@ package api
 
 import (
 	"fmt"
-	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"go.uber.org/mock/gomock"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/m1thrandir225/galore-services/token"
 	"github.com/stretchr/testify/require"
 )
 

@@ -2,9 +2,11 @@ package api
 
 import (
 	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
+
 	"net/http"
 )
 

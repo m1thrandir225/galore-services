@@ -5,8 +5,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
-	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
+
+	"github.com/m1thrandir225/galore-services/internal/categorizer/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/mock"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/embedding/mock"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
+
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -15,10 +21,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	mockdb "github.com/m1thrandir225/galore-services/db/mock"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -338,11 +340,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateFlavourParams{
+				arg := db2.UpdateFlavourParams{
 					ID:   flavour.ID,
 					Name: flavourWithNewName.Name,
 				}
-				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db.Flavour{
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db2.Flavour{
 					Name:      flavourWithNewName.Name,
 					ID:        flavour.ID,
 					CreatedAt: flavour.CreatedAt,
@@ -360,11 +362,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateFlavourParams{
+				arg := db2.UpdateFlavourParams{
 					ID:   flavour.ID,
 					Name: flavourWithNewName.Name,
 				}
-				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db.Flavour{
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db2.Flavour{
 					Name:      flavourWithNewName.Name,
 					ID:        flavour.ID,
 					CreatedAt: flavour.CreatedAt,
@@ -382,11 +384,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateFlavourParams{
+				arg := db2.UpdateFlavourParams{
 					ID:   flavour.ID,
 					Name: flavourWithNewName.Name,
 				}
-				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db.Flavour{
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db2.Flavour{
 					Name:      flavourWithNewName.Name,
 					ID:        flavour.ID,
 					CreatedAt: flavour.CreatedAt,
@@ -406,11 +408,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateFlavourParams{
+				arg := db2.UpdateFlavourParams{
 					ID:   flavour.ID,
 					Name: flavourWithNewName.Name,
 				}
-				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db.Flavour{
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db2.Flavour{
 					Name:      flavourWithNewName.Name,
 					ID:        flavour.ID,
 					CreatedAt: flavour.CreatedAt,
@@ -430,11 +432,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateFlavourParams{
+				arg := db2.UpdateFlavourParams{
 					ID:   flavour.ID,
 					Name: flavourWithNewName.Name,
 				}
-				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db.Flavour{
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(1).Return(db2.Flavour{
 					Name:      flavourWithNewName.Name,
 					ID:        flavour.ID,
 					CreatedAt: flavour.CreatedAt,
@@ -453,11 +455,11 @@ func TestUpdateFlavourApi(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateFlavourParams{
+				arg := db2.UpdateFlavourParams{
 					ID:   flavour.ID,
 					Name: flavourWithNewName.Name,
 				}
-				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db.Flavour{
+				store.EXPECT().UpdateFlavour(gomock.Any(), arg).Times(0).Return(db2.Flavour{
 					Name:      flavourWithNewName.Name,
 					ID:        flavour.ID,
 					CreatedAt: flavour.CreatedAt,
@@ -498,7 +500,7 @@ func TestUpdateFlavourApi(t *testing.T) {
 
 func TestGetAllFlavoursApi(t *testing.T) {
 	user := uuid.New()
-	var flavours []db.Flavour
+	var flavours []db2.Flavour
 	for i := 1; i <= 10; i++ {
 		flavour := randomFlavour(t)
 		flavours = append(flavours, flavour)
@@ -586,11 +588,11 @@ func TestGetAllFlavoursApi(t *testing.T) {
 	}
 }
 
-func requireBodyMatchFlavour(t *testing.T, body *bytes.Buffer, flavour db.Flavour) {
+func requireBodyMatchFlavour(t *testing.T, body *bytes.Buffer, flavour db2.Flavour) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var reqFlavour db.Flavour
+	var reqFlavour db2.Flavour
 	err = json.Unmarshal(data, &reqFlavour)
 	require.NoError(t, err)
 
@@ -599,8 +601,8 @@ func requireBodyMatchFlavour(t *testing.T, body *bytes.Buffer, flavour db.Flavou
 	require.WithinDuration(t, flavour.CreatedAt, reqFlavour.CreatedAt, time.Millisecond)
 }
 
-func randomFlavour(t *testing.T) db.Flavour {
-	return db.Flavour{
+func randomFlavour(t *testing.T) db2.Flavour {
+	return db2.Flavour{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		Name:      util.RandomString(10),

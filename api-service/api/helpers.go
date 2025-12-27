@@ -2,9 +2,10 @@ package api
 
 import (
 	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/m1thrandir225/galore-services/token"
+	"github.com/m1thrandir225/galore-services/internal/token"
 )
 
 type UriId struct {

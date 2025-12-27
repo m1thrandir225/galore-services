@@ -5,10 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
-	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
-	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -16,12 +12,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	mockdb "github.com/m1thrandir225/galore-services/db/mock"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
+	"github.com/m1thrandir225/galore-services/internal/categorizer/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/mock"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/embedding/mock"
+	"github.com/m1thrandir225/galore-services/internal/security"
+	"github.com/m1thrandir225/galore-services/internal/storage/mock"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -77,7 +78,7 @@ func TestGetUserDetailsApi(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
-					Times(1).Return(db.User{}, sql.ErrNoRows)
+					Times(1).Return(db2.User{}, sql.ErrNoRows)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -93,7 +94,7 @@ func TestGetUserDetailsApi(t *testing.T) {
 				store.EXPECT().
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(db.User{}, sql.ErrConnDone)
+					Return(db2.User{}, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -276,7 +277,7 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 		return
 	}
 
-	arg := db.UpdateUserInformationParams{
+	arg := db2.UpdateUserInformationParams{
 		ID:        user.ID,
 		Name:      "James Brown",
 		AvatarUrl: avatarUrl,
@@ -308,7 +309,7 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 				gomock.InOrder(
 					store.EXPECT().GetUser(gomock.Any(), arg.ID).Times(1).Return(user, nil),
 					//storage.EXPECT().ReplaceFile(gomock.Any(), gomock.Any()).Times(1).Return("", nil),
-					store.EXPECT().UpdateUserInformation(gomock.Any(), arg).Times(1).Return(db.UpdateUserInformationRow{}, nil),
+					store.EXPECT().UpdateUserInformation(gomock.Any(), arg).Times(1).Return(db2.UpdateUserInformationRow{}, nil),
 				)
 
 			},
@@ -332,7 +333,7 @@ func TestUpdateUserDetailsApi(t *testing.T) {
 				gomock.InOrder(
 					store.EXPECT().GetUser(gomock.Any(), arg.ID).Times(1).Return(user, nil),
 					//storage.EXPECT().ReplaceFile(gomock.Any(), gomock.Any()).Times(1).Return("", nil),
-					store.EXPECT().UpdateUserInformation(gomock.Any(), arg).Times(1).Return(db.UpdateUserInformationRow{}, nil),
+					store.EXPECT().UpdateUserInformation(gomock.Any(), arg).Times(1).Return(db2.UpdateUserInformationRow{}, nil),
 				)
 
 			},
@@ -456,7 +457,7 @@ func TestUpdateUserPasswordApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPasswordParams{
+				arg := db2.UpdateUserPasswordParams{
 					ID:       user.ID,
 					Password: util.RandomString(10),
 				}
@@ -536,7 +537,7 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPushNotificationsParams{
+				arg := db2.UpdateUserPushNotificationsParams{
 					ID:                       user.ID,
 					EnabledPushNotifications: true,
 				}
@@ -559,7 +560,7 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPushNotificationsParams{
+				arg := db2.UpdateUserPushNotificationsParams{
 					ID:                       user.ID,
 					EnabledPushNotifications: true,
 				}
@@ -617,7 +618,7 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPushNotificationsParams{
+				arg := db2.UpdateUserPushNotificationsParams{
 					ID:                       user.ID,
 					EnabledPushNotifications: true,
 				}
@@ -640,7 +641,7 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPushNotificationsParams{
+				arg := db2.UpdateUserPushNotificationsParams{
 					ID:                       user.ID,
 					EnabledPushNotifications: true,
 				}
@@ -663,7 +664,7 @@ func TestUpdateUserPushNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserPushNotificationsParams{
+				arg := db2.UpdateUserPushNotificationsParams{
 					ID:                       user.ID,
 					EnabledPushNotifications: true,
 				}
@@ -729,7 +730,7 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserEmailNotificationsParams{
+				arg := db2.UpdateUserEmailNotificationsParams{
 					ID:                        user.ID,
 					EnabledEmailNotifications: true,
 				}
@@ -751,7 +752,7 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserEmailNotificationsParams{
+				arg := db2.UpdateUserEmailNotificationsParams{
 					ID:                        user.ID,
 					EnabledEmailNotifications: true,
 				}
@@ -772,7 +773,7 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserEmailNotificationsParams{
+				arg := db2.UpdateUserEmailNotificationsParams{
 					ID:                        user.ID,
 					EnabledEmailNotifications: true,
 				}
@@ -795,7 +796,7 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserEmailNotificationsParams{
+				arg := db2.UpdateUserEmailNotificationsParams{
 					ID:                        user.ID,
 					EnabledEmailNotifications: true,
 				}
@@ -818,7 +819,7 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserEmailNotificationsParams{
+				arg := db2.UpdateUserEmailNotificationsParams{
 					ID:                        user.ID,
 					EnabledEmailNotifications: true,
 				}
@@ -864,16 +865,16 @@ func TestUpdateUserEmailNotificationsApi(t *testing.T) {
 	}
 }
 
-func randomUser(t *testing.T, password string) db.User {
+func randomUser(t *testing.T, password string) db2.User {
 	var date pgtype.Date
 
 	err := date.Scan(util.RandomDate())
 	require.NoError(t, err)
-	hashedPassword, err := util.HashPassowrd(password)
+	hashedPassword, err := security.HashPassword(password)
 	require.NoError(t, err)
 
 	id := uuid.New()
-	return db.User{
+	return db2.User{
 		ID:                        id,
 		Name:                      util.RandomString(10),
 		Email:                     util.RandomEmail(),
@@ -886,11 +887,11 @@ func randomUser(t *testing.T, password string) db.User {
 	}
 }
 
-func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, expectedUser db.User) {
+func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, expectedUser db2.User) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var reqUser db.User
+	var reqUser db2.User
 	err = json.Unmarshal(data, &reqUser)
 
 	require.NoError(t, err)
