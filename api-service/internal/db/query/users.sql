@@ -15,7 +15,7 @@ INSERT INTO users (
   $5,
   $6,
    $7
-) RETURNING id, name, email, avatar_url, birthday, enabled_push_notifications, enabled_email_notifications, created_at;
+) RETURNING *;
 
 -- name: GetUser :one 
 SELECT * FROM users 

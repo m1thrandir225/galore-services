@@ -3,15 +3,15 @@ package util
 import (
 	"fmt"
 
-	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
-	"github.com/m1thrandir225/galore-services/internal/dto"
+	db "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/db/types"
 )
 
-func ConvertPromptsToAiInstructionDto(prompts []dto.PromptInstruction, imageRequests []db.GenerateImageRequest) (dto.AiInstructionDto, error) {
+func ConvertPromptsToAiInstructionDto(prompts []types.PromptInstruction, imageRequests []db.GenerateImageRequest) (types.AiInstructionDto, error) {
 	if len(prompts) != (len(imageRequests) - 1) {
-		return dto.AiInstructionDto{}, fmt.Errorf("the two given arrays are not of the same size")
+		return types.AiInstructionDto{}, fmt.Errorf("the two given arrays are not of the same size")
 	}
-	instructions := make([]dto.AiInstructionData, len(prompts))
+	instructions := make([]types.AiInstructionData, len(prompts))
 	localRequests := imageRequests
 	for i, img := range localRequests {
 		if img.IsMain {
@@ -23,15 +23,15 @@ func ConvertPromptsToAiInstructionDto(prompts []dto.PromptInstruction, imageRequ
 	for i, prompt := range prompts {
 		imageUrl := localRequests[i].ImageUrl
 		if imageUrl == nil {
-			return dto.AiInstructionDto{}, fmt.Errorf("the image url is nil")
+			return types.AiInstructionDto{}, fmt.Errorf("the image url is nil")
 		}
 
-		instruction := dto.AiInstructionData{
+		instruction := types.AiInstructionData{
 			Instruction:      prompt.Instruction,
 			InstructionImage: *imageUrl,
 		}
 		instructions[i] = instruction
 	}
 
-	return dto.AiInstructionDto{Instructions: instructions}, nil
+	return types.AiInstructionDto{Instructions: instructions}, nil
 }

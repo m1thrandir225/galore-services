@@ -5,36 +5,33 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/m1thrandir225/galore-services/internal/dto"
-	"github.com/m1thrandir225/galore-services/internal/util"
+	"github.com/m1thrandir225/galore-services/internal/db/types"
+	"github.com/m1thrandir225/galore-services/pkg/shared"
 	"github.com/pgvector/pgvector-go"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomCocktail(t *testing.T) Cocktail {
-	var is_alcoholic pgtype.Bool
+	isAlcoholic := shared.RandomBool()
 
-	is_alcoholic.Scan(util.RandomBool())
-
-	ingredients := dto.IngredientDto{
-		Ingredients: util.RandomIngredients(),
+	ingredients := types.IngredientDTO{
+		Ingredients: shared.RandomIngredients(10),
 	}
 
-	instructions := util.RandomString(466)
+	instructions := shared.RandomString(466)
 
-	floatArr := util.RandomFloatArray(0.1, 1.0, 768)
+	floatArr := shared.RandomFloatArray(0.1, 1.0, 768)
 
 	embedding := pgvector.NewVector(floatArr)
 
 	arg := CreateCocktailParams{
-		Name:         util.RandomString(40),
-		Image:        util.RandomString(80),
-		Glass:        util.RandomString(12),
+		Name:         shared.RandomString(40),
+		Image:        shared.RandomString(80),
+		Glass:        shared.RandomString(12),
 		Instructions: instructions,
 		Ingredients:  ingredients,
-		IsAlcoholic:  is_alcoholic,
-		Embedding:    embedding,
+		IsAlcoholic:  &isAlcoholic,
+		Embedding:    &embedding,
 	}
 
 	cocktail, err := testStore.CreateCocktail(context.Background(), arg)
@@ -91,21 +88,18 @@ func TestDeleteCocktail(t *testing.T) {
 func TestUpdateCocktail(t *testing.T) {
 	cocktail := createRandomCocktail(t)
 
-	var isAlcoholic pgtype.Bool
-	ingredients := dto.IngredientDto{
-		Ingredients: util.RandomIngredients(),
+	ingredients := types.IngredientDTO{
+		Ingredients: shared.RandomIngredients(10),
 	}
 
-	instructions := util.RandomString(512)
-	err := isAlcoholic.Scan(!cocktail.IsAlcoholic.Bool)
-	require.NoError(t, err)
+	instructions := shared.RandomString(512)
 
 	arg := UpdateCocktailParams{
 		ID:           cocktail.ID,
-		Name:         util.RandomString(48),
-		Glass:        util.RandomString(12),
-		IsAlcoholic:  isAlcoholic,
-		Image:        util.RandomString(80),
+		Name:         shared.RandomString(48),
+		Glass:        shared.RandomString(12),
+		IsAlcoholic:  cocktail.IsAlcoholic,
+		Image:        shared.RandomString(80),
 		Instructions: instructions,
 		Ingredients:  ingredients,
 	}
@@ -136,5 +130,5 @@ func TestUpdateCocktail(t *testing.T) {
 }
 
 func TestGetAllCocktails(t *testing.T) {
-	//TODO
+	// TODO
 }

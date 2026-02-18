@@ -9,8 +9,23 @@
           "nullable": true
         },
         {
+          "db_type": "timestamptz",
+          "go_type": "time.Time",
+          "nullable": false
+        },
+        {
           "db_type": "uuid",
           "go_type": "github.com/google/uuid.UUID"
+        },
+        {
+          "db_type": "date",
+          "go_type": "time.Time",
+          "nullable": true
+        },
+        {
+          "db_type": "date",
+          "go_type": "time.Time",
+          "nullable": false
         }
       ]
     }
@@ -33,40 +48,40 @@
             {
               "column": "created_cocktails.instructions",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/internal/dto",
-                "package": "dto",
+                "import": "github.com/m1thrandir225/galore-services/internal/db/types",
+                "package": "types",
                 "type": "AiInstructionDto"
               }
             },
             {
               "column": "created_cocktails.ingredients",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/internal/dto",
-                "package": "dto",
+                "import": "github.com/m1thrandir225/galore-services/internal/db/types",
+                "package": "types",
                 "type": "IngredientDto"
               }
             },
             {
               "column": "generated_cocktails.instructions",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/internal/dto",
-                "package": "dto",
+                "import": "github.com/m1thrandir225/galore-services/internal/db/types",
+                "package": "types",
                 "type": "AiInstructionDto"
               }
             },
             {
               "column": "generated_cocktails.ingredients",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/internal/dto",
-                "package": "dto",
+                "import": "github.com/m1thrandir225/galore-services/internal/db/types",
+                "package": "types",
                 "type": "IngredientDto"
               }
             },
             {
               "column": "cocktails.ingredients",
               "go_type": {
-                "import": "github.com/m1thrandir225/galore-services/internal/dto",
-                "package": "dto",
+                "import": "github.com/m1thrandir225/galore-services/internal/db/types",
+                "package": "types",
                 "type": "IngredientDto"
               }
             }

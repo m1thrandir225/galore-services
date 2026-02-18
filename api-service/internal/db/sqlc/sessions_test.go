@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/m1thrandir225/galore-services/internal/util"
+	"github.com/m1thrandir225/galore-services/pkg/shared"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,9 +13,9 @@ func createRandomSession(userEmail string, t *testing.T) Session {
 	arg := CreateSessionParams{
 		ID:           uuid.New(),
 		Email:        userEmail,
-		RefreshToken: util.RandomString(5),
-		UserAgent:    util.RandomString(8),
-		ClientIp:     util.RandomString(11),
+		RefreshToken: shared.RandomString(5),
+		UserAgent:    shared.RandomString(8),
+		ClientIp:     shared.RandomString(11),
 		IsBlocked:    false,
 	}
 
