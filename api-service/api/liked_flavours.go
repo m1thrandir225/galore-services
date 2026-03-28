@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
 )
 
 type LikeFlavoursRequest struct {
@@ -33,7 +33,7 @@ func (server *Server) likeFlavours(ctx *gin.Context) {
 		flavourIds = append(flavourIds, uuid.MustParse(flavourId))
 	}
 
-	arg := db.LikeFlavoursParams{
+	arg := db2.LikeFlavoursParams{
 		Flavourids: flavourIds,
 		Userid:     userId,
 	}
@@ -74,7 +74,7 @@ func (server *Server) likeFlavour(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.LikeFlavourParams{
+	arg := db2.LikeFlavourParams{
 		FlavourID: flavourId,
 		UserID:    payload.UserId,
 	}
@@ -110,7 +110,7 @@ func (server *Server) getLikedFlavour(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.GetLikedFlavourParams{
+	arg := db2.GetLikedFlavourParams{
 		UserID:    payload.UserId,
 		FlavourID: flavourId,
 	}
@@ -142,8 +142,8 @@ func (server *Server) getUserLikedFlavours(ctx *gin.Context) {
 	flavours, err := server.store.GetUserLikedFlavours(ctx, userId)
 
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
-			ctx.JSON(http.StatusOK, []db.Flavour{})
+		if errors.Is(err, db2.ErrRecordNotFound) {
+			ctx.JSON(http.StatusOK, []db2.Flavour{})
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -174,7 +174,7 @@ func (server *Server) unlikeFlavour(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.UnlikeFlavourParams{
+	arg := db2.UnlikeFlavourParams{
 		FlavourID: flavourId,
 		UserID:    payload.UserId,
 	}

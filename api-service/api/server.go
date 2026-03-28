@@ -2,56 +2,55 @@ package api
 
 import (
 	"fmt"
-	"github.com/m1thrandir225/galore-services/cocktail_gen"
-	"github.com/m1thrandir225/galore-services/image_gen"
-	"github.com/m1thrandir225/galore-services/notifications"
 	"log"
 
-	"github.com/m1thrandir225/galore-services/cache"
-	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
-	embedding "github.com/m1thrandir225/galore-services/embedding_service"
-	"github.com/m1thrandir225/galore-services/mail"
-	"github.com/m1thrandir225/galore-services/scheduler"
-	"github.com/m1thrandir225/galore-services/storage"
-
 	"github.com/gin-gonic/gin"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
+	"github.com/m1thrandir225/galore-services/internal/cache"
+	"github.com/m1thrandir225/galore-services/internal/categorizer"
+	"github.com/m1thrandir225/galore-services/internal/config"
+	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/embedding"
+	"github.com/m1thrandir225/galore-services/internal/image"
+	"github.com/m1thrandir225/galore-services/internal/mail"
+	"github.com/m1thrandir225/galore-services/internal/notifications"
+	"github.com/m1thrandir225/galore-services/internal/recipe"
+	"github.com/m1thrandir225/galore-services/internal/storage"
+	token2 "github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/scheduler"
 )
 
 type Server struct {
-	config              util.Config
+	config              config.Config
 	store               db.Store
 	router              *gin.Engine
-	tokenMaker          token.Maker
-	storage             storage.FileService
-	cache               cache.KeyValueStore
-	embedding           embedding.EmbeddingService
-	categorizer         categorizer.CategorizerService
+	tokenMaker          token2.Maker
+	storage             storage.Service
+	cache               cache.Store
+	embedding           embedding.Service
+	categorizer         categorizer.Service
 	scheduler           scheduler.SchedulerService
-	mailService         mail.MailService
-	notificationService notifications.NotificationService
-	cocktailGenerator   cocktail_gen.CocktailGenerator
-	imageGenerator      image_gen.ImageGenerator
+	mailService         mail.Service
+	notificationService notifications.Service
+	cocktailGenerator   recipe.Generator
+	imageGenerator      image.Generator
 }
 
 func NewServer(
-	config util.Config,
+	config config.Config,
 	store db.Store,
-	storageService storage.FileService,
-	cacheStore cache.KeyValueStore,
-	embedding embedding.EmbeddingService,
-	categorizer categorizer.CategorizerService,
+	storageService storage.Service,
+	cacheStore cache.Store,
+	embedding embedding.Service,
+	categorizer categorizer.Service,
 	scheduler scheduler.SchedulerService,
-	mailService mail.MailService,
-	notificationService notifications.NotificationService,
-	cocktailGenerator cocktail_gen.CocktailGenerator,
-	imageGenerator image_gen.ImageGenerator,
+	mailService mail.Service,
+	notificationService notifications.Service,
+	cocktailGenerator recipe.Generator,
+	imageGenerator image.Generator,
 
 ) (*Server, error) {
 	log.Println(config)
-	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	tokenMaker, err := token2.NewPASETOMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}

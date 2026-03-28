@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
 )
 
 type CreateCategoryRequest struct {
@@ -25,8 +25,8 @@ type UpdateCategoryRequest struct {
 }
 
 type GetCocktailsByCategoryResponse struct {
-	Category  db.Category                     `json:"category"`
-	Cocktails []db.GetCocktailsForCategoryRow `json:"cocktails"`
+	Category  db2.Category                     `json:"category"`
+	Cocktails []db2.GetCocktailsForCategoryRow `json:"cocktails"`
 }
 
 func (server *Server) getAllCategories(ctx *gin.Context) {
@@ -92,7 +92,7 @@ func (server *Server) createCategory(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateCategoryParams{
+	arg := db2.CreateCategoryParams{
 		Name: requestData.Name,
 		Tag:  requestData.Tag,
 	}
@@ -143,7 +143,7 @@ func (server *Server) getCategoryByTag(ctx *gin.Context) {
 
 	category, err := server.store.GetCategoryByTag(ctx, requestData.Tag)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -174,7 +174,7 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.UpdateCategoryParams{
+	arg := db2.UpdateCategoryParams{
 		ID:   categoryId,
 		Name: requestData.Name,
 		Tag:  requestData.Tag,
@@ -240,7 +240,7 @@ func (server *Server) getCocktailsForCategory(ctx *gin.Context) {
 
 	cocktails, err := server.store.GetCocktailsForCategory(ctx, categoryId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}

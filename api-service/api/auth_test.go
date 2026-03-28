@@ -13,11 +13,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	mockdb "github.com/m1thrandir225/galore-services/db/mock"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
+	"github.com/m1thrandir225/galore-services/internal/db/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/storage/mock"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )

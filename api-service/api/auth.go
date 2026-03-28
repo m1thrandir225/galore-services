@@ -4,9 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/m1thrandir225/galore-services/mail"
-	"github.com/m1thrandir225/galore-services/security"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -14,8 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/util"
+	"github.com/jackc/pgx/v5/pgtype"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/mail"
+	security2 "github.com/m1thrandir225/galore-services/internal/security"
+	util2 "github.com/m1thrandir225/galore-services/internal/util"
 )
 
 type registerUserRequest struct {
@@ -27,12 +27,12 @@ type registerUserRequest struct {
 }
 
 type registerUserResponse struct {
-	User                  db.CreateUserRow `json:"user"`
-	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
-	AccessToken           string           `json:"access_token"`
-	RefreshToken          string           `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time        `json:"refresh_token_expires_at"`
-	SessionID             uuid.UUID        `json:"session_id"`
+	User                  db2.CreateUserRow `json:"user"`
+	AccessTokenExpiresAt  time.Time         `json:"access_token_expires_at"`
+	AccessToken           string            `json:"access_token"`
+	RefreshToken          string            `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time         `json:"refresh_token_expires_at"`
+	SessionID             uuid.UUID         `json:"session_id"`
 }
 
 type loginUserRequest struct {
@@ -50,12 +50,12 @@ type refreshTokenResponse struct {
 }
 
 type loginUserResponse struct {
-	User                  db.CreateUserRow `json:"user"`
-	RefreshToken          string           `json:"refresh_token"`
-	AccessToken           string           `json:"access_token"`
-	RefreshTokenExpiresAt time.Time        `json:"refresh_token_expires_at"`
-	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
-	SessionID             uuid.UUID        `json:"session_id"`
+	User                  db2.CreateUserRow `json:"user"`
+	RefreshToken          string            `json:"refresh_token"`
+	AccessToken           string            `json:"access_token"`
+	RefreshTokenExpiresAt time.Time         `json:"refresh_token_expires_at"`
+	AccessTokenExpiresAt  time.Time         `json:"access_token_expires_at"`
+	SessionID             uuid.UUID         `json:"session_id"`
 }
 
 type logoutRequest struct {
@@ -81,8 +81,8 @@ type VerifyOTPRequest struct {
 }
 
 type VerifyOTPResponse struct {
-	ResetPasswordRequest db.ResetPasswordRequest `json:"reset_password_request"`
-	Email                string                  `json:"email"`
+	ResetPasswordRequest db2.ResetPasswordRequest `json:"reset_password_request"`
+	Email                string                   `json:"email"`
 }
 
 type ResetPasswordRequest struct {
@@ -98,19 +98,19 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		ctx.JSON(400, errorResponse(err))
 		return
 	}
-	dbDate, err := util.TimeToDbDate(requestData.Birthday)
+	dbDate, err := util2.TimeToDbDate(requestData.Birthday)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	hashedPassword, err := util.HashPassowrd(requestData.Password)
+	hashedPassword, err := security2.HashPassword(requestData.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	imageData, err := util.BytesFromFile(requestData.AvatarUrl)
+	imageData, err := util2.BytesFromFile(requestData.AvatarUrl)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -122,13 +122,13 @@ func (server *Server) registerUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
-	otpSecret, err := security.GenerateOTPSecret()
+	otpSecret, err := security2.GenerateOTPSecret()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	args := db.CreateUserParams{
+	args := db2.CreateUserParams{
 		ID:         userId,
 		Email:      requestData.Email,
 		Birthday:   dbDate,
@@ -144,7 +144,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
-	err = server.store.CreateHotpCounter(ctx, db.CreateHotpCounterParams{
+	err = server.store.CreateHotpCounter(ctx, db2.CreateHotpCounterParams{
 		UserID:  newEntry.ID,
 		Counter: 0,
 	})
@@ -166,7 +166,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		return
 	}
 
-	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+	session, err := server.store.CreateSession(ctx, db2.CreateSessionParams{
 		ID:           refreshTokenPayload.ID,
 		Email:        args.Email,
 		RefreshToken: refreshToken,
@@ -184,7 +184,7 @@ func (server *Server) registerUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 
-	server.cache.SaveItem(ctx, args.Email, string(b))
+	server.cache.Save(ctx, args.Email, string(b))
 
 	if err != nil {
 		log.Println(err.Error())
@@ -235,7 +235,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	err = util.ComparePassword(user.Password, requestData.Password)
+	err = security2.ComparePassword(user.Password, requestData.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
@@ -253,7 +253,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+	session, err := server.store.CreateSession(ctx, db2.CreateSessionParams{
 		ID:           refreshTokenPayload.ID,
 		Email:        requestData.Email,
 		RefreshToken: refreshToken,
@@ -269,7 +269,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	response := loginUserResponse{
 		SessionID: session.ID,
-		User: db.CreateUserRow{
+		User: db2.CreateUserRow{
 			ID:                        user.ID,
 			Name:                      user.Name,
 			Email:                     user.Email,
@@ -355,7 +355,7 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 
 	user, err := server.store.GetUserByEmail(ctx, reqData.Email)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("user not found")))
 			return
 		}
@@ -364,8 +364,8 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 	}
 	currentUserCounter, err := server.store.GetCurrentCounter(ctx, user.ID)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
-			err = server.store.CreateHotpCounter(ctx, db.CreateHotpCounterParams{
+		if errors.Is(err, db2.ErrRecordNotFound) {
+			err = server.store.CreateHotpCounter(ctx, db2.CreateHotpCounterParams{
 				UserID:  user.ID,
 				Counter: 0,
 			})
@@ -379,7 +379,7 @@ func (server *Server) forgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	otpCode, err := security.GenerateHOTP(user.HotpSecret, uint64(currentUserCounter))
+	otpCode, err := security2.GenerateHOTP(user.HotpSecret, uint64(currentUserCounter))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error while generating otp code")))
 		return
@@ -405,7 +405,7 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 
 	user, err := server.store.GetUserByEmail(ctx, reqData.Email)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("user not found")))
 			return
 		}
@@ -416,9 +416,9 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 	currentUserCounter, err := server.store.GetCurrentCounter(ctx, user.ID)
 
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			//No counter is found initialize a new one
-			err = server.store.CreateHotpCounter(ctx, db.CreateHotpCounterParams{
+			err = server.store.CreateHotpCounter(ctx, db2.CreateHotpCounterParams{
 				UserID:  user.ID,
 				Counter: 0,
 			})
@@ -436,7 +436,7 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 
 	for lookAhead := uint64(0); lookAhead < 5; lookAhead++ {
 		tC := uint64(currentUserCounter) + lookAhead
-		isValid, vaErr := security.ValidateHOTP(user.HotpSecret, reqData.OTP, tC)
+		isValid, vaErr := security2.ValidateHOTP(user.HotpSecret, reqData.OTP, tC)
 		if vaErr != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("otp verification failed")))
 			return
@@ -464,7 +464,7 @@ func (server *Server) verifyOTP(ctx *gin.Context) {
 		Valid:            true,
 	}
 
-	arg := db.CreateResetPasswordRequestParams{
+	arg := db2.CreateResetPasswordRequestParams{
 		ValidUntil: pgValidUntil,
 		UserID:     user.ID,
 	}
@@ -503,7 +503,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 
 	resetPasswordRequest, err := server.store.GetResetPasswordRequest(ctx, resetPasswordRequestId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("reset password request not found")))
 			return
 		}
@@ -514,7 +514,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 	user, err := server.store.GetUser(ctx, resetPasswordRequest.UserID)
 
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("required user not found")))
 			return
 		}
@@ -536,13 +536,13 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	newPassword, err := util.HashPassowrd(reqData.NewPassword)
+	newPassword, err := security2.HashPassword(reqData.NewPassword)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(errors.New("error while hashing password")))
 		return
 	}
 
-	arg := db.UpdateUserPasswordParams{
+	arg := db2.UpdateUserPasswordParams{
 		ID:       user.ID,
 		Password: newPassword,
 	}
@@ -559,7 +559,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		InfinityModifier: 0,
 	}
 
-	updatePasswordRequestArg := db.UpdateResetPasswordRequestParams{
+	updatePasswordRequestArg := db2.UpdateResetPasswordRequestParams{
 		ID:            resetPasswordRequest.ID,
 		PasswordReset: true,
 		ValidUntil:    pgTypeTimeStamp,

@@ -3,13 +3,15 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/util"
 	"log"
 	"mime/multipart"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/security"
+	util2 "github.com/m1thrandir225/galore-services/internal/util"
 )
 
 type UpdateUserInformationRequest struct {
@@ -90,7 +92,7 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	err = server.store.DeleteUser(ctx, userId)
 
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -128,14 +130,14 @@ func (server *Server) updateUserPassword(ctx *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := util.HashPassowrd(requestData.NewPassword)
+	hashedPassword, err := security.HashPassword(requestData.NewPassword)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	arg := db.UpdateUserPasswordParams{
+	arg := db2.UpdateUserPasswordParams{
 		ID:       userId,
 		Password: hashedPassword,
 	}
@@ -191,7 +193,7 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 		return
 	}
 
-	newBirthday, err := util.TimeToDbDate(requestData.Birthday)
+	newBirthday, err := util2.TimeToDbDate(requestData.Birthday)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -199,7 +201,7 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 	if requestData.AvatarUrl == nil {
 		avatarFilePath = userInformation.AvatarUrl
 	} else {
-		newAvatarData, err2 := util.BytesFromFile(requestData.AvatarUrl)
+		newAvatarData, err2 := util2.BytesFromFile(requestData.AvatarUrl)
 		if err2 != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -213,7 +215,7 @@ func (server *Server) updateUserInformation(ctx *gin.Context) {
 		avatarFilePath = newFilePath
 	}
 
-	arg := db.UpdateUserInformationParams{
+	arg := db2.UpdateUserInformationParams{
 		ID:        userId,
 		Birthday:  newBirthday,
 		AvatarUrl: avatarFilePath,
@@ -256,7 +258,7 @@ func (server *Server) updateUserPushNotifications(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.UpdateUserPushNotificationsParams{
+	arg := db2.UpdateUserPushNotificationsParams{
 		ID:                       userId,
 		EnabledPushNotifications: *requestData.Enabled,
 	}
@@ -300,7 +302,7 @@ func (server *Server) updateUserEmailNotifications(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.UpdateUserEmailNotificationsParams{
+	arg := db2.UpdateUserEmailNotificationsParams{
 		ID:                        userId,
 		EnabledEmailNotifications: *requestData.Enabled,
 	}

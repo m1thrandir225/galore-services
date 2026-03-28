@@ -1,13 +1,15 @@
-FROM python:3.9
+FROM python:3.14-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN pip install --upgrade setuptools[core]
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+COPY ./pyproject.toml ./uv.lock ./ 
 
-COPY . .
+RUN uv pip install --system -r pyproject.toml 
+
+COPY . . 
+
 EXPOSE 8003
 
-CMD ["fastapi", "run", "app.py", "--proxy-headers","--port", "8003"]
+CMD ["fastapi", "run", "--host", "0.0.0.0", "--port", "8003", "--proxy-headers"]

@@ -2,12 +2,13 @@ package api
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/m1thrandir225/galore-services/cocktail_gen"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/recipe"
 )
 
 type CreateGenerateCocktailRequest struct {
@@ -31,7 +32,7 @@ func (server *Server) getUserGeneratedCocktails(ctx *gin.Context) {
 
 	generatedCocktails, err := server.store.GetUserGeneratedCocktails(ctx, userId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -56,7 +57,7 @@ func (server *Server) getGeneratedCocktail(ctx *gin.Context) {
 
 	cocktail, err := server.store.GetGeneratedCocktail(ctx, cocktailId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -79,12 +80,12 @@ func (server *Server) createGenerateCocktailRequest(ctx *gin.Context) {
 		return
 	}
 	log.Println(payload.UserId)
-	cocktailPrompt := cocktail_gen.GeneratePrompt(reqData.ReferenceFlavours, reqData.ReferenceCocktails)
+	cocktailPrompt := recipe.GeneratePrompt(reqData.ReferenceFlavours, reqData.ReferenceCocktails)
 
-	arg := db.CreateGenerateCocktailRequestParams{
+	arg := db2.CreateGenerateCocktailRequestParams{
 		UserID: payload.UserId,
 		Prompt: cocktailPrompt,
-		Status: db.GenerationStatusGeneratingCocktail,
+		Status: db2.GenerationStatusGeneratingCocktail,
 	}
 
 	cocktailRequest, err := server.store.CreateGenerateCocktailRequest(ctx, arg)

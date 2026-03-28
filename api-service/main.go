@@ -2,23 +2,23 @@ package main
 
 import (
 	"context"
-	"github.com/m1thrandir225/galore-services/cocktail_gen"
-	"github.com/m1thrandir225/galore-services/image_gen"
-	"github.com/m1thrandir225/galore-services/notifications"
 	"os"
-
-	"github.com/m1thrandir225/galore-services/cache"
-	categorizer "github.com/m1thrandir225/galore-services/categorizer_service"
-	embedding "github.com/m1thrandir225/galore-services/embedding_service"
-	"github.com/m1thrandir225/galore-services/mail"
-	"github.com/m1thrandir225/galore-services/scheduler"
-	"github.com/m1thrandir225/galore-services/storage"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/m1thrandir225/galore-services/api"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/util"
+	cache2 "github.com/m1thrandir225/galore-services/internal/cache"
+	categorizer2 "github.com/m1thrandir225/galore-services/internal/categorizer"
+	"github.com/m1thrandir225/galore-services/internal/config"
+	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	embedding2 "github.com/m1thrandir225/galore-services/internal/embedding"
+	image2 "github.com/m1thrandir225/galore-services/internal/image"
+	mail2 "github.com/m1thrandir225/galore-services/internal/mail"
+	notifications2 "github.com/m1thrandir225/galore-services/internal/notifications"
+	recipe2 "github.com/m1thrandir225/galore-services/internal/recipe"
+	scheduler2 "github.com/m1thrandir225/galore-services/internal/scheduler"
+	storage2 "github.com/m1thrandir225/galore-services/internal/storage"
+	"github.com/m1thrandir225/galore-services/scheduler"
 	pgxvector "github.com/pgvector/pgvector-go/pgx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -26,21 +26,21 @@ import (
 )
 
 type ginServerConfig struct {
-	Config              util.Config
+	Config              config.Config
 	Store               db.Store
-	Storage             storage.FileService
-	CacheStore          cache.KeyValueStore
-	Embedding           embedding.EmbeddingService
-	Categorizer         categorizer.CategorizerService
+	Storage             storage2.Service
+	CacheStore          cache2.Store
+	Embedding           embedding2.Service
+	Categorizer         categorizer2.Service
 	Scheduler           scheduler.SchedulerService
-	MailService         mail.MailService
-	NotificationService notifications.NotificationService
-	CocktailGenerator   cocktail_gen.CocktailGenerator
-	ImageGenerator      image_gen.ImageGenerator
+	MailService         mail2.Service
+	NotificationService notifications2.Service
+	CocktailGenerator   recipe2.Generator
+	ImageGenerator      image2.Generator
 }
 
 func main() {
-	config, err := util.LoadConfig(".")
+	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot load config")
 	}
@@ -68,7 +68,7 @@ func main() {
 	/**
 	FILE STORE
 	*/
-	localStorage := storage.NewLocalStorage("./public")
+	localStorage := storage2.NewLocalStorage("./public")
 	/**
 	DB STORE
 	*/
@@ -76,35 +76,35 @@ func main() {
 	/**
 	CACHE STORE
 	*/
-	cacheStore := cache.NewRedisStore(
+	cacheStore := cache2.NewRedisStore(
 		config.CacheSource,
 		config.CachePassword,
 	)
 	/**
 	CATEGORIZER SERVICE
 	*/
-	categorizer := categorizer.NewGaloreCategorizer(
+	categorizer := categorizer2.NewGaloreCategorizer(
 		config.CategorizerServiceAddress,
 		config.CategorizerServiceKey,
 	)
 	/**
 	EMBEDDING SERVICE
 	*/
-	embeddingService := embedding.NewGaloreEmbeddingService(
+	embeddingService := embedding2.NewGaloreEmbeddingService(
 		config.EmbeddingServiceAddress,
 		config.EmbeddingServiceKey,
 	)
 	/**
 	BACKGROUND TASK PROCESSOR & SCHEDULER
 	*/
-	scheduler := scheduler.NewGoworkScheduler(
+	scheduler := scheduler2.NewWorkScheduler(
 		"galore-work-pool",
 		config.WorkerSource,
 	)
 	/**
 	COCKTAIL RECIPE GENERATION SERVICE
 	*/
-	cocktailGenerator := cocktail_gen.NewOpenAIPromptGenerator(
+	cocktailGenerator := recipe2.NewOpenAIPromptGenerator(
 		config.OpenAIApiKey,
 		config.OpenAIAssistantID,
 		config.OpenAIThreadURL,
@@ -112,13 +112,13 @@ func main() {
 	/**
 	IMAGE GENERATION SERVICE
 	*/
-	imageGenerator := image_gen.NewStableDiffusionGenerator(
+	imageGenerator := image2.NewStableDiffusionGenerator(
 		config.StableDiffusionURL,
 		config.StableDiffusionApiKey,
 		"16:9",
 		"png",
 	)
-	mailService := mail.NewGenericMail(
+	mailService := mail2.NewGenericMail(
 		config.SMTPHost,
 		config.SMTPPort,
 		config.SMTPUser,
@@ -127,7 +127,7 @@ func main() {
 	/**
 	NOTIFICATION SERVICE
 	*/
-	fcmNotifications, err := notifications.NewFirebaseNotifications(config.FirebaseServiceKey)
+	fcmNotifications, err := notifications2.NewFirebaseNotificator(config.FirebaseServiceKey)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot initialize firebase notifications.")
 	}

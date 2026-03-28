@@ -14,13 +14,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
-	mockdb "github.com/m1thrandir225/galore-services/db/mock"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
-	mockstorage "github.com/m1thrandir225/galore-services/storage/mock"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
+	"github.com/m1thrandir225/galore-services/internal/categorizer/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/mock"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/embedding/mock"
+	"github.com/m1thrandir225/galore-services/internal/storage/mock"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -46,7 +46,7 @@ func TestCreateCategoryApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateCategoryParams{
+				arg := db2.CreateCategoryParams{
 					Name: category.Name,
 					Tag:  category.Tag,
 				}
@@ -70,14 +70,14 @@ func TestCreateCategoryApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateCategoryParams{
+				arg := db2.CreateCategoryParams{
 					Tag:  category.Tag,
 					Name: category.Name,
 				}
 				store.EXPECT().
 					CreateCategory(gomock.Any(), arg).
 					Times(1).
-					Return(db.Category{}, sql.ErrConnDone)
+					Return(db2.Category{}, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -151,7 +151,7 @@ func TestGetCategoriesApi(t *testing.T) {
 	userId, err := uuid.NewRandom()
 	require.NoError(t, err)
 
-	categories := make([]db.Category, 5)
+	categories := make([]db2.Category, 5)
 	for i := range categories {
 		categories[i] = randomCategory(t)
 	}
@@ -298,7 +298,7 @@ func TestGetCategoryByIdApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().GetCategoryById(gomock.Any(), gomock.Any()).Times(1).Return(db.Category{}, sql.ErrNoRows)
+				store.EXPECT().GetCategoryById(gomock.Any(), gomock.Any()).Times(1).Return(db2.Category{}, sql.ErrNoRows)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -311,7 +311,7 @@ func TestGetCategoryByIdApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().GetCategoryById(gomock.Any(), gomock.Any()).Times(1).Return(db.Category{}, sql.ErrConnDone)
+				store.EXPECT().GetCategoryById(gomock.Any(), gomock.Any()).Times(1).Return(db2.Category{}, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -481,12 +481,12 @@ func TestUpdateCategoryApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateCategoryParams{
+				arg := db2.UpdateCategoryParams{
 					ID:   category.ID,
 					Name: updatedName,
 					Tag:  strings.ToLower(updatedName),
 				}
-				store.EXPECT().UpdateCategory(gomock.Any(), arg).Times(1).Return(db.Category{
+				store.EXPECT().UpdateCategory(gomock.Any(), arg).Times(1).Return(db2.Category{
 					ID:        category.ID,
 					Name:      updatedName,
 					Tag:       strings.ToLower(updatedName),
@@ -508,7 +508,7 @@ func TestUpdateCategoryApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().UpdateCategory(gomock.Any(), gomock.Any()).Times(1).Return(db.Category{}, sql.ErrNoRows)
+				store.EXPECT().UpdateCategory(gomock.Any(), gomock.Any()).Times(1).Return(db2.Category{}, sql.ErrNoRows)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -556,7 +556,7 @@ func TestUpdateCategoryApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, userId, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().UpdateCategory(gomock.Any(), gomock.Any()).Times(1).Return(db.Category{}, sql.ErrConnDone)
+				store.EXPECT().UpdateCategory(gomock.Any(), gomock.Any()).Times(1).Return(db2.Category{}, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -594,11 +594,11 @@ func TestUpdateCategoryApi(t *testing.T) {
 	}
 }
 
-func randomCategory(t *testing.T) db.Category {
+func randomCategory(t *testing.T) db2.Category {
 	name := util.RandomString(10)
 	id, err := uuid.NewRandom()
 	require.NoError(t, err)
-	return db.Category{
+	return db2.Category{
 		ID:        id,
 		Name:      name,
 		Tag:       strings.ToLower(name),
@@ -606,11 +606,11 @@ func randomCategory(t *testing.T) db.Category {
 	}
 }
 
-func requireBodyMatchCategory(t *testing.T, body *bytes.Buffer, category db.Category) {
+func requireBodyMatchCategory(t *testing.T, body *bytes.Buffer, category db2.Category) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var reqCategory db.Category
+	var reqCategory db2.Category
 	err = json.Unmarshal(data, &reqCategory)
 
 	require.NoError(t, err)

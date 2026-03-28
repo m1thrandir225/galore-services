@@ -7,11 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
 )
 
 type GetNotificationTypesResponse struct {
-	Types []db.NotificationType `json:"notification_types"`
+	Types []db2.NotificationType `json:"notification_types"`
 }
 
 type UpdateNotificationTypeRequest struct {
@@ -34,7 +34,7 @@ func (server *Server) createNotificationType(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateNotificationTypeParams{
+	arg := db2.CreateNotificationTypeParams{
 		Tag:     requestData.Tag,
 		Content: requestData.Content,
 		Title:   requestData.Title,
@@ -143,7 +143,7 @@ func (server *Server) updateNotificationType(ctx *gin.Context) {
 		return
 	}
 
-	args := db.UpdateNotificationTypeParams{
+	args := db2.UpdateNotificationTypeParams{
 		ID:      id,
 		Title:   requestData.Title,
 		Content: requestData.Content,

@@ -12,14 +12,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	mockcategorize "github.com/m1thrandir225/galore-services/categorizer_service/mock"
-	mockembedding "github.com/m1thrandir225/galore-services/embedding_service/mock"
+	"github.com/m1thrandir225/galore-services/internal/categorizer/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/mock"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/embedding/mock"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
 
 	"github.com/gin-gonic/gin"
-	mockdb "github.com/m1thrandir225/galore-services/db/mock"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/token"
-	"github.com/m1thrandir225/galore-services/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -44,7 +44,7 @@ func TestCreateNotification(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateNotificationParams{
+				arg := db2.CreateNotificationParams{
 					UserID:             notification.UserID,
 					NotificationTypeID: notification.NotificationTypeID,
 				}
@@ -64,7 +64,7 @@ func TestCreateNotification(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateNotificationParams{
+				arg := db2.CreateNotificationParams{
 					UserID:             notification.UserID,
 					NotificationTypeID: notification.NotificationTypeID,
 				}
@@ -81,7 +81,7 @@ func TestCreateNotification(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateNotificationParams{
+				arg := db2.CreateNotificationParams{
 					UserID:             notification.UserID,
 					NotificationTypeID: notification.NotificationTypeID,
 				}
@@ -101,7 +101,7 @@ func TestCreateNotification(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateNotificationParams{
+				arg := db2.CreateNotificationParams{
 					UserID:             notification.UserID,
 					NotificationTypeID: notification.NotificationTypeID,
 				}
@@ -163,11 +163,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserNotificationParams{
+				arg := db2.UpdateUserNotificationParams{
 					ID:     notification.ID,
 					Opened: true,
 				}
-				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(1).Return(db.Notification{
+				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(1).Return(db2.Notification{
 					ID:                 notification.ID,
 					Opened:             true,
 					NotificationTypeID: notification.NotificationTypeID,
@@ -188,11 +188,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserNotificationParams{
+				arg := db2.UpdateUserNotificationParams{
 					ID:     notification.ID,
 					Opened: true,
 				}
-				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(0).Return(db.Notification{}, nil)
+				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(0).Return(db2.Notification{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -208,11 +208,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserNotificationParams{
+				arg := db2.UpdateUserNotificationParams{
 					ID:     notification.ID,
 					Opened: true,
 				}
-				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(0).Return(db.Notification{}, nil)
+				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(0).Return(db2.Notification{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -228,11 +228,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserNotificationParams{
+				arg := db2.UpdateUserNotificationParams{
 					ID:     notification.ID,
 					Opened: true,
 				}
-				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(1).Return(db.Notification{}, sql.ErrNoRows)
+				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(1).Return(db2.Notification{}, sql.ErrNoRows)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -247,11 +247,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserNotificationParams{
+				arg := db2.UpdateUserNotificationParams{
 					ID:     notification.ID,
 					Opened: true,
 				}
-				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(0).Return(db.Notification{}, nil)
+				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(0).Return(db2.Notification{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -267,11 +267,11 @@ func TestUpdateNotificationStatus(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, notification.UserID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.UpdateUserNotificationParams{
+				arg := db2.UpdateUserNotificationParams{
 					ID:     notification.ID,
 					Opened: true,
 				}
-				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(1).Return(db.Notification{}, sql.ErrConnDone)
+				store.EXPECT().UpdateUserNotification(gomock.Any(), arg).Times(1).Return(db2.Notification{}, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -309,10 +309,10 @@ func TestUpdateNotificationStatus(t *testing.T) {
 }
 
 func TestGetUserNotifications(t *testing.T) {
-	var notifications []db.Notification
+	var notifications []db2.Notification
 	user := randomUser(t, util.RandomString(10))
 	for i := 0; i < 10; i++ {
-		notification := db.Notification{
+		notification := db2.Notification{
 			UserID:             user.ID,
 			Opened:             false,
 			ID:                 uuid.New(),
@@ -422,11 +422,11 @@ func TestGetUserNotifications(t *testing.T) {
 	}
 }
 
-func requireBodyMatchNotification(t *testing.T, body *bytes.Buffer, expectedNotification db.Notification) {
+func requireBodyMatchNotification(t *testing.T, body *bytes.Buffer, expectedNotification db2.Notification) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var reqNotification db.Notification
+	var reqNotification db2.Notification
 	err = json.Unmarshal(data, &reqNotification)
 
 	require.NoError(t, err)
@@ -436,11 +436,11 @@ func requireBodyMatchNotification(t *testing.T, body *bytes.Buffer, expectedNoti
 	require.WithinDuration(t, expectedNotification.CreatedAt, reqNotification.CreatedAt, time.Millisecond)
 }
 
-func requireUpdatedNotMatchInitial(t *testing.T, body *bytes.Buffer, expectedNotification db.Notification) {
+func requireUpdatedNotMatchInitial(t *testing.T, body *bytes.Buffer, expectedNotification db2.Notification) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var reqNotification db.Notification
+	var reqNotification db2.Notification
 	err = json.Unmarshal(data, &reqNotification)
 
 	require.NoError(t, err)
@@ -451,11 +451,11 @@ func requireUpdatedNotMatchInitial(t *testing.T, body *bytes.Buffer, expectedNot
 	require.NotEqual(t, expectedNotification.Opened, reqNotification.Opened)
 }
 
-func randomNotification(t *testing.T) db.Notification {
+func randomNotification(t *testing.T) db2.Notification {
 	user := randomUser(t, util.RandomString(10))
 	notificationType := randomNotificationType(t)
 
-	notification := db.Notification{
+	notification := db2.Notification{
 		UserID:             user.ID,
 		NotificationTypeID: notificationType.ID,
 		ID:                 uuid.New(),

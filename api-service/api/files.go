@@ -2,8 +2,9 @@ package api
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 /*

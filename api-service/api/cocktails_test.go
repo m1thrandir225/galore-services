@@ -11,16 +11,16 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	mockcache "github.com/m1thrandir225/galore-services/cache/mock"
-	mockdb "github.com/m1thrandir225/galore-services/db/mock"
-	"github.com/m1thrandir225/galore-services/dto"
-	"github.com/m1thrandir225/galore-services/token"
+	"github.com/m1thrandir225/galore-services/internal/cache/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/mock"
+	"github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	"github.com/m1thrandir225/galore-services/internal/dto"
+	"github.com/m1thrandir225/galore-services/internal/token"
+	"github.com/m1thrandir225/galore-services/internal/util"
 	"github.com/pgvector/pgvector-go"
 	"github.com/stretchr/testify/require"
 
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
-	"github.com/m1thrandir225/galore-services/util"
 )
 
 func TestCreateCocktailApi(t *testing.T) {}
@@ -95,7 +95,7 @@ func randomCocktail(t *testing.T) db.Cocktail {
 		Ingredients: dto.IngredientDto{
 			Ingredients: util.RandomIngredients(),
 		},
-		Instructions: strings.Join(util.RandomInstructions(), ","),
+		Instructions: strings.Join(util.RandomStringArray(10, 32), ","),
 		Glass:        util.RandomString(10),
 		IsAlcoholic:  isAlcoholic,
 		Embedding:    embedding,

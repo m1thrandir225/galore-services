@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
 )
 
 type createCategoryFlavourRequest struct {
@@ -39,7 +39,7 @@ func (server *Server) createCategoryFlavour(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateCategoryFlavourParams{
+	arg := db2.CreateCategoryFlavourParams{
 		CategoryID: categoryId,
 		FlavourID:  flavourId,
 	}
@@ -68,7 +68,7 @@ func (server *Server) getCategoriesBasedOnLikedFlavours(ctx *gin.Context) {
 	}
 	categories, err := server.store.GetCategoriesFromLikedFlavours(ctx, userId)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -96,7 +96,7 @@ func (server *Server) getCategoryFlavour(ctx *gin.Context) {
 
 	categoryFlavour, err := server.store.GetCategoryFlavour(ctx, id)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -124,7 +124,7 @@ func (server *Server) deleteCategoryFlavour(ctx *gin.Context) {
 
 	err = server.store.DeleteCategoryFlavour(ctx, id)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
+		if errors.Is(err, db2.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}

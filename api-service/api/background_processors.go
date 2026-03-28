@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/m1thrandir225/galore-services/dto"
-	"github.com/m1thrandir225/galore-services/util"
 	"log"
 	"net/http"
 
-	db "github.com/m1thrandir225/galore-services/db/sqlc"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	db2 "github.com/m1thrandir225/galore-services/internal/db/sqlc"
+	dto2 "github.com/m1thrandir225/galore-services/internal/dto"
+	"github.com/m1thrandir225/galore-services/internal/util"
 )
 
 func (server *Server) registerBackgroundHandlers() {
@@ -87,9 +87,9 @@ func (server *Server) createCocktailDraft(args map[string]interface{}) error {
 	*/
 	promptCocktail, err := server.cocktailGenerator.GenerateRecipe(prompt)
 	if err != nil {
-		updateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+		updateRequestArgs := db2.UpdateGenerateCocktailRequestParams{
 			ID:     cocktailRequestId,
-			Status: db.GenerationStatusError,
+			Status: db2.GenerationStatusError,
 		}
 		_, uErr := server.store.UpdateGenerateCocktailRequest(context.Background(), updateRequestArgs)
 		if uErr != nil {
@@ -108,7 +108,7 @@ func (server *Server) createCocktailDraft(args map[string]interface{}) error {
 		return err
 	}
 
-	createArgs := db.CreateGenerateCocktailDraftParams{
+	createArgs := db2.CreateGenerateCocktailDraftParams{
 		RequestID:       cocktailRequestId,
 		Name:            promptCocktail.Name,
 		Description:     promptCocktail.Description,
@@ -122,9 +122,9 @@ func (server *Server) createCocktailDraft(args map[string]interface{}) error {
 		return err
 	}
 
-	updateGenerateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+	updateGenerateRequestArgs := db2.UpdateGenerateCocktailRequestParams{
 		ID:     draft.RequestID,
-		Status: db.GenerationStatusGeneratingImages,
+		Status: db2.GenerationStatusGeneratingImages,
 	}
 
 	_, err = server.store.UpdateGenerateCocktailRequest(context.Background(), updateGenerateRequestArgs)
@@ -205,11 +205,11 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 	Check if the request has a status error (i.e one of the previous images had an error),
 	if it does then just cancel the current image generation process
 	*/
-	if generateRequest.Status == db.GenerationStatusError {
-		createArgs := db.CreateImageGenerationRequestParams{
+	if generateRequest.Status == db2.GenerationStatusError {
+		createArgs := db2.CreateImageGenerationRequestParams{
 			DraftID: cocktailDraftId,
 			Prompt:  imagePrompt,
-			Status:  db.ImageGenerationStatusCancelled,
+			Status:  db2.ImageGenerationStatusCancelled,
 			IsMain:  isMain,
 		}
 
@@ -224,10 +224,10 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 	/*
 		If the parent request for the draft doesn't have an error continue with the generation process
 	*/
-	createArgs := db.CreateImageGenerationRequestParams{
+	createArgs := db2.CreateImageGenerationRequestParams{
 		DraftID: cocktailDraftId,
 		Prompt:  imagePrompt,
-		Status:  db.ImageGenerationStatusGenerating,
+		Status:  db2.ImageGenerationStatusGenerating,
 		IsMain:  isMain,
 	}
 
@@ -243,7 +243,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 	*/
 	generatedImageData, err := server.imageGenerator.GenerateImage(imageRequest.Prompt, httpClient, "core")
 	if err != nil {
-		errorUpdateArgs := db.UpdateImageGenerationRequestParams{
+		errorUpdateArgs := db2.UpdateImageGenerationRequestParams{
 			ID: imageRequest.ID,
 			ImageUrl: pgtype.Text{
 				String: "",
@@ -253,7 +253,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 				String: err.Error(),
 				Valid:  true,
 			},
-			Status: db.ImageGenerationStatusError,
+			Status: db2.ImageGenerationStatusError,
 		}
 		_, updateImageReqErr := server.store.UpdateImageGenerationRequest(context.Background(), errorUpdateArgs)
 		if updateImageReqErr != nil {
@@ -272,7 +272,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		fmt.Sprintf("%s%s", generatedImageData.FileName, generatedImageData.FileExt),
 	)
 	if err != nil {
-		errorUpdateArgs := db.UpdateImageGenerationRequestParams{
+		errorUpdateArgs := db2.UpdateImageGenerationRequestParams{
 			ID: imageRequest.ID,
 			ImageUrl: pgtype.Text{
 				String: "",
@@ -282,7 +282,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 				String: err.Error(),
 				Valid:  true,
 			},
-			Status: db.ImageGenerationStatusError,
+			Status: db2.ImageGenerationStatusError,
 		}
 		_, updateImageReqErr := server.store.UpdateImageGenerationRequest(context.Background(), errorUpdateArgs)
 		if updateImageReqErr != nil {
@@ -291,7 +291,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		}
 	}
 
-	successUpdateArgs := db.UpdateImageGenerationRequestParams{
+	successUpdateArgs := db2.UpdateImageGenerationRequestParams{
 		ID: imageRequest.ID,
 		ImageUrl: pgtype.Text{
 			String: uploadedFilePath,
@@ -301,7 +301,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 			String: "",
 			Valid:  false,
 		},
-		Status: db.ImageGenerationStatusSuccess,
+		Status: db2.ImageGenerationStatusSuccess,
 	}
 	_, err = server.store.UpdateImageGenerationRequest(context.Background(), successUpdateArgs)
 
@@ -333,9 +333,9 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 	if !data.AllSuccessful {
 		log.Println("ERROR: not all images completed the generation process successfully")
 
-		updateGenerateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+		updateGenerateRequestArgs := db2.UpdateGenerateCocktailRequestParams{
 			ID:     generateRequestId,
-			Status: db.GenerationStatusError,
+			Status: db2.GenerationStatusError,
 		}
 		_, err = server.store.UpdateGenerateCocktailRequest(context.Background(), updateGenerateRequestArgs)
 
@@ -350,7 +350,7 @@ func (server *Server) createImageGenerationRequest(args map[string]interface{}) 
 		Logic for comparing if this image_generation request is the last one, if it is then schedule the generation of the final cocktail
 	*/
 
-	var instructions []dto.PromptInstruction
+	var instructions []dto2.PromptInstruction
 	err = json.Unmarshal(draft.Instructions, &instructions)
 	if err != nil {
 		log.Println("ERR: error while unmarshalling instructions: " + err.Error())
@@ -408,7 +408,7 @@ func (server *Server) createGeneratedCocktail(args map[string]interface{}) error
 		}
 	}
 
-	var promptInstructions []dto.PromptInstruction
+	var promptInstructions []dto2.PromptInstruction
 	err = json.Unmarshal([]byte(draft.Instructions), &promptInstructions)
 	if err != nil {
 		log.Println(err)
@@ -421,16 +421,16 @@ func (server *Server) createGeneratedCocktail(args map[string]interface{}) error
 		return err
 	}
 
-	var ingredientData []dto.IngredientData
+	var ingredientData []dto2.IngredientData
 	err = json.Unmarshal([]byte(draft.Ingredients), &ingredientData)
 
-	createFinalCocktailArgs := db.CreateGeneratedCocktailParams{
+	createFinalCocktailArgs := db2.CreateGeneratedCocktailParams{
 		Name:         draft.Name,
 		UserID:       userId,
 		RequestID:    draft.RequestID,
 		DraftID:      draft.ID,
 		Instructions: aiInstructions,
-		Ingredients: dto.IngredientDto{
+		Ingredients: dto2.IngredientDto{
 			Ingredients: ingredientData,
 		},
 		Description:  draft.Description,
@@ -446,9 +446,9 @@ func (server *Server) createGeneratedCocktail(args map[string]interface{}) error
 	log.Println(finalCocktail)
 	//TODO: SEND NOTIFICATION
 
-	updateGenerateRequestArgs := db.UpdateGenerateCocktailRequestParams{
+	updateGenerateRequestArgs := db2.UpdateGenerateCocktailRequestParams{
 		ID:     draft.RequestID,
-		Status: db.GenerationStatusSuccess,
+		Status: db2.GenerationStatusSuccess,
 	}
 
 	_, err = server.store.UpdateGenerateCocktailRequest(context.Background(), updateGenerateRequestArgs)
@@ -556,7 +556,7 @@ func (server *Server) createNotificationJob(args map[string]interface{}) error {
 		return fmt.Errorf("missing required arguments: user_id")
 	}
 
-	notifArgs := db.CreateNotificationParams{
+	notifArgs := db2.CreateNotificationParams{
 		UserID:             userId,
 		NotificationTypeID: notificationTypeId,
 	}
