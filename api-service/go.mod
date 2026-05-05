@@ -9,7 +9,7 @@ require (
 	github.com/gocraft/work v0.5.1
 	github.com/gomodule/redigo v1.9.3
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.9.0
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/o1egl/paseto v1.0.0
 	github.com/pgvector/pgvector-go v0.3.0
 	github.com/pquerna/otp v1.5.0
